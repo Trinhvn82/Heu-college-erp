@@ -368,7 +368,7 @@ def lop81_hk(request, lop_id, hk_ma):
                 hs.cccd = request.POST["cccd"+str(stud.id)]
                 hs.cccdbo = request.POST["cccdbo"+str(stud.id)]
                 hs.cccdme = request.POST["cccdme"+str(stud.id)]
-                hs.gsk = request.POST["gsk"+str(stud.id)]
+                hs.gks = request.POST["gks"+str(stud.id)]
                 hs.ghichu = request.POST["ghichu"+str(stud.id)]
                 hs.status = 1
 
@@ -405,7 +405,6 @@ def lophp_hk(request, lop_id, hk_ma):
             for hk in hks:
                 hs = Hocphi.objects.get(sv_id = stud.id,hk=hk.ma,lop_id = lop_id)
                 hs.hpstatus = request.POST["status"+str(stud.id)]
-                hs.sotien = request.POST["sotien"+str(stud.id)]
                 hs.ghichu = request.POST["ghichu"+str(stud.id)]
                 hs.status = 1
                 hs.save()
@@ -460,11 +459,8 @@ def import_monhoc_dm(request):
                 sogio_lt = sheet.cell(r,5).value
                 sogio_th = sheet.cell(r,6).value
                 sogio_kt = sheet.cell(r,7).value
-                if Monhoc.objects.filter(ma=ma).exists():
-                    messages.error(request, 'Ma: ' + ma + ' already exists')
-                else:
-                    mh = Monhoc(ma=ma, ten=ten, chuongtrinh=chuongtrinh, sotinchi=sotinchi, sogio_lt=sogio_lt,sogio_th=sogio_th,sogio_kt=sogio_kt)
-                    mh.save()
+                mh = Monhoc(ma=ma, ten=ten, chuongtrinh=chuongtrinh, sotinchi=sotinchi, sogio_lt=sogio_lt,sogio_th=sogio_th,sogio_kt=sogio_kt)
+                mh.save()
 
         if 'hk-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin hoc ky")
@@ -477,7 +473,7 @@ def import_monhoc_dm(request):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
                 if Hocky.objects.filter(ma=ma).exists():
-                    messages.error(request, 'Ma: ' + ma + ' already exists')
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hk = Hocky(ma=ma, ten=ten)
                     hk.save()
@@ -493,7 +489,7 @@ def import_monhoc_dm(request):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
                 if Loaidiem.objects.filter(ma=ma).exists():
-                    messages.error(request, 'Ma: ' + ma + ' already exists')
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     ld = Loaidiem(ma=ma, ten=ten)
                     ld.save()
@@ -509,7 +505,7 @@ def import_monhoc_dm(request):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
                 if HocphiStatus.objects.filter(ma=ma).exists():
-                    messages.error(request, 'Ma: ' + ma + ' already exists')
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hp = HocphiStatus(ma=ma, ten=ten)
                     hp.save()
@@ -525,7 +521,7 @@ def import_monhoc_dm(request):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
                 if SvStatus.objects.filter(ma=ma).exists():
-                    messages.error(request, 'Ma: ' + ma + ' already exists')
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hp = SvStatus(ma=ma, ten=ten)
                     hp.save()
@@ -540,7 +536,7 @@ def import_lopsv(request, lop_id):
             messages.error(request, "File excel khong dung format")
             return redirect("svlop_list", lop_id)
 
-        sheet = wb["lopsv"]
+        sheet = wb["allsv"]
         #for r in range(3, sheet.max_row+1):
         #maxid=500
         #for r in range(3, 44):
@@ -611,13 +607,29 @@ def import_gv(request):
 @login_required
 def export_gv(request):
     # Query the Person model to get all records
+    gvs = Hsgv.objects.all().values()
+    # Convert the QuerySet to a DataFrame
+    df = pd.DataFrame(list(gvs))
+
+    # Define the Excel file response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=giaovien.xlsx'
+
+    # Use Pandas to write the DataFrame to an Excel file
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+@login_required
+def export_sv(request):
+    # Query the Person model to get all records
     gvs = Hssv.objects.all().values()
     # Convert the QuerySet to a DataFrame
     df = pd.DataFrame(list(gvs))
 
     # Define the Excel file response
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=persons.xlsx'
+    response['Content-Disposition'] = 'attachment; filename=hocvien.xlsx'
 
     # Use Pandas to write the DataFrame to an Excel file
     df.to_excel(response, index=False, engine='openpyxl')

@@ -30,7 +30,9 @@
             <div class="btn-toolbar mb-2 mb-md-0">
                 <div class="btn-group">
                     <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                    <a href="{% url 'export_sv' %}">
+                        <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                    </a>
                 </div>
             </div>
         </div>

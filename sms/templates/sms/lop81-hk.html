@@ -60,31 +60,31 @@
                                     <td>{{ hs.sv.msv }}</td>
                                     <td>{{ hs.sv.hoten }}</td>
                                     <td>
-                                        <input type="text" name="dondn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.dondn }}">
+                                        <input type="number" name="dondn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.dondn }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="cntn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cntn }}">
+                                        <input type="number" name="cntn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cntn }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="bangtn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.bangtn }}">
+                                        <input type="number" name="bangtn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.bangtn }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="xnct{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.xnct }}">
+                                        <input type="number" name="xnct{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.xnct }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="cccd{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccd }}">
+                                        <input type="number" name="cccd{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccd }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="cccdbo{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccdbo }}">
+                                        <input type="number" name="cccdbo{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccdbo }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="cccdme{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccdme }}">
+                                        <input type="number" name="cccdme{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccdme }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="gsk{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.gsk }}">
+                                        <input type="number" name="gks{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.gks }}" max="5" min="0">
                                     </td>
                                     <td>
-                                        <input type="text" name="ghichu{{ hs.sv_id }}" maxlength="30" size="30" value="{{ hs.ghichu }}">
+                                        <input type="text" name="ghichu{{ hs.sv_id }}" maxlength="200" size="30" value="{{ hs.ghichu }}">
                                     </td>
                                 </tr>
                                 {% endfor %}

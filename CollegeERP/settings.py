@@ -32,7 +32,6 @@ AUTH_USER_MODEL = 'info.User'
 
 SESSION_COOKIE_AGE =  600 # 5 minutes
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
-USE_THOUSAND_SEPARATOR = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -102,7 +101,7 @@ WSGI_APPLICATION = 'CollegeERP.wsgi.application'
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': "temp5",
+       'NAME': "temp8",
        'USER': 'postgres',
        'PASSWORD': '123654',
        'HOST': 'localhost',

@@ -7,7 +7,7 @@ wb = openpyxl.load_workbook('D:\Đại học Điện lực\\ctdt.xlsx')
 #wb.get_sheet_names()
 sheet = wb['Sheet1']
 
-conn = psycopg2.connect(database="temp1",
+conn = psycopg2.connect(database="temp8",
                         host="localhost",
                         user="postgres",
                         password="123654",

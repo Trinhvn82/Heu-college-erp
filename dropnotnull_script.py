@@ -1,9 +1,9 @@
 import psycopg2
 
-conn = psycopg2.connect(database="temp2",
-                        host="103.141.140.214",
+conn = psycopg2.connect(database="temp8",
+                        host="localhost",
                         user="postgres",
-                        password="Hs123456!",
+                        password="123654",
                         port="5432")
 cursor = conn.cursor()
 
@@ -24,20 +24,6 @@ ALTER COLUMN hotenbo DROP NOT NULL,
 ALTER COLUMN hotenme DROP NOT NULL,
 ALTER COLUMN sdths DROP NOT NULL,
 ALTER COLUMN sdtph DROP NOT NULL,
-
-ALTER COLUMN hs81_1 DROP NOT NULL,
-ALTER COLUMN hs81_2 DROP NOT NULL,
-ALTER COLUMN hs81_3 DROP NOT NULL,
-ALTER COLUMN hs81_4 DROP NOT NULL,
-ALTER COLUMN hs81_5 DROP NOT NULL,
-ALTER COLUMN hs81_6 DROP NOT NULL,
-ALTER COLUMN hs81_7 DROP NOT NULL,
-ALTER COLUMN hs81_8 DROP NOT NULL,
-ALTER COLUMN hs81_9 DROP NOT NULL,
-ALTER COLUMN hs81_10 DROP NOT NULL,
-ALTER COLUMN hs81_11 DROP NOT NULL,
-ALTER COLUMN hs81_12 DROP NOT NULL,
-ALTER COLUMN hs81_13 DROP NOT NULL,
 ALTER COLUMN ghichu DROP NOT NULL
 """
 cursor.execute(query)
@@ -71,6 +57,15 @@ ALTER TABLE sms_lopmonhoc
 ALTER COLUMN ngaystart DROP NOT NULL,
 ALTER COLUMN ngayend DROP NOT NULL,
 ALTER COLUMN hsdt DROP NOT NULL
+"""
+cursor.execute(query)
+
+#LopMonhoc
+
+query = """
+ALTER TABLE sms_lophk 
+ALTER COLUMN start_hk DROP NOT NULL,
+ALTER COLUMN end_hk DROP NOT NULL
 """
 cursor.execute(query)
 
@@ -116,20 +111,6 @@ ALTER COLUMN hotenbo DROP NOT NULL,
 ALTER COLUMN hotenme DROP NOT NULL,
 ALTER COLUMN sdths DROP NOT NULL,
 ALTER COLUMN sdtph DROP NOT NULL,
-
-ALTER COLUMN hs81_1 DROP NOT NULL,
-ALTER COLUMN hs81_2 DROP NOT NULL,
-ALTER COLUMN hs81_3 DROP NOT NULL,
-ALTER COLUMN hs81_4 DROP NOT NULL,
-ALTER COLUMN hs81_5 DROP NOT NULL,
-ALTER COLUMN hs81_6 DROP NOT NULL,
-ALTER COLUMN hs81_7 DROP NOT NULL,
-ALTER COLUMN hs81_8 DROP NOT NULL,
-ALTER COLUMN hs81_9 DROP NOT NULL,
-ALTER COLUMN hs81_10 DROP NOT NULL,
-ALTER COLUMN hs81_11 DROP NOT NULL,
-ALTER COLUMN hs81_12 DROP NOT NULL,
-ALTER COLUMN hs81_13 DROP NOT NULL,
 ALTER COLUMN ghichu DROP NOT NULL
 """
 cursor.execute(query)
@@ -163,6 +144,15 @@ ALTER TABLE sms_historicallopmonhoc
 ALTER COLUMN ngaystart DROP NOT NULL,
 ALTER COLUMN ngayend DROP NOT NULL,
 ALTER COLUMN hsdt DROP NOT NULL
+"""
+cursor.execute(query)
+
+#LopMonhoc
+
+query = """
+ALTER TABLE sms_historicallophk 
+ALTER COLUMN start_hk DROP NOT NULL,
+ALTER COLUMN end_hk DROP NOT NULL
 """
 cursor.execute(query)
 

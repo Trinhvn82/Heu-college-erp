@@ -43,7 +43,6 @@
                                         <th>Mã</th>
                                         <th>Họ tên</th>
                                         <th>Tình trạng</th>
-                                        <th>Số tiền</th>
                                         <th>Ghi chú</th>
                                     </tr>
                                 </thead>
@@ -72,10 +71,7 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="number" name="sotien{{ hp.sv_id }}" class="form-control" placeholder="So tien" value="{{ hp.sotien }}">
-                                        </td>
-                                        <td>
-                                            <input type="text" name="ghichu{{ hp.sv_id }}" maxlength="30" size="30" value="{{ hp.ghichu }}">
+                                            <input type="text" name="ghichu{{ hp.sv_id }}" maxlength="200" size="30" value="{{ hp.ghichu }}">
                                         </td>
                                     </tr>
                                     {% endfor %}

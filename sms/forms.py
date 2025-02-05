@@ -163,7 +163,7 @@ class CreateSv(forms.ModelForm):
     class Meta:
         model = Hssv
         #fields = "__all__"
-        fields = ('msv','hoten','malop', 'namsinh','gioitinh', 'dantoc','noisinh', 'quequan','diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph', 'status')
+        fields = ('msv','hoten','malop', 'namsinh','gioitinh', 'dantoc','noisinh', 'quequan','diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph', 'status', 'ghichu')
         #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
@@ -181,7 +181,8 @@ class CreateSv(forms.ModelForm):
             'hotenme': 'Họ tên mẹ',
             'sdths': 'SĐT học sinh',
             'sdtph': 'SĐT phụ huynh',
-            'status': 'Trạng thái'
+            'status': 'Trạng thái',
+            'ghichu': 'Ghi chú'
         }
         widgets = {
             'msv': forms.TextInput(attrs={'class': 'form-control'}),
@@ -199,6 +200,7 @@ class CreateSv(forms.ModelForm):
             'sdths': forms.TextInput(attrs={'class': 'form-control'}),
             'sdtph': forms.TextInput(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
         }
 
 class CreateGv(forms.ModelForm):
@@ -231,7 +233,7 @@ class CreateGv(forms.ModelForm):
             'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
             'cccd': forms.TextInput(attrs={'class': 'form-control'}),
             'thoihanhd': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
-            'hsgv': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
+            'hsgv': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
 class CreateHocphi(forms.ModelForm):

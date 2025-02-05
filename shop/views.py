@@ -6,7 +6,8 @@ from django.shortcuts import render
 
 from shop.models import Purchase, RawRP
 from shop.charts import months, colorPrimary, colorSuccess, colorDanger, generate_color_palette, get_year_dict
-
+from sms.models import Lop, Hocky
+from django.contrib.auth.decorators import login_required, permission_required
 
 #@staff_member_required
 def get_filter_options(request):
@@ -148,6 +149,35 @@ def ctdt_chart(request):
         },
     })
 
+def hp_chart(request, lop, hk):
+    query = """
+                SELECT st.id as id, st.ten as labels, count(hp.id) as data FROM sms_hocphistatus st
+                inner join public.sms_hocphi hp
+                on hp.hpstatus = st.ma and hp.hk=%s and lop_id=%s
+                group by st.id
+                order by st.ma
+            """
+
+    ctdts = RawRP.objects.raw(query,[hk, lop] )
+
+    ctdt_dict = dict()
+
+    for ctdt in ctdts:
+        ctdt_dict[ctdt.labels] = ctdt.data
+
+    return JsonResponse({
+        "title": f"Số học viên phân theo Chương trình đào tạo",
+        "data": {
+            "labels": list(ctdt_dict.keys()),
+            "datasets": [{
+                "label": "Số người",
+                "backgroundColor": generate_color_palette(len(ctdt_dict)),
+                "borderColor": generate_color_palette(len(ctdt_dict)),
+                "data": list(ctdt_dict.values()),
+            }]
+        },
+    })
+
 #@staff_member_required
 def lopsv_chart(request):
     query = """
@@ -178,6 +208,12 @@ def lopsv_chart(request):
             }]
         },
     })
-#@staff_member_required
+@login_required
 def statistics_view(request):
-    return render(request, "statistics.html", {})
+    lops = Lop.objects.all()
+    hks = Hocky.objects.all()
+    context = {
+        "lops": lops,
+        "hks": hks
+    }
+    return render(request, "statistics.html", context)

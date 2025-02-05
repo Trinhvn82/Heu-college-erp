@@ -73,13 +73,6 @@ class Lop(models.Model):
     ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE)
     # mhs = models.ManyToManyField(Monhoc, default= None , blank= True)
     history = HistoricalRecords()
-    @property
-    def _history_user(self):
-        return self.changed_by
-
-    @_history_user.setter
-    def _history_user(self, value):
-        self.changed_by = value
     def __str__(self):
         return self.ma
 
@@ -112,20 +105,7 @@ class Hssv(models.Model):
     hotenme = models.CharField(max_length=200, blank=True)
     sdths = models.CharField(max_length=100, blank=True)
     sdtph = models.CharField(max_length=100, blank=True)
-    hs81_1 = models.CharField(max_length=30, blank=True)
-    hs81_2 = models.CharField(max_length=30, blank=True)
-    hs81_3 = models.CharField(max_length=30, blank=True)
-    hs81_4 = models.CharField(max_length=30, blank=True)
-    hs81_5 = models.CharField(max_length=30, blank=True)
-    hs81_6 = models.CharField(max_length=30, blank=True)
-    hs81_7 = models.CharField(max_length=30, blank=True)
-    hs81_8 = models.CharField(max_length=30, blank=True)
-    hs81_9 = models.CharField(max_length=30, blank=True)
-    hs81_10 = models.CharField(max_length=30, blank=True)
-    hs81_11 = models.CharField(max_length=30, blank=True)
-    hs81_12 = models.CharField(max_length=30, blank=True)
-    hs81_13 = models.CharField(max_length=30, blank=True)
-    ghichu = models.CharField(max_length=500, blank=True)
+    ghichu = models.CharField(max_length=200, blank=True)
     history = HistoricalRecords()
     def __str__(self):
         return self.hoten
@@ -193,7 +173,7 @@ class Lichhoc(models.Model):
     thoigian = models.DateField()
     sotiet = models.IntegerField(default= 1)
     status = models.IntegerField(default= 0)
-    ghichu = models.TextField(default= "", blank= True)
+    ghichu = models.TextField(default= "", max_length=200,blank= True)
     #TenTT = models.IntegerField()
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
@@ -208,7 +188,7 @@ class Hocphi(models.Model):
     thoigian = models.DateField(default= None, blank= True)
     sotien = models.IntegerField(default= 0, blank= True)
     hpstatus = models.IntegerField(default= 1)
-    ghichu = models.TextField(default= "", blank= True)
+    ghichu = models.TextField(default= "", max_length=200,blank= True)
     status = models.IntegerField(default= 0)
     #TenTT = models.IntegerField()
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
@@ -228,8 +208,8 @@ class Hs81(models.Model):
     cccd = models.CharField(default= "", max_length=50)
     cccdbo = models.CharField(default= "", max_length=50)
     cccdme = models.CharField(default= "", max_length=50)
-    gsk = models.CharField(default= "", max_length=50)
-    ghichu = models.CharField(default= "", max_length=100)
+    gks = models.CharField(default= "", max_length=50)
+    ghichu = models.CharField(default= "", max_length=200)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
  
