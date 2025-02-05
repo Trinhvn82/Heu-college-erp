@@ -1,0 +1,100 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Cập nhật môn học {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between w-100 flex-wrap">
+                <div class="mb-3 mb-lg-0">
+                    <h1 class="h4">Thong tin ho so 81 cua lop: {{tenlop}} hoc ky: {{hk_ma}}</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                    <form action="#" method="post">
+                        <!-- <form action="#" method="post"> -->
+                        {% csrf_token %}
+                        <input class="btn btn-success" type="submit" value="Submit">
+                        <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
+                            <table>
+                                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Mã</th>
+                                    <th>Ho ten</th>
+                                    <th>Don DN</th>
+                                    <th>CN TN</th>
+                                    <th>Bang TN</th>
+                                    <th>XN CT</th>
+                                    <th>CCCD</th>
+                                    <th>CCCD Bo</th>
+                                    <th>CCCD Me</th>
+                                    <th>Giay KS</th>
+                                    <th>Ghi chu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hs in hss %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ hs.sv.msv }}</td>
+                                    <td>{{ hs.sv.hoten }}</td>
+                                    <td>
+                                        <input type="text" name="dondn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.dondn }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="cntn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cntn }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="bangtn{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.bangtn }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="xnct{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.xnct }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="cccd{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccd }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="cccdbo{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccdbo }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="cccdme{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.cccdme }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="gsk{{ hs.sv_id }}" maxlength="2" size="2" value="{{ hs.gsk }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="ghichu{{ hs.sv_id }}" maxlength="30" size="30" value="{{ hs.ghichu }}">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                        <!-- </form> -->
+                    </form>
+                </div>
+        </div>
+    </main>
+
+{% endblock content %}

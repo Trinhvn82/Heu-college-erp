@@ -1,0 +1,201 @@
+{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Theo doi ho so 81 cua lop: {{ten}}
+            </div>
+            <div class="card-body">
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <tbody>
+                        <tr>
+                            <a href="{% url 'create_ctdtmonhoc' %}">
+                                <button type="button" class="btn btn-info"><i class="fa fa-edit">Them thong tin ho so 81</i></button>
+                            </a>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 1</b></p>
+                        <tr>
+                            <th>Ho ten SV</th>
+                            <th>Don DN</th>
+                            <th>CNTN</th>
+                            <th>Bang TN</th>
+                            <th>XNCT</th>
+                            <th>CCCD</th>
+                            <th>CCCD Bo</th>
+                            <th>CCCD Me</th>
+                            <th>GKS</th>
+                            <th>Ghi chu</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc1 %}
+                        <tr>
+                            <td>{{ ct.sv.hoten }}</td>
+                            <td>{{ ct.dondn }}</td>
+                            <td>{{ ct.cntn }}</td>
+                            <td>{{ ct.bangtn }}</td>
+                            <td>{{ ct.xnct }}</td>
+                            <td>{{ ct.cccd }}</td>
+                            <td>{{ ct.cccdbo }}</td>
+                            <td>{{ ct.cccdme }}</td>
+                            <td>{{ ct.gks }}</td>
+                            <td>{{ ct.ghichu }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i>Sua</button>
+                                </a>
+                                <a href="{% url 'delete_teacher' ct.id %}">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co du lieu</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 2</b></p>
+                        <tr>
+                            <th>Ho ten SV</th>
+                            <th>Don DN</th>
+                            <th>CNTN</th>
+                            <th>Bang TN</th>
+                            <th>XNCT</th>
+                            <th>CCCD</th>
+                            <th>CCCD Bo</th>
+                            <th>CCCD Me</th>
+                            <th>GKS</th>
+                            <th>Ghi chu</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc2 %}
+                        <tr>
+                            <td>{{ ct.sv.hoten }}</td>
+                            <td>{{ ct.dondn }}</td>
+                            <td>{{ ct.cntn }}</td>
+                            <td>{{ ct.bangtn }}</td>
+                            <td>{{ ct.xnct }}</td>
+                            <td>{{ ct.cccd }}</td>
+                            <td>{{ ct.cccdbo }}</td>
+                            <td>{{ ct.cccdme }}</td>
+                            <td>{{ ct.gks }}</td>
+                            <td>{{ ct.ghichu }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="{% url 'delete_teacher' teacher.id %}">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co du lieu</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 3</b></p>
+                        <tr>
+                            <th>Ho ten SV</th>
+                            <th>Don DN</th>
+                            <th>CNTN</th>
+                            <th>Bang TN</th>
+                            <th>XNCT</th>
+                            <th>CCCD</th>
+                            <th>CCCD Bo</th>
+                            <th>CCCD Me</th>
+                            <th>GKS</th>
+                            <th>Ghi chu</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc3 %}
+                        <tr>
+                            <td>{{ ct.sv.hoten }}</td>
+                            <td>{{ ct.dondn }}</td>
+                            <td>{{ ct.cntn }}</td>
+                            <td>{{ ct.bangtn }}</td>
+                            <td>{{ ct.xnct }}</td>
+                            <td>{{ ct.cccd }}</td>
+                            <td>{{ ct.cccdbo }}</td>
+                            <td>{{ ct.cccdme }}</td>
+                            <td>{{ ct.gks }}</td>
+                            <td>{{ ct.ghichu }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co du lieu</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 4</b></p>
+                        <tr>
+                            <th>Ho ten SV</th>
+                            <th>Don DN</th>
+                            <th>CNTN</th>
+                            <th>Bang TN</th>
+                            <th>XNCT</th>
+                            <th>CCCD</th>
+                            <th>CCCD Bo</th>
+                            <th>CCCD Me</th>
+                            <th>GKS</th>
+                            <th>Ghi chu</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc4 %}
+                        <tr>
+                            <td>{{ ct.sv.hoten }}</td>
+                            <td>{{ ct.dondn }}</td>
+                            <td>{{ ct.cntn }}</td>
+                            <td>{{ ct.bangtn }}</td>
+                            <td>{{ ct.xnct }}</td>
+                            <td>{{ ct.cccd }}</td>
+                            <td>{{ ct.cccdbo }}</td>
+                            <td>{{ ct.cccdme }}</td>
+                            <td>{{ ct.gks }}</td>
+                            <td>{{ ct.ghichu }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co du lieu</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

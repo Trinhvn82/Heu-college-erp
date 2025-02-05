@@ -1,0 +1,91 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Cập nhật môn học {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'ctdt_list' %}">Chương trình ĐT</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Môn học</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between w-100 flex-wrap">
+                <div class="mb-3 mb-lg-0">
+                    <h1 class="h4">Chọn môn học</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                    <form action="{% url 'ctdt_monhoc' ctdt_id %}" method="post">
+                        {% csrf_token %}
+                        <input class="btn btn-success" type="submit" value="Submit">
+                        <br>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>Chương trình</th>
+                                                <th>Mã</th>
+                                                <th>Tên</th>
+                                                <th>Tình trạng</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for ct in cms %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ ct.monhoc.chuongtrinh }}</td>
+                                                <td>{{ ct.monhoc.ma }}</td>
+                                                <td>{{ ct.monhoc.ten }}</td>
+                                                <td>
+                                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                        {% if ct.status == 1 %}
+                                                        <label class="btn btn-success">
+                                                            <input type="radio" name="C{{ ct.id }}" id="option1" autocomplete="off" value="1" checked> Có
+                                                        </label>
+                    
+                                                        <label class="btn btn-danger">
+                                                            <input type="radio" name="C{{ ct.id }}" id="option2" autocomplete="off" value="0"> Không
+                                                        </label>
+                                                        {% else %}
+                                                        <label class="btn btn-outline-success">
+                                                            <input type="radio" name="C{{ ct.id }}" id="option1" autocomplete="off" value="1"> Có
+                                                        </label>
+                    
+                                                        <label class="btn btn-outline-danger active">
+                                                            <input type="radio" name="C{{ ct.id }}" id="option2" autocomplete="off" value="0" checked> Không
+                                                        </label>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+        </div>
+    </main>
+
+{% endblock content %}

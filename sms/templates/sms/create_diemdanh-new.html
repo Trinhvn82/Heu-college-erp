@@ -1,0 +1,39 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="card">
+    <div class="card-header">
+        <i class="fa fa-align-justify"></i>Them sinh vien vang mat cua lop: {{ttlh.lop.ten}} - Mon hoc: {{ttlh.monhoc.ten}} vao ngay: {{ttlh.thoigian}}
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <select hidden name="lichhoc" class="form-control" placeholder="Mon hoc" required id="id_lichhoc">
+                    <option value="{{lh_id}}" selected>{{lh_id}}</option>
+                </select>
+            </p>
+            <p>
+                <select name="sv" class="form-control" required id="id_sv">
+                    <option value="" selected>----</option>
+                    {% for sv in dssv %}
+                    <option value="{{sv.id}}">{{sv.hoten}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p>
+                <label for="id_ghichu">Ghi chu:</label>
+                <textarea name="ghichu" cols="40" rows="10" class="form-control" placeholder="Ghi chu" maxlength="300" id="id_ghichu">
+                </textarea>
+            </p>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+

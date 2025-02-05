@@ -1,0 +1,128 @@
+﻿{% extends 'layouts/base.html' %}
+{% block content %}
+<h1>Danh sách lớp</h1>
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                <tbody>
+                    <tr>
+                        <td>Tên lớp</td>
+                        <td>
+                            <form action="{% url 'sv_list' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="text" name="name">
+                                <input type="submit" name="submit" value="Search">
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="{% url 'create_lop' %}">
+                                <button type="button" class="btn btn-primary">Tạo mới lớp</button>
+                            </a>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã lớp</th>
+                        <th>Tên lớp</th>
+                        <th>Trung tssm</th>
+                        <th>Chương trình ĐT</th>
+                        <th>Tác nghiệp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ct in lop %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ ct.ma }}</td>
+                        <td>
+                            {{ ct.ten }}
+                        </td>
+                        <td>{{ ct.trungtam }}</td>
+                        <td>
+                            {{ ct.ctdt.ten }}
+                        </td>
+                        <td>
+                            <!-- <a class="btn btn-primary" href="{% url 'lop_monhoc' ct.id  %}" role="button">Quản lý học tập</a>
+                            <a class="btn btn-warning" href="{% url 'lop81-lst' ct.id %}">Hồ sơ 81 & Học phí</a>
+                            <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
+                            <div class="btn-group">
+                                <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-dark"></span>
+                                    </span>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'lop_monhoc' ct.id  %}">
+                                        <span class="fas fa-edit mr-2"></span>Quản lý học tập
+                                    </a>
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'lop81-lst' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81 & Học phí
+                                    </a>
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'svlop_list' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>Học viên
+                                    </a>
+                                </div>
+                            </div>
+                    </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">
+        {% if lop.has_other_pages %}
+        <ul class="pagination">
+            {% if lop.has_previous %}
+            <li class="page-item">
+                <a href="?page={{lop.previous_page_number}}" class="page-link">Prev</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Prev</a>
+            </li>
+            {% endif %}
+            {% for i in lop.paginator.page_range %}
+            {% if lop.number == i %}
+            <li class="page-item active">
+                <a class="page-link">{{ i }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if lop.has_next %}
+            <li class="page-item">
+                <a href="?page={{lop.next_page_number}}" class="page-link">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

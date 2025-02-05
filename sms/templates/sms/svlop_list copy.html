@@ -1,0 +1,117 @@
+{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Danh sách học viên cua lớp {{tenlop}}</div>
+            <div class="card-body">
+
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <tbody>
+                        <tr>
+                            <td>Chọn file </td>
+                            <td>
+                                <form action="{% url 'import_lopsv' lop_id%}" method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="file"
+                                           title="Upload excel file"
+                                           name="excel_file"
+                                           style="border: 1px solid black; padding: 5px;"
+                                           required="required">
+                                    <input type="submit" class="btn btn-primary" name="submit" value="Import Học viên">
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <a href="{% url 'create_sv' %}">
+                                    <button type="button" class="btn btn-primary">Thêm Học viên</button>
+                                </a>
+
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Họ tên</th>
+                            <th>Năm sinh</th>
+                            <th>Nơi sinh</th>
+                            <th>Giới tính</th>
+                            <th>CCCD</th>
+                            <th>SDT </th>
+                            <th>Địa chỉ</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ student.hoten }}</td>
+                            <td>{{ student.namsinh | date:"d/m/y" }}</td>
+                            <td>{{ student.noisinh }}</td>
+                            <td>{{ student.gioitinh }}</td>
+                            <td>{{ student.cccd }}</td>
+                            <td>{{ student.sdths }}</td>
+                            <td>{{ student.diachi }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if students.has_other_pages %}
+            <ul class="pagination">
+                {% if students.has_previous %}
+                    <li class="page-item">
+                        <a href="?page={{students.previous_page_number}}" class="page-link">Prev</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Prev</a>
+                    </li>
+                {% endif %}
+                {% for i in students.paginator.page_range %}
+                    {% if students.number == i %}
+                        <li class="page-item active">
+                            <a class="page-link">{{ i }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if students.has_next %}
+                    <li class="page-item">
+                        <a href="?page={{students.next_page_number}}" class="page-link">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

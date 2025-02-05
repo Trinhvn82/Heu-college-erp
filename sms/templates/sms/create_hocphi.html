@@ -1,0 +1,68 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="card">
+    <div class="card-header">
+        <i class="fa fa-align-justify"></i>Them Hoc phi cua lop: {{ttlh.ten}}
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label for="id_sogio">Ten sinh vien:</label>
+                <select name="sv" class="form-control" required id="id_sv">
+                    <option value="" selected>----</option>
+                    {% for sv in dssv %}
+                    <option value="{{sv.id}}">{{sv.hoten}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <p>
+                <input hidden type="number" name="lop" class="form-control" value="{{lh_id}}" required id="id_sogio">
+            </p>
+            <p>
+                <label for="id_sogio">Hoc ky:</label>
+                <select name="hk" class="form-control" id="id_status" required>
+                    <option value="" selected>---------</option>
+                    <option value="1">Hoc ky 1</option>
+                    <option value="2">Hoc ky 2</option>
+                    <option value="3">Hoc ky 3</option>
+                    <option value="4">Hoc ky 4</option>
+                </select>
+            </p>
+            <p>
+                <label for="id_sogio">So tien:</label>
+                <input type="number" name="sotien" class="form-control" placeholder="So tien">
+            </p>
+            <p>
+                <label for="id_thoigian">Thoi gian nop:</label>
+                <input type="date" name="thoigian" class="form-control" placeholder="mm/dd/yyyy" id="id_thoigian">
+            </p>
+            <p>
+                <label for="id_status">Status:</label>
+                <select name="status" class="form-control" id="id_status" required>
+                    <option value="" selected>---------</option>
+                    <option value="Hoan thien ho so">Hoan thien ho so</option>
+
+                    <option value="Nhan ho tro">Nhan ho tro</option>
+
+                    <option value="Nop nha truong">Nop nha truong</option>
+
+                </select>
+            </p>
+            <p>
+                <label for="id_ghichu">Ghi chu:</label>
+                <textarea name="ghichu" cols="40" rows="10" class="form-control" placeholder="Ghi chu" maxlength="300" id="id_ghichu">
+                </textarea>
+            </p>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+

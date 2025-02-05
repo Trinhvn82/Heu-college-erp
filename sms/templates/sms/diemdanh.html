@@ -1,0 +1,94 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Cập nhật môn học {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lichhoclopmh_list' lmh%}">Lịch học</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Điểm danh</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between w-100 flex-wrap">
+                <div class="mb-3 mb-lg-0">
+                    <h1 class="h4">Điểm danh</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                    <form action="{% url 'diemdanh_list' lh_id%}" method="post">
+                        {% csrf_token %}
+                        <input class="btn btn-success" type="submit" value="Submit">
+                        <br>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>Mã</th>
+                                                <th>Ten học vien</th>
+                                                <th>Sdt</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for ct in dds %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ ct.sv.msv }}</td>
+                                                <td>{{ ct.sv.hoten }}</td>
+                                                <td>{{ ct.sv.sdths }}</td>
+                                                <td>
+                                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    
+                                                        {% if ct.status == 1 %}
+                                                        <label class="btn btn-success">
+                                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Present
+                                                        </label>
+                    
+                                                        <label class="btn btn-danger">
+                                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Absent
+                                                        </label>
+                                                        {% else %}
+                                                        <label class="btn btn-outline-success">
+                                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Present
+                                                        </label>
+                    
+                                                        <label class="btn btn-outline-danger active">
+                                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked> Absent
+                                                        </label>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+        </div>
+    </main>
+
+{% endblock content %}

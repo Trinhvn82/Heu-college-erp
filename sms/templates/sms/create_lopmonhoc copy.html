@@ -1,0 +1,57 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Them mon hoc</h2>
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label for="id_sogio">Mon hoc:</label>
+                <select name="monhoc" class="form-control" required id="id_sv">
+                    <option value="" selected>----</option>
+                    {% for ct in mhs %}
+                    <option value="{{ct.id}}">{{ct.ma}}-{{ct.ten}}</option>
+                    {% endfor%}
+                </select>
+            </p>
+            <p>
+                <input hidden type="number" name="lop" class="form-control" value="{{lop_id}}" required id="id_sogio">
+            </p>
+            <p>
+                <label for="id_thoigian">Ngay bat dau:</label>
+                <input type="date" name="ngaystart" class="form-control" placeholder="mm/dd/yyyy" id="id_thoigian">
+            </p>
+            <p>
+                <label for="id_thoigian">Ngay ket thuc:</label>
+                <input type="date" name="ngayend" class="form-control" placeholder="mm/dd/yyyy" id="id_thoigian">
+            </p>
+            <p>
+                <label for="id_status">Status:</label>
+                <select name="status" class="form-control" id="id_status" required>
+                    <option value="" selected>---------</option>
+                    <option value="Lap ket hoach">Lap ket hoach</option>
+
+                    <option value="Da hoan thanh">Da hoan thanh</option>
+                </select>
+            </p>
+            <p>
+                <label for="id_ghichu">Ho so dao tao:</label>
+                <textarea name="hsdt" cols="40" rows="10" class="form-control" placeholder="Ghi chu" maxlength="300" id="id_ghichu">
+                </textarea>
+            </p>
+
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+

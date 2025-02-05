@@ -1,0 +1,142 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Settings {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+                
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox" src="/static/assets/img/brand/light.svg" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div>
+                <button class="btn btn-secondary text-dark mr-2 dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fas fa-plus mr-2"></span>Xem Dashboard
+                </button>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Lớp học</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-comment-dots mr-2"></span>Môn học</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-box-open mr-2"></span>Lịch học</a>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fas fa-clipboard mr-2"></span>Báo cáo
+                    <span class="icon icon-small ml-1"><span class="fas fa-chevron-down"></span></span>
+                </button>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-box-open mr-2"></span>Học viên</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-store mr-2"></span>Kết quả học tập</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-cart-arrow-down mr-2"></span>Học phí</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Học viên theo CTĐT</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="ctdtChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Học viên theo Lớp</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="lopsvChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <!-- Page Content -->
+    <script>
+        $(document).ready(function () {
+            loadAllCharts();
+        });
+
+        function loadChart(chart, endpoint) {
+            $.ajax({
+                url: endpoint,
+                type: "GET",
+                dataType: "json",
+                success: (jsonResponse) => {
+                    // Extract data from the response
+                    const title = jsonResponse.title;
+                    const labels = jsonResponse.data.labels;
+                    const datasets = jsonResponse.data.datasets;
+
+                    // Reset the current chart
+                    chart.data.datasets = [];
+                    chart.data.labels = [];
+
+                    // Load new data into the chart
+                    chart.options.title.text = title;
+                    chart.options.title.display = true;
+                    chart.data.labels = labels;
+                    datasets.forEach(dataset => {
+                        chart.data.datasets.push(dataset);
+                    });
+                    chart.update();
+                },
+                error: () => console.log("Failed to fetch chart data from " + endpoint + "!")
+            });
+        }
+
+        function loadAllCharts() {
+            loadChart(ctdtChart, `/shop/chart/ctdt/`);
+            loadChart(lopsvChart, `/shop/chart/lopsv/`);
+        }
+    </script>
+    <script>
+        let ctdtCtx = document.getElementById("ctdtChart").getContext("2d");
+        let ctdtChart = new Chart(ctdtCtx, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let lopsvCtx = document.getElementById("lopsvChart").getContext("2d");
+        let lopsvChart = new Chart(lopsvCtx, {
+            type: "bar",
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: ""
+                }
+            }
+        });
+    </script>
+    </main>
+    
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

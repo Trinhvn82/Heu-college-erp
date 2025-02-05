@@ -1,0 +1,100 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="#">Quản lý đào tạo</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"> Kết quả học tập</li>
+                    </ol>
+                </nav>
+                <h4>Lớp: {{tenlop}}</h4>
+                <h6>Môn hoc: {{tenmh}}</h6>
+                <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                </div>
+            </div>
+        </div>
+        <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
+            <!-- <table class="table table-responsive-sm table-bordered table-striped table-sm"> -->
+                <table class="table table-responsive-sm table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Điểm thành phần</th>
+                            <th>Tình trạng</th>
+                            <th>Tác nghiệp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ld in lol %}
+                        {% if ld.st >= 1 %}
+                        <tr class="table-success">
+                        {% else %}
+                        <tr>
+                        {% endif %}
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ ld.ten }}</td>
+                            {% if ld.st >= 1 %}
+                            <td>Đã có điểm</td>
+                            {% else %}
+                            <td>Chưa có điểm</td>
+                            {% endif %}
+                            <td>
+                                <!-- <a href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a class="btn btn-primary" href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}" role="button">Cap nhat diem</a> -->
+                                <div class="btn-group">
+                                    <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="icon icon-sm">
+                                            <span class="fas fa-ellipsis-h icon-dark"></span>
+                                        </span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item edit_item"
+                                           href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}">
+                                            <span class="fas fa-edit mr-2"></span>Vào điểm
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {{ transactions.pagination }}
+
+        </div>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

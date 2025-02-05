@@ -1,0 +1,102 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Thong tin hoc phi cua lop: {{tenlop}} hoc ky: {{hk_ma}}
+            </div>
+            <div class="card-body">
+                <form action="#" method="post">
+                    {% csrf_token %}
+                    <input class="btn btn-success" type="submit" value="Submit">
+                    <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Ho ten</th>
+                                <th>Tinh trang</th>
+                                <th>So tien</th>
+                                <th>Ghi chu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hp in hps %}
+                            {% if hp.hpstatus == 3 %}
+                            <tr class="table-success">
+                            {% else %}
+                            <tr>
+                            {% endif %}
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ hp.sv.hoten }}</td>
+                                <td>
+                                    <select name="status{{ hp.sv_id }}" class="form-control" id="id_status" required>
+                                        {% for s in st %}
+                                        {% if s.ma == hp.hpstatus%}
+                                        <option value="{{ s.ma }}" selected>{{ s.ten }}</option>
+                                        {% else %}
+                                        <option value="{{ s.ma }}">{{ s.ten }}</option>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="sotien{{ hp.sv_id }}" class="form-control" placeholder="So tien" value="{{ hp.sotien }}">
+                                </td>
+                                <td>
+                                    <input type="text" name="ghichu{{ hp.sv_id }}" maxlength="50" size="50" value="{{ hp.ghichu }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if diems.has_other_pages %}
+        <ul class="pagination">
+            {% if students.has_previous %}
+            <li class="page-item">
+                <a href="?page={{diems.previous_page_number}}" class="page-link">Prev</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Prev</a>
+            </li>
+            {% endif %}
+            {% for i in diems.paginator.page_range %}
+            {% if diems.number == i %}
+            <li class="page-item active">
+                <a class="page-link">{{ i }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if diems.has_next %}
+            <li class="page-item">
+                <a href="?page={{diems.next_page_number}}" class="page-link">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

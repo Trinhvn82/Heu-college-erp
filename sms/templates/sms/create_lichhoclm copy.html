@@ -1,0 +1,44 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="card">
+    <div class="card-header">
+        <h2>Tao moi / Cap nhat lich hoc new</h2>
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <input hidden type="number" name="lop" class="form-control" value="{{lop_id}}" required id="id_sogio">
+            </p>
+            <p>
+                <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" required id="id_sogio">
+            </p>
+            <p>
+                <label for="id_thoigian">Thoi gian:</label>
+                <input type="date" name="thoigian" class="form-control" placeholder="mm/dd/yyyy" required id="id_thoigian">
+            </p>
+            <p>
+                <label for="id_diadiem">Dia diem:</label>
+                <input type="text" name="diadiem" class="form-control" placeholder="Dia diem" maxlength="100" id="id_diadiem">
+            </p>
+            <p>
+                <label for="id_sogio">So tiet:</label>
+                <input type="number" name="sotiet" class="form-control" placeholder="So gio" required id="id_sogio"  min="1" max="5">
+            </p>
+            <p>
+                <label for="id_ghichu">Ghi chu:</label>
+                <textarea name="ghichu" cols="40" rows="10" class="form-control" placeholder="Ghi chu" id="id_ghichu">
+                </textarea>
+            </p>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+

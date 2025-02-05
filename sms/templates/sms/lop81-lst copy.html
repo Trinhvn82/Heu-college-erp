@@ -1,0 +1,94 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Ho so 81 & hoc phi cua lop: {{tenlop}}
+            </div>
+            <div class="card-body">
+                    <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Hoc ky</th>
+                                <th>Tinh trang</th>
+                                <th>Ho so 81</th>
+                                <th>Tinh trang</th>
+                                <th>Hoc phi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hk in lol %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ hk.ten }}</td>
+                                {% if hk.st1 == 1%}
+                                <td class="p-3 mb-2 bg-success text-white">Da co thong tin</td>
+                                {%else%}
+                                <td class="p-3 mb-2 bg-danger text-white">Chua co thông tin</td>
+                                {%endif%}
+                                <td>
+                                    <a class="btn btn-primary" href="{% url 'lop81-hk' lop_id hk.ma  %}">Nhập thông tin</a>
+                                </td>
+                                {% if hk.st2 == 1%}
+                                <td class="p-3 mb-2 bg-success text-white">Da co thong tin</td>
+                                {%else%}
+                                <td class="p-3 mb-2 bg-danger text-white">Chua co thông tin</td>
+                                {%endif%}
+                                <td>
+                                    <a class="btn btn-primary" href="{% url 'lophp-hk' lop_id hk.ma  %}">Nhập thông tin</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if diems.has_other_pages %}
+        <ul class="pagination">
+            {% if students.has_previous %}
+            <li class="page-item">
+                <a href="?page={{diems.previous_page_number}}" class="page-link">Prev</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Prev</a>
+            </li>
+            {% endif %}
+            {% for i in diems.paginator.page_range %}
+            {% if diems.number == i %}
+            <li class="page-item active">
+                <a class="page-link">{{ i }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if diems.has_next %}
+            <li class="page-item">
+                <a href="?page={{diems.next_page_number}}" class="page-link">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

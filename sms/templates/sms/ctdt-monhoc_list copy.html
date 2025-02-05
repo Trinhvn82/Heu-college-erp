@@ -1,0 +1,205 @@
+{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Chuong trinh dao tao: {{ten}}
+            </div>
+            <div class="card-body">
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <tbody>
+                        <tr>
+                                <a href="{% url 'create_ctdtmonhoc' %}">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit">Them mon hoc</i></button>
+                                </a>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 1</b></p>
+                        <tr>
+                            <th>Mon hoc</th>
+                            <th>So tin chi</th>
+                            <th>So gio ly thuyet</th>
+                            <th>So gio thuc hanh</th>
+                            <th>So gio kiem tra</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc1 %}
+                        <tr>
+                            <td>{{ ct.monhoc.chuongtrinh }}: {{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ ct.monhoc.sotinchi }}</td>
+                            <td>{{ ct.monhoc.sogio_lt }}</td>
+                            <td>{{ ct.monhoc.sogio_th }}</td>
+                            <td>{{ ct.monhoc.sogio_kt }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co danh sach mon hoc cho CTDT da chon</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 2</b></p>
+                        <tr>
+                            <th>Mon hoc</th>
+                            <th>So tin chi</th>
+                            <th>So gio ly thuyet</th>
+                            <th>So gio thuc hanh</th>
+                            <th>So gio kiem tra</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc2 %}
+                        <tr>
+                            <td>{{ ct.monhoc.chuongtrinh }}: {{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ ct.monhoc.sotinchi }}</td>
+                            <td>{{ ct.monhoc.sogio_lt }}</td>
+                            <td>{{ ct.monhoc.sogio_th }}</td>
+                            <td>{{ ct.monhoc.sogio_kt }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co danh sach mon hoc cho CTDT da chon</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 3</b></p>
+                        <tr>
+                            <th>Mon hoc</th>
+                            <th>So tin chi</th>
+                            <th>So gio ly thuyet</th>
+                            <th>So gio thuc hanh</th>
+                            <th>So gio kiem tra</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc3 %}
+                        <tr>
+                            <td>{{ ct.monhoc.chuongtrinh }}: {{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ ct.monhoc.sotinchi }}</td>
+                            <td>{{ ct.monhoc.sogio_lt }}</td>
+                            <td>{{ ct.monhoc.sogio_th }}</td>
+                            <td>{{ ct.monhoc.sogio_kt }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co danh sach mon hoc cho CTDT da chon</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <p><b>Hoc ky 4</b></p>
+                        <tr>
+                            <th>Mon hoc</th>
+                            <th>So tin chi</th>
+                            <th>So gio ly thuyet</th>
+                            <th>So gio thuc hanh</th>
+                            <th>So gio kiem tra</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in ctdtmonhoc4 %}
+                        <tr>
+                            <td>{{ ct.monhoc.chuongtrinh }}: {{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ ct.monhoc.sotinchi }}</td>
+                            <td>{{ ct.monhoc.sogio_lt }}</td>
+                            <td>{{ ct.monhoc.sogio_th }}</td>
+                            <td>{{ ct.monhoc.sogio_kt }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co danh sach mon hoc cho CTDT da chon</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if ctdt.has_other_pages %}
+            <ul class="pagination">
+                {% if ctdt.has_previous %}
+                    <li class="page-item">
+                        <a href="?page={{ctdt.previous_page_number}}" class="page-link">Prev</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Prev</a>
+                    </li>
+                {% endif %}
+                {% for i in ctdt.paginator.page_range %}
+                    {% if ctdt.number == i %}
+                        <li class="page-item active">
+                            <a class="page-link">{{ i }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if ctdt.has_next %}
+                    <li class="page-item">
+                        <a href="?page={{ctdt.next_page_number}}" class="page-link">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

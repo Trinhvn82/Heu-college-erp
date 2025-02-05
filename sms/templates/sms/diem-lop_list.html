@@ -1,0 +1,85 @@
+{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Ket qua diem cua lop {{tenlop}}</div>
+            <div class="card-body">
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <tbody>
+                        <tr>
+                            <a href="{% url 'create_diem' lop_id %}">
+                                <button type="button" class="btn btn-info"><i class="fa fa-edit">Them ket qua diem</i></button>
+                            </a>
+                            <a href="{% url 'create_lichhoc' %}">
+                                <button type="button" class="btn btn-info"><i class="fa fa-edit">Import ket qua diem</i></button>
+                            </a>
+                            <a href="{% url 'create_lichhoc' %}">
+                                <button type="button" class="btn btn-info"><i class="fa fa-edit">Export ket qua diem</i></button>
+                            </a>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <tbody>
+                        <tr>
+                            <td>Ten sinh vien</td>
+                            <td>
+                                <form action="{% url 'diem-lop_list' lop_id %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="text" name="name">
+                                    <input type="submit" name="submit" value="Search">
+                                </form>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Ho ten</th>
+                            <th>Mon hoc</th>
+                            <th>Diem thanh phan</th>
+                            <th>Diem</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for diem in diems %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ diem.sv.hoten }}</td>
+                            <td>{{ diem.monhoc.ten }}</td>
+                            <td>{{ diem.tp.ten }}</td>
+                            <td>{{ diem.diem }}</td>
+                            <td>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co thong tin diem cua lop da chon</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

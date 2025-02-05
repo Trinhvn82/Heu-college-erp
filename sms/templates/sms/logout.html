@@ -1,0 +1,29 @@
+{% extends "layouts/base-fullscreen.html" %}
+
+{% block title %} 404 Error {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main>
+        <section class="vh-100 d-flex align-items-center justify-content-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 text-center d-flex align-items-center justify-content-center">
+                        <div class="text-center h3">
+                            you have been logged out
+                            <br><br>
+                            <a class="btn btn-primary animate-hover" href="/accounts/login">login?</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

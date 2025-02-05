@@ -1,0 +1,162 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Danh sách học viên</li>
+                    </ol>
+                </nav>
+                <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Import học viên từ file excel</h2>
+                    <form action="{% url 'import_lopsv' lop_id%}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="file"
+                               title="Upload excel file"
+                               name="excel_file"
+                               style="border: 1px solid black; padding: 5px;"
+                               required="required">
+                        <input type="submit" class="btn btn-primary" name="submit" value="Import Học viên">
+                    </form>
+        </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Thông tin tìm kiếm</h2>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div><label for="id_ma">Tên học viên:</label>
+                                    <input type="text" name="ma" class="form-control" maxlength="100" required id="id_ma">
+                                </div>
+                            </div>
+                        
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                            </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Danh sách học viên của lớp {{tenlop}}</h2>
+                <div class="table-responsive">
+                            <table class="table table-centered mb-0 rounded">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Mã</th>
+                                        <th>Họ tên</th>
+                                        <th>Năm sinh</th>
+                                        <th>Nơi sinh</th>
+                                        <th>Giới tính</th>
+                                        <th>CCCD</th>
+                                        <th>SDT </th>
+                                        <th>Địa chỉ</th>
+                
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ student.msv }}</td>
+                                        <td>{{ student.hoten }}</td>
+                                        <td>{{ student.namsinh | date:"d/m/y" }}</td>
+                                        <td>{{ student.noisinh }}</td>
+                                        <td>{{ student.gioitinh }}</td>
+                                        <td>{{ student.cccd }}</td>
+                                        <td>{{ student.sdths }}</td>
+                                        <td>{{ student.diachi }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                                </div>
+                <a href="{% url 'create_sv' %}">
+                    <button type="button" class="btn btn-primary">Thêm học viên</button>
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                {% if teachers.has_other_pages %}
+                    <ul class="pagination">
+                        {% if teachers.has_previous %}
+                            <li class="page-item">
+                                <a href="?page={{teachers.previous_page_number}}" class="page-link">Prev</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">Prev</a>
+                            </li>
+                        {% endif %}
+                        {% for i in teachers.paginator.page_range %}
+                            {% if teachers.number == i %}
+                                <li class="page-item active">
+                                    <a class="page-link">{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if teachers.has_next %}
+                            <li class="page-item">
+                                <a href="?page={{teachers.next_page_number}}" class="page-link">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

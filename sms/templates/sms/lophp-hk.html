@@ -1,0 +1,91 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Cập nhật môn học {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Học phí</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between w-100 flex-wrap">
+                <div class="mb-3 mb-lg-0">
+                    <h1 class="h4">Thông tin học phí của lớp: {{tenlop}} học kỳ: {{hk_ma}}</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                    <form action="#" method="post">
+                        <!-- <form action="#" method="post"> -->
+                        {% csrf_token %}
+                        <input class="btn btn-success" type="submit" value="Submit">
+                        <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Mã</th>
+                                        <th>Họ tên</th>
+                                        <th>Tình trạng</th>
+                                        <th>Số tiền</th>
+                                        <th>Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for hp in hps %}
+                                    <tr class="table-success">
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ hp.sv.msv }}</td>
+                                        <td>
+                                        {% if hp.hpstatus == 3 %}
+                                        <span class="font-weight-bold text-success">{{ hp.sv.hoten }}</span>
+                                        {% else %}
+                                        <span class="font-weight-bold">{{ hp.sv.hoten }}</span>
+                                        {% endif %}
+                                        </td>
+                                        <td>
+                                            <select name="status{{ hp.sv_id }}" class="form-control" id="id_status" required>
+                                                {% for s in st %}
+                                                {% if s.ma == hp.hpstatus%}
+                                                <option value="{{ s.ma }}" selected>{{ s.ten }}</option>
+                                                {% else %}
+                                                <option value="{{ s.ma }}">{{ s.ten }}</option>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="sotien{{ hp.sv_id }}" class="form-control" placeholder="So tien" value="{{ hp.sotien }}">
+                                        </td>
+                                        <td>
+                                            <input type="text" name="ghichu{{ hp.sv_id }}" maxlength="30" size="30" value="{{ hp.ghichu }}">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            </div>
+                        <!-- </form> -->
+                    </form>
+                </div>
+        </div>
+    </main>
+
+{% endblock content %}

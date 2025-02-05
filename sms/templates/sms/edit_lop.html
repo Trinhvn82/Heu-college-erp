@@ -1,0 +1,78 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Tạo lớp {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Cập nhật lớp</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between w-100 flex-wrap">
+                <div class="mb-3 mb-lg-0">
+                    <h1 class="h4">Cập nhật lớp</h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            {% for field in forms %}
+                            {% if field.name == 'ma' %}
+                            <input hidden type="text" name="ma" class="form-control" value="{{ma}}" required id="id_sogio">
+                            {% else %}
+                                <div class="col-md-6 mb-3">
+                                    <div>{{ field.label_tag }}{{ field }}</div>
+                                </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            <span class="h4 font-weight-bold">Thông tin học kỳ</span>
+                        </div>
+                        <div class="row">
+                                {% for l in lhk %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-check-label">
+                                        {{l.hk.ten}}
+                                    </label>    
+                                    <div>
+                                        <label for="id_thoigian">Tgian bắt đầu:</label>
+                                        <input type="date" name="start{{l.hk.ma}}" class="form-control" value="{{l.start_hk | date:"20y-m-d" }}">
+                                    </div>
+                                    <div>
+                                        <label for="id_thoigian">Tgian kết thúc:</label>
+                                        <input type="date" name="end{{l.hk.ma}}" class="form-control" value="{{l.end_hk | date:"20y-m-d" }}">
+                                    </div>
+                                </div>
+                                {% endfor %}
+                        </div>
+            
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock content %}

@@ -1,0 +1,90 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="#">Quản lý đào tạo</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Lịch sử thay đổi</li>
+                    </ol>
+                </nav>
+                <h2 class="h4">Lịch sử thay đổi môn học {{lmh.monhoc.ten}}</h2>
+                <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>id</th>
+                                <th>date/time</th>
+                                <th>change made</th>
+                                <th>user</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for change in changes %}
+                                <tr>
+                                    <td>{{change.new_record.history_id}}</td>
+                                    <td>{{change.new_record.history_date}}</td>
+                                    <td>
+                                        {% if change.changed_fields|length > 0 %}
+                                        {% for change_by_id in change.changes  %}
+                                        <b>{{change_by_id.field|title}}</b> From:
+                                        {% if change_by_id.old %}
+                                            <b>{{change_by_id.old}}</b>
+                                            {% else %}
+                                            <b>blank field</b>    
+                                        {% endif %}
+                                            to ---> <b>{{change_by_id.new}}</b>
+                                            <br>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{change.new_record.history_user}}</td>
+                                </tr>
+                            {% endfor %}
+                                
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
