@@ -83,10 +83,11 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{% url 'logout' %}" class="nav-link">
-                <span class="sidebar-icon"><span class="fas fa-sign-out-alt text-danger"></span></span>
-                <span>Logout</span>
-            </a>
+            <form method="post" action="{% url 'logout' %}" class="nav-link">
+                {% csrf_token %} 
+                <span class="sidebar-icon"><span class="fas fa-sign-out-alt text-danger"></span></span>    
+                <button type="submit" name="login" class="btn btn-primary">Logout</button>
+            </form>
         </li>            
         </ul>
     </div>
