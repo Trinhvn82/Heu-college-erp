@@ -181,12 +181,12 @@ def hp_chart(request, lop, hk):
 #@staff_member_required
 def lopsv_chart(request):
     query = """
-                select l.id as id, l.ten as labels, count(s.id) as data 
+                select max(l.id) as id, l.trungtam as labels, count(s.id) as data 
                 from sms_lop l
                 inner join sms_hssv s
                     on s.malop_id = l.id
-                group by l.id
-                order by l.id            
+                group by l.trungtam
+                order by l.trungtam            
             """
 
     ctdts = RawRP.objects.raw(query)
