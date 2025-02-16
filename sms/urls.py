@@ -19,6 +19,7 @@ urlpatterns = [
     path('export-sv/', views.export_sv, name='export_sv'),
     path('import-gv/', views.import_gv, name='import_gv'),
     path('export-gv/', views.export_gv, name='export_gv'),
+    path('export-lh/', views.export_lh, name='export_lh'),
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
     path('alllop/', views.lop_list, name='lop_list'),
     path('alllichhoc/', views.lichhoc_list, name='lichhoc_list'),

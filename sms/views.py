@@ -637,6 +637,22 @@ def export_sv(request):
     return response
 
 @login_required
+def export_lh(request):
+    # Query the Person model to get all records
+    gvs = Lichhoc.objects.all().values()
+    # Convert the QuerySet to a DataFrame
+    df = pd.DataFrame(list(gvs))
+
+    # Define the Excel file response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=lichhoc.xlsx'
+
+    # Use Pandas to write the DataFrame to an Excel file
+    df.to_excel(response, index=False, engine='openpyxl')
+
+    return response
+
+@login_required
 def lop_list(request):
     #if not request.user.username:
     #    messages.error(request, "Login required")
