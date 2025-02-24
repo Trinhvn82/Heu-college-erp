@@ -26,7 +26,7 @@
                         <li class="breadcrumb-item active" aria-current="page">Lớp</li>
                     </ol>
                 </nav>
-                <h2 class="h4">Danh sách lớp</h2>
+                <h6 class="h6">Danh sách lớp</h6>
                 <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
             </div>
             <div class="btn-toolbar mb-2 mb-md-0">
@@ -37,29 +37,38 @@
             </div>
         </div>
 
-        <div class="table-settings mb-4">
-            <div class="row align-items-center justify-content-between">
-                <div class="col col-md-6 col-lg-3 col-xl-4">
-                    <form action="" method="get">
-                        <div class="input-group">
-                            <span class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></span>
-                            <input type="text" name="search" class="form-control" placeholder="Search">
-                        </div>
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Thông tin tìm kiếm</h2>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div><label for="id_ma">Tên lớp:</label>
+                                    <input type="text" name="ten" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                        
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                    </svg>
+                                    Tìm kiếm                              
+                                </button>
+                            </div>
+                            </div>
                     </form>
-                </div>
-                <div class="col-4 col-md-2 col-xl-1 pl-md-0 text-right">
-                    <div class="btn-group">
-                        <a href="{% url 'create_lop' %}">
-                            <button type="button" class="btn btn-primary">Tạo mới lớp</button>
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
-            <table class="table table-hover">
-                <thead>
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
                     <tr>
                         <th>STT</th>
                         <th>Mã lớp</th>
@@ -82,36 +91,38 @@
                             {{ ct.ctdt.ten }}
                         </td>
                         <td>
-                            <!-- <a class="btn btn-primary" href="{% url 'lop_monhoc' ct.id  %}" role="button">Quản lý học tập</a>
-                            <a class="btn btn-warning" href="{% url 'lop81-lst' ct.id %}">Hồ sơ 81 & Học phí</a>
-                            <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
-                            <div class="btn-group">
-                                <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
-                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div>
+                                <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <span class="icon icon-sm">
                                         <span class="fas fa-ellipsis-h icon-dark"></span>
                                     </span>
-                                    <span class="sr-only">Toggle Dropdown</span>
                                 </button>
-                                <div class="dropdown-menu">
+                                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                     <a class="dropdown-item edit_item"
                                        href="{% url 'lop_monhoc' ct.id  %}">
-                                        <span class="fas fa-edit mr-2"></span>Quản lý học tập
+                                        <span class="fas fa-edit mr-2"></span>Kế hoạch học tập
                                     </a>
+                <!-- 
+
                                     <a class="dropdown-item edit_item"
                                        href="{% url 'lop81-lst' ct.id %}">
-                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81 & Học phí
+                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81 & Học phí (cũ)
                                     </a>
+                -->
+
                                     <a class="dropdown-item edit_item"
                                        href="{% url 'edit_lop' ct.id %}">
                                         <span class="fas fa-edit mr-2"></span>Cập nhật lớp
                                     </a>
                                     <a class="dropdown-item edit_item"
                                        href="{% url 'svlop_list' ct.id %}">
-                                        <span class="fas fa-edit mr-2"></span>Học viên
+                                        <span class="fas fa-edit mr-2"></span>Học viên - Hồ sơ 81 - Học phí
                                     </a>
                                 </div>
                             </div>
+                    <!-- <a class="btn btn-primary" href="{% url 'lop_monhoc' ct.id  %}" role="button">Quản lý học tập</a>
+                            <a class="btn btn-warning" href="{% url 'lop81-lst' ct.id %}">Hồ sơ 81 & Học phí</a>
+                            <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
                         </td>
                     </tr>
                     {% endfor %}
@@ -121,7 +132,20 @@
             {{ transactions.pagination }}
 
         </div>
-    </main>
+    </div>
+</div>
+<div class="table-settings mb-4">
+    <div class="row align-items-center justify-content-between">
+        <div class="col-4 col-md-2 col-xl-1 pl-md-0 text-right">
+            <div class="btn-group">
+                <a href="{% url 'create_lop' %}">
+                    <button type="button" class="btn btn-primary">Tạo mới lớp</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
 
 {% endblock content %}
 

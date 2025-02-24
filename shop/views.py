@@ -208,7 +208,7 @@ def lopsv_chart(request):
             }]
         },
     })
-@login_required
+#@login_required
 def statistics_view(request):
     lops = Lop.objects.all()
     hks = Hocky.objects.all()

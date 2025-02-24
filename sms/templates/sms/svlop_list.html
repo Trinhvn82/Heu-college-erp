@@ -11,6 +11,7 @@
     <main class="content">
 
         {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
 
         <div class="preloader bg-soft flex-column justify-content-center align-items-center">
             <img class="loader-element animate__animated animate__jackInTheBox"
@@ -23,7 +24,7 @@
                     <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                         <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                         <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Danh sách học viên</li>
+                        <li class="breadcrumb-item active" aria-current="page">Học viên - Hồ sơ 81 - Học phí</li>
                     </ol>
                 </nav>
                 <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
@@ -85,12 +86,8 @@
                                         <th>STT</th>
                                         <th>Mã</th>
                                         <th>Họ tên</th>
-                                        <th>Năm sinh</th>
-                                        <th>Nơi sinh</th>
-                                        <th>Giới tính</th>
                                         <th>CCCD</th>
-                                        <th>SDT </th>
-                                        <th>Địa chỉ</th>
+                                        <th>Tác nghiệp</th>
                 
                                     </tr>
                                 </thead>
@@ -100,12 +97,33 @@
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ student.msv }}</td>
                                         <td>{{ student.hoten }}</td>
-                                        <td>{{ student.namsinh | date:"d/m/y" }}</td>
-                                        <td>{{ student.noisinh }}</td>
-                                        <td>{{ student.gioitinh }}</td>
                                         <td>{{ student.cccd }}</td>
-                                        <td>{{ student.sdths }}</td>
-                                        <td>{{ student.diachi }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="icon icon-sm">
+                                                        <span class="fas fa-ellipsis-h icon-dark"></span>
+                                                    </span>
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item edit_item"
+                                                       href="{% url 'edit_sv' student.id %}">
+                                                        <span class="fas fa-edit mr-2"></span>Edit
+                                                    </a>
+                                                    <a class="dropdown-item edit_item"
+                                                       href="{% url 'hv_hp81_list' student.id %}">
+                                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81 & học phí
+                                                    </a>
+                                                    <a class="dropdown-item text-danger delete_item"
+                                                       data-href="">
+                                                        <span class="fas fa-trash-alt mr-2"></span>Remove
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'CollegeERP.wsgi.application'
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': "temp8",
+       'NAME': "temp1",
        'USER': 'postgres',
        'PASSWORD': '123654',
        'HOST': 'localhost',

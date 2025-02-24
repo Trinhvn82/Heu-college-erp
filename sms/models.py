@@ -35,6 +35,19 @@ class TeacherInfo(models.Model):
 
     def __str__(self):
         return self.name
+class HocphiStatus(models.Model):
+    ma = models.IntegerField(default= 1)
+    ten = models.CharField(max_length=100)
+    history = HistoricalRecords()
+    def __str__(self):
+        return self.ten
+
+class Hocky(models.Model):
+    ma = models.IntegerField(default= 1)
+    ten = models.CharField(max_length=20)
+    history = HistoricalRecords()
+    def __str__(self):
+        return self.ten
 
 class Monhoc(models.Model):
     ma = models.CharField(max_length=100)
@@ -66,10 +79,18 @@ class Ctdt(models.Model):
     def __str__(self):
         return self.ten
 
+class Trungtam(models.Model):
+    ten = models.CharField(max_length=100)
+    history = HistoricalRecords()
+ 
+    def __str__(self):
+        return self.ten
+
 class Lop(models.Model):
     ma = models.CharField(max_length=100)
     ten = models.CharField(max_length=100)
-    trungtam = models.CharField(max_length=100)
+    #trungtam = models.CharField(max_length=100)
+    trungtam = models.ForeignKey(Trungtam, on_delete=models.CASCADE)
     ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE)
     # mhs = models.ManyToManyField(Monhoc, default= None , blank= True)
     history = HistoricalRecords()
@@ -90,7 +111,8 @@ class Hssv(models.Model):
     )
     #gender = models.CharField(choices=gender_choice, max_length=10)
     #status = models.CharField(choices=st_choice, max_length=50)
-    status = models.IntegerField(choices=st_choice, default= 1)
+    status = models.ForeignKey(SvStatus, on_delete=models.CASCADE, default=1)
+    #status = models.IntegerField(choices=st_choice, default= 1)
     namsinh = models.DateField()
     gioitinh = models.CharField(max_length=30, blank=True)
     dantoc = models.CharField(max_length=30, blank=True)
@@ -105,7 +127,7 @@ class Hssv(models.Model):
     hotenme = models.CharField(max_length=200, blank=True)
     sdths = models.CharField(max_length=100, blank=True)
     sdtph = models.CharField(max_length=100, blank=True)
-    ghichu = models.CharField(max_length=200, blank=True)
+    ghichu = models.CharField(max_length=500, blank=True)
     history = HistoricalRecords()
     def __str__(self):
         return self.hoten
@@ -168,12 +190,18 @@ class LopMonhoc(models.Model):
 
 class Lichhoc(models.Model):
     #ten = models.CharField(max_length=100)
+    st_choice = (
+        ("Lập kế hoạch", "Lập kế hoạch"),
+        ("Đã hoàn thành", "Đã hoàn thành"),
+    )
     trungtam = models.CharField(max_length=100, blank= True)
     diadiem = models.CharField(max_length=100, blank= True)
-    thoigian = models.DateField()
+    thoigian = models.DateTimeField()
+    #tgbd = models.DateTimeField()
+    #tgkt = models.DateTimeField()
     sotiet = models.IntegerField(default= 1)
-    status = models.IntegerField(default= 0)
-    ghichu = models.TextField(default= "", max_length=200,blank= True)
+    status = models.CharField(choices=st_choice, max_length=50)
+    ghichu = models.TextField(default= "", max_length=500,blank= True)
     #TenTT = models.IntegerField()
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
@@ -188,7 +216,7 @@ class Hocphi(models.Model):
     thoigian = models.DateField(default= None, blank= True)
     sotien = models.IntegerField(default= 0, blank= True)
     hpstatus = models.IntegerField(default= 1)
-    ghichu = models.TextField(default= "", max_length=200,blank= True)
+    ghichu = models.TextField(default= "", max_length=500,blank= True)
     status = models.IntegerField(default= 0)
     #TenTT = models.IntegerField()
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
@@ -196,6 +224,26 @@ class Hocphi(models.Model):
     history = HistoricalRecords()
     def __str__(self):
         return self.lop.ten + "-" + self.sv.hoten
+
+class Hp81(models.Model):
+    #hk = models.IntegerField()
+    tt_choice = (
+        ("Thiếu", "Thiếu"),
+        ("Đủ", "Đủ"),
+    )
+    hs81_st = models.CharField(choices=tt_choice, max_length=20)
+    thoigian = models.DateField(default= None, blank= True)
+    ghichu = models.TextField(default= "", max_length=500,blank= True)
+    sotien1 = models.IntegerField(default= 0, blank= True)
+    sotien2 = models.IntegerField(default= 0, blank= True)
+    #TenTT = models.IntegerField()
+    #status = models.IntegerField(choices=st_choice1, default= 1)
+    status = models.ForeignKey(HocphiStatus, on_delete=models.CASCADE)
+    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
+    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
+    history = HistoricalRecords()
+    def __str__(self):
+        return self.hk.ten
 
 class Hs81(models.Model):
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
@@ -209,7 +257,7 @@ class Hs81(models.Model):
     cccdbo = models.CharField(default= "", max_length=50)
     cccdme = models.CharField(default= "", max_length=50)
     gks = models.CharField(default= "", max_length=50)
-    ghichu = models.CharField(default= "", max_length=200)
+    ghichu = models.CharField(default= "", max_length=500)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
  
@@ -240,19 +288,7 @@ class Loaidiem(models.Model):
     def __str__(self):
         return self.ten
 
-class Hocky(models.Model):
-    ma = models.IntegerField(default= 1)
-    ten = models.CharField(max_length=20)
-    history = HistoricalRecords()
-    def __str__(self):
-        return self.ten
 
-class HocphiStatus(models.Model):
-    ma = models.IntegerField(default= 1)
-    ten = models.CharField(max_length=100)
-    history = HistoricalRecords()
-    def __str__(self):
-        return self.ten
 
 class Diemthanhphan(models.Model):
     #ghichu = models.CharField(max_length=300)

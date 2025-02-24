@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, LopMonhoc
+from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -17,8 +17,8 @@ User = get_user_model()
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk
-from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
+from .models import LopHk, Hp81
+from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv, CreateHp81
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
@@ -124,7 +124,7 @@ def sv_lop(request, lop_id):
     #students = Hssv.objects.all()
     tenlop = Lop.objects.get(id = lop_id).ten
     students = Hssv.objects.filter(malop_id = lop_id)
-    paginator = Paginator(students, 50)
+    paginator = Paginator(students, 100)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
     print("LOP ID la ")
@@ -155,10 +155,10 @@ def lichhoc_lop(request, lop_id):
 @login_required
 def lichhoc_lopmh(request, lopmh_id):
     #students = Hssv.objects.all()
-    lmh = LopMonhoc.objects.get(id = lopmh_id)
+    lmh = LopMonhoc.objects.filter(id = lopmh_id).select_related("monhoc", "lop")[0]
     lop_id = LopMonhoc.objects.get(id = lopmh_id).lop_id
     monhoc_id = LopMonhoc.objects.get(id = lopmh_id).monhoc_id
-    lichhoc = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id)
+    lichhoc = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id).order_by('thoigian')
     paginator = Paginator(lichhoc, 100)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
@@ -169,7 +169,8 @@ def lichhoc_lopmh(request, lopmh_id):
         "lh": paged_students,
         "lopmh_id": lopmh_id,
         "lop_id": lmh.lop_id,
-        "monhoc_id": lmh.monhoc_id
+        "monhoc_id": lmh.monhoc_id,
+        "monhoc": lmh.monhoc.ten
     }
     return render(request, "sms/lichhoc-lopmh_list.html", context)
 @login_required
@@ -459,8 +460,11 @@ def import_monhoc_dm(request):
                 sogio_lt = sheet.cell(r,5).value
                 sogio_th = sheet.cell(r,6).value
                 sogio_kt = sheet.cell(r,7).value
-                mh = Monhoc(ma=ma, ten=ten, chuongtrinh=chuongtrinh, sotinchi=sotinchi, sogio_lt=sogio_lt,sogio_th=sogio_th,sogio_kt=sogio_kt)
-                mh.save()
+                if Monhoc.objects.filter(ma=ma, ten=ten, chuongtrinh=chuongtrinh).exists():
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
+                else:
+                    mh = Monhoc(ma=ma, ten=ten, chuongtrinh=chuongtrinh, sotinchi=sotinchi, sogio_lt=sogio_lt,sogio_th=sogio_th,sogio_kt=sogio_kt)
+                    mh.save()
 
         if 'hk-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin hoc ky")
@@ -525,6 +529,22 @@ def import_monhoc_dm(request):
                 else:
                     hp = SvStatus(ma=ma, ten=ten)
                     hp.save()
+
+        if 'tt-lst' not in wb.sheetnames:
+            messages.error(request, "File excel khong co thong tin danh sách trung tâm")
+            #return redirect("ctdt_list")
+
+        else:
+            sheet = wb["tt-lst"]
+            for r in range(2, sheet.max_row+1):
+            #for r in range(sheet.max_row-1, sheet.max_row):
+                ten = sheet.cell(r,1).value
+                #ten = sheet.cell(r,2).value
+                if Trungtam.objects.filter(ten=ten).exists():
+                    messages.error(request, 'Ten: ' + ten + ' already exists')
+                else:
+                    tt = Trungtam(ten=ten)
+                    tt.save()
         messages.success(request, "Import done!")
         return redirect("ctdt_list")
 @login_required
@@ -536,7 +556,7 @@ def import_lopsv(request, lop_id):
             messages.error(request, "File excel khong dung format")
             return redirect("svlop_list", lop_id)
 
-        sheet = wb["allsv"]
+        sheet = wb["lopsv"]
         #for r in range(3, sheet.max_row+1):
         #maxid=500
         #for r in range(3, 44):
@@ -555,12 +575,15 @@ def import_lopsv(request, lop_id):
             #v11 = sheet.cell(r,11).value
             #v12 = sheet.cell(r,12).value
             v13 = sheet.cell(r,13).value
-            #v14 = sheet.cell(r,14).value
+            v14 = sheet.cell(r,14).value
+            v15 = sheet.cell(r,15).value
             v16 = sheet.cell(r,16).value
+            v17 = sheet.cell(r,17).value
+            v18 = sheet.cell(r,18).value
             if Hssv.objects.filter(msv=v1).exists():
                 messages.error(request, 'MSV: ' + v1+ ' already exists')
             else:
-                sv = Hssv(msv=v1, hoten = v2, lop = v3, namsinh=v4, gioitinh=v5, diachi=v9, cccd=v13, sdths=v16, malop_id=lop_id)
+                sv = Hssv(msv=v1, hoten = v2, lop = v3, namsinh=v4, gioitinh=v5, diachi=v9, cccd=v13, hotenbo=v14, hotenme=v15,sdths=v16, sdtph=v17, ghichu=v18, malop_id=lop_id)
                 sv.save()
 
         messages.success(request, "Import thanh cong!")
@@ -689,7 +712,7 @@ def lichhoc_list(request):
             if query_tgian1:
                 lh = lh.filter(thoigian__gte=query_tgian1)     
             if query_tgian2:
-                lh = lh.filter(thoigian__te=query_tgian2)     
+                lh = lh.filter(thoigian__lte=query_tgian2)     
             messages.success(request, "Tìm kiếm thành công!")
     paginator = Paginator(lh, 20)
     page = request.GET.get('page')
@@ -727,8 +750,8 @@ def diemdanh_lop(request, lh_id):
             dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
             dd.status=status
             dd.save()
-        ttlh.status=1
-        ttlh.save()
+        #ttlh.status=1
+        #ttlh.save()
         messages.success(request, "Cap nhat diem danh thanh cong!")
         return redirect("lichhoclopmh_list", lmh)
 
@@ -819,6 +842,19 @@ def lop_monhoc(request, lop_id):
         return render(request, "sms/lop-monhoc_list.html", context)
 
 @login_required
+def hv_hp81_list(request, sv_id):
+        hp81s = Hp81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
+        sv = Hssv.objects.get(id = sv_id)
+        lop_id = sv.malop_id
+        context = {
+            "hp81s": hp81s,
+            "ten": sv.hoten,
+            "lop_id": lop_id,
+            "sv_id": sv_id
+        }
+        return render(request, "sms/hv-hp81_list.html", context)
+
+@login_required
 def single_hs81lop(request, lop_id):
         ctdtmonhs811 = Hs81.objects.filter(lop_id = lop_id, hk = 1).select_related("sv", "lop")
         ctdtmonhs812 = Hs81.objects.filter(lop_id = lop_id, hk = 2).select_related("sv", "lop")
@@ -856,6 +892,28 @@ def create_lichhoc(request):
         "forms": forms
     }
     return render(request, "sms/create_lichhoc.html", context)
+
+@login_required
+def create_hp81(request, sv_id):
+    if request.method == "POST":
+        hk_id = request.POST.get('hk', None)
+        forms = CreateHp81(request.POST, request.FILES or None)
+        if Hp81.objects.filter(hk_id = hk_id, sv_id=sv_id).first():
+            #messages.success(request, "Mon hoc da ton taij!")
+            messages.error(request, "Bản ghi đã tồn tại!")
+        else:
+            lop = request.POST.get('lop', None)
+            if forms.is_valid():
+                forms.save()
+                messages.success(request, "Bản ghi duoc tao thanh cong!")
+                return redirect("hv_hp81_list", sv_id)
+    else:
+        forms = CreateHp81()
+    context = {
+        "sv_id": sv_id,
+        "forms": forms
+    }
+    return render(request, "sms/create_hp81.html", context)
 
 @login_required
 def create_lichhoclm(request, lopmh_id):
@@ -983,13 +1041,15 @@ def create_lop(request):
 def create_sv(request):
     if request.method == "POST":
         forms = CreateSv(request.POST, request.FILES or None)
+        #lh = request.POST.get('lichhoc', None)
         if Hssv.objects.filter(msv = forms['msv'].value()).first():
             messages.error(request, "Mã học viên đã tồn tại!")
-            return redirect("sv_list")
-        if forms.is_valid():
-            forms.save()
-        messages.success(request, "Tạo mới học viên thành công!")
-        return redirect("sv_list")
+        else:
+            #return redirect("sv_list")
+            if forms.is_valid():
+                forms.save()
+                messages.success(request, "Tạo mới học viên thành công!")
+                return redirect("svlop_list", forms.instance.malop_id)
     else:
         forms = CreateSv()
 
@@ -1205,17 +1265,40 @@ def edit_sv(request, sv_id):
 
     if request.method == "POST":
         edit_forms = CreateSv(request.POST, request.FILES or None, instance=sv)
-
+        lop_id = request.POST.get('malop', None)
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Học viên Info Successfully!")
-            return redirect("sv_list")
+            return redirect("svlop_list", lop_id)
 
     context = {
         "forms": lh_forms,
         "msv": sv.msv
     }
     return render(request, "sms/edit_sv.html", context)
+
+@login_required
+def edit_hp81(request, hp81_id):
+    hp = Hp81.objects.get(id=hp81_id)
+    sv_id = hp.sv_id
+    hk_id = hp.hk_id
+    #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
+    lh_forms = CreateHp81(instance=hp)
+
+    if request.method == "POST":
+        edit_forms = CreateHp81(request.POST, request.FILES or None, instance=hp)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Edit Info Successfully!")
+            return redirect("hv_hp81_list", sv_id)
+
+    context = {
+        "forms": lh_forms,
+        "sv_id": sv_id,
+        "hk_id": hk_id
+    }
+    return render(request, "sms/edit_hp81.html", context)
 
 @login_required
 def edit_gv(request, gv_id):

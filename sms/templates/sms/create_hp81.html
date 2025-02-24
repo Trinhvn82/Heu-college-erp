@@ -1,19 +1,19 @@
-{% extends "layouts/base.html" %}
+﻿{% extends "layouts/base.html" %}
 {% load static %}
 
-{% block title %} Tạo Học viên {% endblock %}
+{% block title %} Tạo môn học {% endblock %}
 
 {% block content %}
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script>
     $(document).ready(function() {
-        $('#id_malop').select2();
+        $('#id_monhoc').select2();
     });    
 </script>
-
-    <main class="content">
+<main class="content">
 
         {% include 'includes/navigation.html' %}
         {% include 'sms/alerts.html' %}
@@ -27,15 +27,10 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'sv_list' %}">Học viên</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Tạo mới Học viên</li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv_id %}">Hồ sơ 81 - Học phí</a></li>
                 </ol>
             </nav>
-            <div class="d-flex justify-content-between w-100 flex-wrap">
-                <div class="mb-3 mb-lg-0">
-                    <h1 class="h4">Tạo học viên</h1>
-                </div>
-            </div>
         </div>
 
         <div class="row item-row">
@@ -45,9 +40,17 @@
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
+                            {% if field.name == 'sv' %}
+                                <input hidden type="number" name="sv" class="form-control" value="{{sv_id}}" required id="id_sogio">
+                            {% elif field.name == 'ghichu' %}
+                                <div class="col-md-12 mb-3">
+                                    <div>{{ field.label_tag }}{{ field }}</div>
+                                </div>
+                            {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
                                 </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
 

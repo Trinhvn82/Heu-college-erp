@@ -1,7 +1,7 @@
 ﻿from tkinter.ttk import LabeledScale
 from django import forms
 from .models import Ctdt, Diemdanh, Diemthanhphan, Hocphi, Hsgv, Lichhoc, Lop, TeacherInfo, CtdtMonhoc, Hssv, LopMonhoc
-from .models import LopHk, Monhoc
+from .models import LopHk, Monhoc, Hp81
 
 class CreateTeacher(forms.ModelForm):
     class Meta:
@@ -27,8 +27,8 @@ class CreateLichhoc(forms.ModelForm):
     class Meta:
         model = Lichhoc
         #fields = "__all__"
-        fields = ('lop','trungtam','thoigian','diadiem','monhoc',
-                       'giaovien','sotiet','ghichu')
+        fields = ('lop','thoigian','diadiem','monhoc',
+                       'giaovien','sotiet','status','ghichu')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'trungtam': 'Trung tâm',
@@ -36,6 +36,7 @@ class CreateLichhoc(forms.ModelForm):
             'thoigian': 'Thời gian',
             'sotiet': 'Số tiết',
             'lop': 'Lop',
+            'status': 'Trang thai',
             'monhoc': 'Mon hoc',
             'giaovien': 'Giáo viên',
             'ghichu': 'Ghi chú',
@@ -43,12 +44,14 @@ class CreateLichhoc(forms.ModelForm):
         widgets = {
             'trungtam': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Trung tam'}),
             'diadiem': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dia diem'}),
-            'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            #'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             #'thoigian': forms.DateTimeInput(attrs={'class': 'form-control datetimepicker-input', 'data-target': 'datetimepicker','type': 'date' }),
             'sotiet': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'So tiet', 'max': 5, 'min': 1}),
             'lop': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Lop'}),
             'monhoc': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
             'giaovien': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Giao vien'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
         }
 class CreateCtdtMonhoc(forms.ModelForm):
@@ -156,9 +159,42 @@ class CreateLop(forms.ModelForm):
         widgets = {
             'ma': forms.TextInput(attrs={'class': 'form-control'}),
             'ten': forms.TextInput(attrs={'class': 'form-control'}),
-            'trungtam': forms.TextInput(attrs={'class': 'form-control'}),
+            #'trungtam': forms.TextInput(attrs={'class': 'form-control'}),
+            'trungtam': forms.Select(attrs={'class': 'form-control'}),
             'ctdt': forms.Select(attrs={'class': 'form-control'}),
         }
+
+class CreateHp81(forms.ModelForm):
+    # mhs = forms.ModelMultipleChoiceField(
+    #     queryset=Monhoc.objects.all(),
+    #     widget=forms.SelectMultiple,
+    # )
+    class Meta:
+        model = Hp81
+        #fields = "__all__"
+        fields = ('hk','hs81_st','status', 'thoigian', 'sotien1', 'sotien2', 'ghichu', 'sv')
+        #fields_required = ('lop','trungtam','thoigian','monhoc')
+        labels = {
+            'hk': 'Học kỳ',
+            'hs81_st': 'Tình trạng hồ sơ',
+            'status': 'Tình trạng học phí',
+            'thoigian': 'Tgian giải ngân dự kiến',
+            'sotien1': 'Số tiền giải ngân dự kiến',
+            'sotien2': 'Số tiền thực nhận từ học viên',
+            'ghichu': 'Ghi chú',
+            #'mhs': 'Môn học của lớp'
+        }
+        widgets = {
+            'hs81_st': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'sotien1': forms.NumberInput(attrs={'class': 'form-control'}),
+            'sotien2': forms.NumberInput(attrs={'class': 'form-control'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control'}),
+            'hk': forms.Select(attrs={'class': 'form-control'}),
+            'sv': forms.Select(attrs={'class': 'form-control'}),
+        }
+
 class CreateSv(forms.ModelForm):
     class Meta:
         model = Hssv
@@ -175,7 +211,7 @@ class CreateSv(forms.ModelForm):
             'dantoc': 'Dân tộc',
             'noisinh': 'Nơi sinh',
             'quequan': 'Quê quán',
-            'diachi': 'Địa chỉ',
+            'diachi': 'Địa chỉ thương trú',
             'cccd': 'CCCD',
             'hotenbo': 'Họ tên bố',
             'hotenme': 'Họ tên mẹ',

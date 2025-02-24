@@ -1,6 +1,6 @@
 import psycopg2
 
-conn = psycopg2.connect(database="temp8",
+conn = psycopg2.connect(database="temp1",
                         host="localhost",
                         user="postgres",
                         password="123654",
@@ -93,6 +93,15 @@ ALTER COLUMN status DROP NOT NULL
 
 cursor.execute(query)
 
+query = """
+ALTER TABLE sms_hp81
+ALTER COLUMN thoigian DROP NOT NULL,
+ALTER COLUMN sotien1 DROP NOT NULL,
+ALTER COLUMN sotien2 DROP NOT NULL,
+ALTER COLUMN ghichu DROP NOT NULL
+"""
+
+cursor.execute(query)
 
 # Historical table
 #Hssv
@@ -179,6 +188,17 @@ ALTER COLUMN status DROP NOT NULL
 """
 
 cursor.execute(query)
+
+query = """
+ALTER TABLE sms_historicalhp81
+ALTER COLUMN thoigian DROP NOT NULL,
+ALTER COLUMN sotien1 DROP NOT NULL,
+ALTER COLUMN sotien2 DROP NOT NULL,
+ALTER COLUMN ghichu DROP NOT NULL
+"""
+
+cursor.execute(query)
+
 
 cursor.close()
 

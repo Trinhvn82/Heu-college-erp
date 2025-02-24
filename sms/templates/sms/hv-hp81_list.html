@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+﻿{% extends "layouts/base.html" %}
 {% load static %}
 
 {% block title %} Transactions {% endblock %}
@@ -24,11 +24,10 @@
                     <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                         <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                         <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lop_id%}">Môn học</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Lịch học</li>
+                        <li class="breadcrumb-item"><a href="{% url 'svlop_list' lop_id %}">Hồ sơ 81 - Học phí</a></li>
                     </ol>
                 </nav>
-                <h6>Lịch học của môn: {{monhoc}}</h6>
+                <h6>Học viên: {{ten}}</h6>
                 <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
             </div>
             <div class="btn-toolbar mb-2 mb-md-0">
@@ -41,20 +40,12 @@
 
         <div class="table-settings mb-4">
             <div class="row align-items-center justify-content-between">
-                <div class="col col-md-6 col-lg-3 col-xl-4">
-                    <form action="" method="get">
-                        <div class="input-group">
-                            <span class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></span>
-                            <input type="text" name="search" class="form-control" placeholder="Search">
-                        </div>
-                    </form>
-                </div>
                 <div class="col-4 col-md-2 col-xl-1 pl-md-0 text-right">
                     <div class="btn-group">
-                        <a href="{% url 'create_lichhoclm' lopmh_id%}">
+                        <a href="{% url 'create_hp81' sv_id %}">
                             <button type="button" class="btn btn-primary">Thêm mới</button>
                         </a>
-                </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,34 +56,23 @@
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
-                                <th>STT</th>
-                                <th>Thời gian</th>
-                                <th>Địa điểm</th>
-                                <th>Môn học</th>
-                                <th>Số tiết</th>
-                                <th>Tình trạng</th>
+                                <th>Học kỳ</th>
+                                <th>Tình trạng Hs81</th>
+                                <th>Tình trạng Học phí</th>
+                                <th>Số tiền dự kiến</th>
+                                <th>Số tiền thực nhận</th>
                                 <th>Tác nghiệp</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for ct in lh %}
+                            {% for ct in hp81s %}
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ ct.thoigian }}</td>
-                                <td>{{ ct.diadiem }}</td>
-                                <td>{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
-                                <td>{{ ct.sotiet }}</td>
+                                <td>{{ ct.hk }}</td>
+                                <td>{{ ct.hs81_st }}</td>
                                 <td>{{ ct.status }}</td>
+                                <td>{{ ct.sotien1 }}</td>
+                                <td>{{ ct.sotien2 }}</td>
                                 <td>
-                                    <!-- <a href="{% url 'diemdanh_list' ct.id %}">
-                                        <button type="button" class="btn btn-primary">Diem danh</button>
-                                    </a>
-                                    <a href="#">
-                                        <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
-                                    </a>
-                                    <a href="#">
-                                        <button type="button" class="btn btn-danger">X</button>
-                                    </a> -->
                                     <div>
                                         <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="icon icon-sm">
@@ -101,12 +81,12 @@
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'diemdanh_list' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Điểm danh
+                                               href="{% url 'edit_hp81' ct.id %}">
+                                                <span class="fas fa-edit mr-2"></span>Cập nhật
                                             </a>
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'edit_lichhoc' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Edit
+                                               href="{% url 'history_lopmonhoc' ct.id %}">
+                                                <span class="fas fa-edit mr-2"></span>Lịch sử thay đổi
                                             </a>
                                             <a class="dropdown-item text-danger delete_item"
                                                data-href="">
@@ -118,11 +98,11 @@
                             </tr>
                             {% endfor %}
                         </tbody>
-                </table>
-        
+                    </table>
                 </div>
             </div>
         </div>
+
     </main>
 
 {% endblock content %}

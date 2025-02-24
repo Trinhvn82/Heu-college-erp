@@ -22,12 +22,11 @@
             <div class="d-block mb-4 mb-md-0">
                 <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
                     <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                        <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                        <li class="breadcrumb-item"><a href="#">Quản lý đào tạo</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81 & học phí</li>
+                        <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Lớp</li>
                     </ol>
                 </nav>
+                <h6 class="h6">Danh sách lớp</h6>
                 <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
             </div>
             <div class="btn-toolbar mb-2 mb-md-0">
@@ -38,38 +37,54 @@
             </div>
         </div>
 
+        <div class="table-settings mb-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col col-md-6 col-lg-3 col-xl-4">
+                    <form action="" method="get">
+                        <div class="input-group">
+                            <span class="input-group-text" id="basic-addon2"><span class="fas fa-search"></span></span>
+                            <input type="text" name="search" class="form-control" placeholder="Search">
+                        </div>
+                    </form>
+                </div>
+                <div class="col-4 col-md-2 col-xl-1 pl-md-0 text-right">
+                    <div class="btn-group">
+                        <a href="{% url 'create_lop' %}">
+                            <button type="button" class="btn btn-primary">Tạo mới lớp</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
-            <!-- <table class="table table-responsive-sm table-bordered table-striped table-sm"> -->
-            <table class="table table-centered mb-0 rounded">
-                <thead class="thead-light">
+            <table class="table table-hover">
+                <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Hoc ky</th>
-                        <th>Tinh trang Ho so 81</th>
-                        <th>Tinh trang Hoc phi</th>
-                        <th>Tác vụ</th>
+                        <th>STT</th>
+                        <th>Mã lớp</th>
+                        <th>Tên lớp</th>
+                        <th>Trung tâm</th>
+                        <th>Chương trình ĐT</th>
+                        <th>Tác nghiệp</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for hk in lol %}
+                    {% for ct in lop %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ hk.ten }}</td>
+                        <td>{{ ct.ma }}</td>
                         <td>
-                        {% if hk.st1 == 1%}
-                            <span class="font-weight-bold text-success">Đã có thông tin</span>
-                        {%else%}
-                            <span class="font-weight-bold">Chưa có thông tin</span>
-                        {%endif%}
+                            {{ ct.ten }}
+                        </td>
+                        <td>{{ ct.trungtam }}</td>
+                        <td>
+                            {{ ct.ctdt.ten }}
                         </td>
                         <td>
-                        {% if hk.st2 == 1%}
-                            <span class="font-weight-bold text-success">Đã có thông tin</span>
-                        {%else%}
-                            <span class="font-weight-bold">Chưa có thông tin</span>
-                        {%endif%}
-                        </td>
-                        <td>
+                            <!-- <a class="btn btn-primary" href="{% url 'lop_monhoc' ct.id  %}" role="button">Quản lý học tập</a>
+                            <a class="btn btn-warning" href="{% url 'lop81-lst' ct.id %}">Hồ sơ 81 & Học phí</a>
+                            <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
                             <div class="btn-group">
                                 <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -80,12 +95,20 @@
                                 </button>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item edit_item"
-                                       href="{% url 'lop81-hk' lop_id hk.ma  %}">
-                                        <span class="fas fa-edit mr-2"></span>Thông tin HS 81
+                                       href="{% url 'lop_monhoc' ct.id  %}">
+                                        <span class="fas fa-edit mr-2"></span>Quản lý học tập
                                     </a>
                                     <a class="dropdown-item edit_item"
-                                       href="{% url 'lophp-hk' lop_id hk.ma  %}">
-                                        <span class="fas fa-edit mr-2"></span>Thông tin học phí
+                                       href="{% url 'lop81-lst' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81 & Học phí (cũ)
+                                    </a>
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'edit_lop' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>Cập nhật lớp
+                                    </a>
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'svlop_list' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>Học viên - Hồ sơ 81 - Học phí
                                     </a>
                                 </div>
                             </div>
