@@ -123,7 +123,7 @@ def sv_list(request):
 def sv_lop(request, lop_id):
     #students = Hssv.objects.all()
     tenlop = Lop.objects.get(id = lop_id).ten
-    students = Hssv.objects.filter(malop_id = lop_id)
+    students = Hssv.objects.filter(malop_id = lop_id).order_by('msv')
     paginator = Paginator(students, 100)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
