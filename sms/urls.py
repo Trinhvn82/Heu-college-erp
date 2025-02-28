@@ -49,6 +49,7 @@ urlpatterns = [
     path('EditLop/<int:lop_id>/', views.edit_lop, name='edit_lop'),
     path('CreateSinhvien/', views.create_sv, name='create_sv'),
     path('EditSinhvien/<int:sv_id>/', views.edit_sv, name='edit_sv'),
+    path('detailsSinhvien/<int:sv_id>/', views.details_sv, name='details_sv'),
     path('CreateGiaovien/', views.create_gv, name='create_gv'),
     path('EditGiaovien/<int:gv_id>/', views.edit_gv, name='edit_gv'),
     path('CreateCtdt/', views.create_ctdt, name='create_ctdt'),

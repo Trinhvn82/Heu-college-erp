@@ -580,8 +580,11 @@ def import_lopsv(request, lop_id):
             v16 = sheet.cell(r,16).value
             v17 = sheet.cell(r,17).value
             v18 = sheet.cell(r,18).value
+            #print(type(v4))
             if Hssv.objects.filter(msv=v1).exists():
-                messages.error(request, 'MSV: ' + v1+ ' already exists')
+                messages.error(request, 'Mã: ' + v1+ ' already exists')
+            elif type(v4) is not datetime:
+                messages.error(request, 'Mã: ' + v1 + ' Namsinh: ' + v4 + ' not in date format')
             else:
                 sv = Hssv(msv=v1, hoten = v2, lop = v3, namsinh=v4, gioitinh=v5, diachi=v9, cccd=v13, hotenbo=v14, hotenme=v15,sdths=v16, sdtph=v17, ghichu=v18, malop_id=lop_id)
                 sv.save()
@@ -1047,6 +1050,9 @@ def create_sv(request):
         else:
             #return redirect("sv_list")
             if forms.is_valid():
+                #uploaded_img = forms.save(commit=False)
+                #uploaded_img.image_data = forms.cleaned_data['image'].file.read()
+                #uploaded_img.save()
                 forms.save()
                 messages.success(request, "Tạo mới học viên thành công!")
                 return redirect("svlop_list", forms.instance.malop_id)
@@ -1262,20 +1268,62 @@ def edit_sv(request, sv_id):
     sv = Hssv.objects.get(id=sv_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateSv(instance=sv)
-
+    print(sv.image)
     if request.method == "POST":
         edit_forms = CreateSv(request.POST, request.FILES or None, instance=sv)
         lop_id = request.POST.get('malop', None)
         if edit_forms.is_valid():
+            #uploaded_img = edit_forms.save(commit=False)
+            #uploaded_img.image_data = edit_forms.cleaned_data['image'].file.read()
             edit_forms.save()
             messages.success(request, "Edit Học viên Info Successfully!")
             return redirect("svlop_list", lop_id)
 
     context = {
         "forms": lh_forms,
+        "img": sv.image,
         "msv": sv.msv
     }
     return render(request, "sms/edit_sv.html", context)
+
+@login_required
+def details_sv(request, sv_id):
+    sv = Hssv.objects.get(id=sv_id)
+    lmh = LopMonhoc.objects.filter(lop_id = sv.malop_id).select_related("monhoc")
+    dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
+    #ld = Loaidiem.objects.all()
+    hks = Hocky.objects.all()
+    hps = Hp81.objects.filter(sv_id = sv_id)
+
+    for mh in lmh:
+        ld = Loaidiem.objects.all()
+        for l in ld:
+            #hp.duno = hp.sotien2-hp.sotien1
+            if Diemthanhphan.objects.filter(sv_id = sv_id,monhoc_id = mh.monhoc_id,tp_id = l.id).first():
+                l.diem = Diemthanhphan.objects.filter(sv_id = sv_id,monhoc_id = mh.monhoc_id,tp_id = l.id)[0].diem
+        mh.ttdiem = ld
+
+    for hp in hps:
+        hp.duno = hp.sotien2-hp.sotien1
+
+    for hk in hks:
+        if Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id).first():
+            hk.hp = Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id)[0]
+            hk.hp.duno = hk.hp.sotien2-hk.hp.sotien1
+        else:
+            hk.hp = None
+    
+
+    context = {
+        "lmh": lmh,
+        "ld": ld,
+        "dtp": dtp,
+        "hks": hks,
+        "hps": hps,
+        "msv": sv.msv,
+        "ten": sv.hoten
+    }
+    return render(request, "sms/sv_details.html", context)
 
 @login_required
 def edit_hp81(request, hp81_id):

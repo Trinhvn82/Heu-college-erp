@@ -41,7 +41,7 @@
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <form action="" method="post">
+                    <form action="" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}

@@ -15,3 +15,9 @@ urlpatterns = [
     path('accounts/logout/',
          auth_views.LogoutView.as_view(template_name='sms/logout.html'), name='logout'),
 ]
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+#if settings.DEBUG:
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

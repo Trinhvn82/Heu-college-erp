@@ -41,14 +41,23 @@
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <form action="" method="post">
+                    <form action="" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
                             {% if field.name == 'msv' %}
                                 <input hidden type="text" name="msv" class="form-control" value="{{msv}}" required id="id_sogio">
+                                <img src="{{ img.image_thumbnail }}" width="500px"/>
                             {% elif field.name == 'monhoc' %}
                                 <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" required id="id_sogio">
+                            {% elif field.name == 'image' %}
+                            <div class="col-md-6 mb-3">
+                                <div>
+                                    <label for="id_image">Ảnh:</label>
+                                    <input type="file" name="image" accept="image/*" id="id_image">   
+                                    <img src="/media/{{ img }}" width="500px"/>
+                                </div>
+                            </div>
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

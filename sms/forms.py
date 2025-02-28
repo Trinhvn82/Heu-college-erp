@@ -199,12 +199,13 @@ class CreateSv(forms.ModelForm):
     class Meta:
         model = Hssv
         #fields = "__all__"
-        fields = ('msv','hoten','malop', 'namsinh','gioitinh', 'dantoc','noisinh', 'quequan','diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph', 'status', 'ghichu')
+        fields = ('msv','hoten','image','malop', 'namsinh','gioitinh', 'dantoc','noisinh', 'quequan','diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph', 'status', 'ghichu')
         #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
-            'msv': 'Mã sinh viên',
+            'msv': 'Mã học viên',
             'hoten': 'Họ tên',
+            'image': 'Ảnh',
             'malop': 'Tên lớp',
             'namsinh': 'Năm sinh',
             'gioitinh': 'Gioi tính',

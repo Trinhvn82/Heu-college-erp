@@ -1,0 +1,142 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'sv_list' %}">Danh sách học viên</a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <a href="{% url 'export_sv' %}">
+                        <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <h6>Mã: {{msv}}</h6>
+        <h6>Tên: {{ten}}</h6>
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Qúa trình học tập</h2>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Môn học</th>
+                                <th>Điểm thành phần</th>
+                                <th>Kết quả</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mh in lmh %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ mh.monhoc.ten }}</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                                {% for l in mh.ttdiem %}
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ l.ten }}</td>
+                                    {% if l.diem != None %}
+                                    <td>{{ l.diem }}</td>
+                                    {% else %}
+                                    <td><span class="font-weight-bold text-danger">Chưa có điểm</span></td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Thông tin học phí</h2>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Học kỳ</th>
+                                <th>Trạng thái hồ sơ 81</th>
+                                <th>Trạng thái học phí</th>
+                                <th>Dư nợ học phí</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for hk in hks %}
+                            <tr>
+                                <td>{{ hk.ten }}</td>
+                                {% if hk.hp %}
+                                    <td>{{ hk.hp.hs81_st }}</td>
+                                    <td>{{ hk.hp.status }}</td>
+                                    <td>{{ hk.hp.duno }}</td>
+                                {% else %}
+                                    <td></td>
+                                    <td></td>
+                                    <td><span class="font-weight-bold text-danger">Chưa có thông tin</span></td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Xét điều kiện tốt nghiệp</h2>
+            <div class="col-12">
+                        <form action="" method="post">
+                            {% csrf_token %}
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn btn-success">
+                                    <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Đủ
+                                </label>
+            
+                                <label class="btn btn-danger">
+                                    <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Không đủ
+                                </label>
+                            </div>
+                            <br>
+                            <input class="btn btn-primary" type="submit" value="Xác nhận">
+                        </form>
+                    </div>
+                </div>
+            </div>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
