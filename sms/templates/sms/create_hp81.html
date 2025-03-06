@@ -41,7 +41,7 @@
                         <div class="row">
                             {% for field in forms %}
                             {% if field.name == 'sv' %}
-                                <input hidden type="number" name="sv" class="form-control" value="{{sv_id}}" required id="id_sogio">
+                                <input hidden type="number" name="sv" class="form-control" value="{{sv_id}}" id="id_sogio">
                             {% elif field.name == 'ghichu' %}
                                 <div class="col-md-12 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

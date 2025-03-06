@@ -45,8 +45,8 @@ test_name = (
 
 class User(AbstractUser):
     @property
-    def is_student(self):
-        if hasattr(self, 'student'):
+    def is_nhansu(self):
+        if hasattr(self, 'hsns'):
             return True
         return False
 

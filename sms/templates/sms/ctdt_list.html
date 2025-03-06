@@ -37,7 +37,7 @@
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <h2 class="h5 mb-4">Import du lieu ban dau</h2>
+                    <h2 class="h5 mb-4">Import dữ liệu</h2>
                     <form action="{% url 'import_monhoc_dm' %}" method="POST" enctype="multipart/form-data">
                         {% csrf_token %}
                         <input type="file"
@@ -83,7 +83,7 @@
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'ctdt_monhoc' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Thêm chi tiết
+                                                <span class="fas fa-edit mr-2"></span>Thông tin môn học
                                             </a>
                                         </div>
                                     </div>

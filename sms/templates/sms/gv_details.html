@@ -1,0 +1,95 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'gv_list' %}">Danh sách giảng viên</a></li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <a href="{% url 'export_sv' %}">
+                        <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <h6>Mã: {{gv.ma}}</h6>
+        <h6>Tên: {{gv.hoten}}</h6>
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Qúa trình giảng dạy</h2>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Lớp</th>
+                                <th>Môn học</th>
+                                <th>Lịch học</th>
+                                <th>Số tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in lops %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ l.ten }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                                {% for mh in l.mhs %}
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ mh.monhoc.ten }}</td>
+                                    <td></td>
+                                    <td><span class="font-weight-bold text-success">{{ mh.sotiet }}</span></td>
+                                </tr>
+                                    {% for lh in mh.lhs %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{ lh.thoigian }}</td>
+                                        <td>{{ lh.sotiet }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

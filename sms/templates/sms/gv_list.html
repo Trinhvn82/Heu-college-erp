@@ -110,7 +110,11 @@
                                                href="{% url 'edit_gv' teacher.id%}">
                                                 <span class="fas fa-edit mr-2"></span>Edit
                                             </a>
-                                            <a class="dropdown-item text-danger delete_item"
+                                            <a class="dropdown-item edit_item"
+                                            href="{% url 'details_gv' teacher.id %}">
+                                             <span class="fas fa-edit mr-2"></span>Qúa trình giảng dạy
+                                         </a>
+                                         <a class="dropdown-item text-danger delete_item"
                                                data-href="">
                                                 <span class="fas fa-trash-alt mr-2"></span>Remove
                                             </a>

@@ -1,6 +1,7 @@
 from django.urls import path, include
-from . import views
+from . import views, views_report
 from django.contrib import admin
+from info.views import add_nsuser, reset_pwd, user_changepwd
 
 
 urlpatterns = [
@@ -14,12 +15,23 @@ urlpatterns = [
     path('allteachers/', views.teacher_list, name='teacher_list'),
     path('allsv/', views.sv_list, name='sv_list'),
     path('allgv/', views.gv_list, name='gv_list'),
+    path('allns/', views.ns_list, name='ns_list'),
+    path('ns_lop/<int:ns_id>/', views.ns_lop, name='ns_lop'),
+
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),
     path('export-sv/', views.export_sv, name='export_sv'),
     path('import-gv/', views.import_gv, name='import_gv'),
+    path('import-ns/', views.import_ns, name='import_ns'),
     path('export-gv/', views.export_gv, name='export_gv'),
     path('export-lh/', views.export_lh, name='export_lh'),
+
+    path('report_hs81/', views_report.report_hs81, name='report_hs81'),
+    path('report_ttgv/', views_report.report_ttgv, name='report_ttgv'),
+    path('report_kqht/', views_report.report_kqht, name='report_kqht',),
+
+    path('export_hs81/<str:query_tt>/<str:query_lop>/', views_report.export_hs81, name='export_hs81'),
+ 
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
     path('alllop/', views.lop_list, name='lop_list'),
     path('alllichhoc/', views.lichhoc_list, name='lichhoc_list'),
@@ -52,6 +64,10 @@ urlpatterns = [
     path('detailsSinhvien/<int:sv_id>/', views.details_sv, name='details_sv'),
     path('CreateGiaovien/', views.create_gv, name='create_gv'),
     path('EditGiaovien/<int:gv_id>/', views.edit_gv, name='edit_gv'),
+    path('detailsGiaovien/<int:gv_id>/', views.details_gv, name='details_gv'),
+    path('Createnhansu/', views.create_ns, name='create_ns'),
+    path('Editnhansu/<int:ns_id>/', views.edit_ns, name='edit_ns'),
+    path('EditTtgv/<int:lopmh_id>/<int:gv_id>/', views.edit_ttgv, name='edit_ttgv'),
     path('CreateCtdt/', views.create_ctdt, name='create_ctdt'),
     path('<int:teacher_id>/', views.single_teacher, name='single_teacher'),
     path('hs81/<int:lop_id>/', views.single_hs81lop, name='single_hs81lop'),
@@ -62,11 +78,20 @@ urlpatterns = [
     path('alldiem/<int:lop_id>/', views.diem_lop, name='diem-lop_list'),
     path('diemlmh/<int:lmh_id>/', views.diem_lmh, name='diem-lmh'),
     path('diemlmh-lst/<int:lmh_id>/', views.diem_lmh_lst, name='diem-lmh-lst'),
+    path('gvlmh-lst/<int:lmh_id>/', views.gv_lmh_lst, name='gv-lmh-lst'),
     path('diemlmh-dtp/<int:lmh_id>/<int:dtp_id>/', views.diem_lmh_dtp, name='diem-lmh-dtp'),
     path('lop81-hk/<int:lop_id>/<int:hk_ma>/', views.lop81_hk, name='lop81-hk'),
     path('lophp-hk/<int:lop_id>/<int:hk_ma>/', views.lophp_hk, name='lophp-hk'),
     path('delete/<int:teacher_id>', views.delete_teacher, name='delete_teacher'),
     path('react', views.react, name='react'),
+    path('upload/', views.upload_file, name='upload_file'),
+    path('download-temp/<int:file_id>/', views.download_file, name='download_file'),
+    path('download-temp1/', views.download_file1, name='download_file1'),
+    path('download-temp2/', views.download_file2, name='download_file2'),
+
+    path('add-ns/<int:id>/', add_nsuser, name='add_ns'),
+    path('resetpwd/<int:ns_id>/', reset_pwd, name='reset_pwd'),
+    path('changepwd/', user_changepwd, name='changepwd'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

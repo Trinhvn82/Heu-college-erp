@@ -3,6 +3,7 @@ from cProfile import label
 from xml.etree.ElementTree import tostring
 from django.db import models
 from simple_history.models import HistoricalRecords
+from info.models import User
 
 # Create your models here.
 class TeacherDeptInfo(models.Model):
@@ -86,6 +87,13 @@ class Trungtam(models.Model):
     def __str__(self):
         return self.ten
 
+class Phong(models.Model):
+    ten = models.CharField(max_length=100)
+    history = HistoricalRecords()
+ 
+    def __str__(self):
+        return self.ten
+
 class Lop(models.Model):
     ma = models.CharField(max_length=100)
     ten = models.CharField(max_length=100)
@@ -99,6 +107,7 @@ class Lop(models.Model):
 
 
 class Hssv(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     msv = models.CharField(max_length=100, blank=True, default='TC0001')
     hoten = models.CharField(max_length=100)
     #image = models.FileField(blank=True)
@@ -137,6 +146,7 @@ class Hssv(models.Model):
 
 
 class Hsgv(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     ma = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
     hoten = models.CharField(max_length=100)
@@ -161,6 +171,23 @@ class Hsgv(models.Model):
     def __str__(self):
         return self.hoten
 
+class Hsns(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    ma = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+    hoten = models.CharField(max_length=100)
+    diachi = models.CharField(max_length=100, blank=True)
+    quequan = models.CharField(max_length=100, blank=True)
+    #namsinh = models.DateField()
+    sdt = models.CharField(max_length=100, blank=True)
+    gioitinh = models.CharField(max_length=100, blank=True)
+    cccd = models.CharField(max_length=100, blank=True)
+    ghichu = models.CharField(max_length=500, blank=True)
+    phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True)
+    history = HistoricalRecords()
+ 
+    def __str__(self):
+        return self.hoten
     
     
 class CtdtMonhoc(models.Model):
@@ -173,6 +200,13 @@ class CtdtMonhoc(models.Model):
     def __str__(self):
         return self.hocky
     
+class NsLop(models.Model):
+    ns = models.ForeignKey(Hsns, on_delete=models.CASCADE)
+    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+    status = models.IntegerField(default= 0)
+    history = HistoricalRecords()
+    def __str__(self):
+        return self.lop.ten
     
 class LopMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
@@ -310,3 +344,19 @@ class LopHk(models.Model):
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
     hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
     history = HistoricalRecords()
+
+class Ttgv(models.Model):
+    sotien1 = models.IntegerField(default= 0, blank= True)
+    sotien2 = models.IntegerField(default= 0, blank= True)
+    ghichu = models.TextField(default= "", max_length=500,blank= True)
+    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.CASCADE)
+    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
+    history = HistoricalRecords()
+
+class UploadedFile(models.Model):
+    file = models.FileField(upload_to='uploads/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    mota = models.CharField(max_length=100)
+    history = HistoricalRecords()
+    def __str__(self):
+        return self.file.name

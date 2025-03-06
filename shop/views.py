@@ -117,7 +117,7 @@ def payment_method_chart(request, year):
         },
     })
 
-#@staff_member_required
+@login_required
 def ctdt_chart(request):
     query = """
                 select c.id as id, c.ten as labels, count(s.id) as data from sms_ctdt c
@@ -149,13 +149,13 @@ def ctdt_chart(request):
         },
     })
 
-def hp_chart(request, lop, hk):
+@login_required
+def hs_chart(request, lop, hk):
     query = """
-                SELECT st.id as id, st.ten as labels, count(hp.id) as data FROM sms_hocphistatus st
-                inner join public.sms_hocphi hp
-                on hp.hpstatus = st.ma and hp.hk=%s and lop_id=%s
-                group by st.id
-                order by st.ma
+                select max(sv.id) as id, coalesce(hp.hs81_st,'Chưa nhập dữ liệu') as labels,count(coalesce(hp.hs81_st,'Chưa nhập dữ liệu')) as data from sms_hssv sv
+                left outer join public.sms_hp81 hp
+                    on sv.id = hp.sv_id and hp.hk_id=%s and sv.malop_id=%s
+                group by hp.hs81_st 
             """
 
     ctdts = RawRP.objects.raw(query,[hk, lop] )
@@ -178,15 +178,50 @@ def hp_chart(request, lop, hk):
         },
     })
 
-#@staff_member_required
+@login_required
+def hp_chart(request, lop, hk):
+    query = """
+                select max(sv.id) as id, coalesce(hp.ten,'Chưa nhập dữ liệu') as labels, count(*) as data
+					from sms_hssv sv
+                left outer join 
+                    (select sv_id, hk_id, st.ten from public.sms_hp81
+                    inner join public.sms_hocphistatus st
+                        on status_id = st.id) as hp
+                    on sv.id = hp.sv_id and hp.hk_id=%s and sv.malop_id=%s
+				 group by hp.ten
+            """
+
+    ctdts = RawRP.objects.raw(query,[hk, lop] )
+
+    ctdt_dict = dict()
+
+    for ctdt in ctdts:
+        ctdt_dict[ctdt.labels] = ctdt.data
+
+    return JsonResponse({
+        "title": f"Số học viên phân theo Chương trình đào tạo",
+        "data": {
+            "labels": list(ctdt_dict.keys()),
+            "datasets": [{
+                "label": "Số người",
+                "backgroundColor": generate_color_palette(len(ctdt_dict)),
+                "borderColor": generate_color_palette(len(ctdt_dict)),
+                "data": list(ctdt_dict.values()),
+            }]
+        },
+    })
+
+@login_required
 def lopsv_chart(request):
     query = """
-                select max(l.id) as id, l.trungtam as labels, count(s.id) as data 
+                select max(l.id) as id, max(tt.ten) as labels, count(s.id) as data 
                 from sms_lop l
+                inner join sms_trungtam tt
+                    on tt.id = l.trungtam_id
                 inner join sms_hssv s
                     on s.malop_id = l.id
-                group by l.trungtam
-                order by l.trungtam            
+                group by l.trungtam_id
+                order by l.trungtam_id       
             """
 
     ctdts = RawRP.objects.raw(query)
@@ -208,7 +243,7 @@ def lopsv_chart(request):
             }]
         },
     })
-#@login_required
+@login_required
 def statistics_view(request):
     lops = Lop.objects.all()
     hks = Hocky.objects.all()

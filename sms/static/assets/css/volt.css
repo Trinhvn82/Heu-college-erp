@@ -361,6 +361,10 @@ label {
     display: inline-block;
 }
 
+label.required::after {
+    content: ' *';
+    color: red;
+}
 button {
     border-radius: 0;
 }

@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam
+from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -9,16 +9,20 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 
 import psycopg2
-import openpyxl
+import openpyxl, xlsxwriter 
+import shutil, os
 
+from django.conf import settings
+from django.http import HttpResponse, Http404
 
 
 User = get_user_model()
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk, Hp81
-from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv, CreateHp81
+from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns
+from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
+from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
@@ -100,6 +104,24 @@ def gv_list(request):
         "teachers": paged_teachers
     }
     return render(request, "sms/gv_list.html", context)
+
+@login_required
+def ns_list(request):
+    ns = Hsns.objects.all().order_by('hoten')
+    if request.method == "POST":
+            query_name = request.POST.get('ten', None)
+            if query_name:
+                ns = Hsns.objects.filter(hoten__contains=query_name).order_by('hoten')
+                messages.success(request, "Ket qua tim kiem voi ten co chua: " + query_name)
+#                return render(request, 'product-search.html', {"results":results})
+
+    paginator = Paginator(ns, 20)
+    page = request.GET.get('page')
+    paged_ns = paginator.get_page(page)
+    context = {
+        "nss": paged_ns
+    }
+    return render(request, "sms/ns_list.html", context)
 
 @login_required
 def sv_list(request):
@@ -280,6 +302,58 @@ def diem_lmh_lst(request, lmh_id):
         "tenmh": tenmh
     }
     return render(request, "sms/diem-lmh-lst.html", context)
+
+@login_required
+def gv_lmh_lst(request, lmh_id):
+
+    #lmh = LopMonhoc.objects.get(id = lmh_id)
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
+
+    lh = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id).select_related("lop", "monhoc")
+    gvs = Hsgv.objects.filter(id__in = lh.values_list('giaovien_id', flat=True))
+    
+    for gv in gvs:
+        gv.lhs = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id, giaovien_id = gv.id)
+        gv.sotiet = gv.lhs.aggregate(Sum('sotiet'))['sotiet__sum']
+        if Ttgv.objects.filter(gv_id = gv.id, lopmh_id = lmh_id).exists():
+            gv.sotien = Ttgv.objects.get(gv_id = gv.id, lopmh_id = lmh_id).sotien2
+        else:
+            gv.sotien = 0
+        #Sale.objects.filter(type='Flour').aggregate(Sum('column'))['column__sum']
+        
+    context = {
+        "lmh": lmh,
+        "gvs": gvs,
+    }
+    return render(request, "sms/gv-lmh-lst.html", context)
+
+@login_required
+def details_gv(request, gv_id):
+
+    #lmh = LopMonhoc.objects.get(id = lmh_id)
+    lh = Lichhoc.objects.filter(giaovien_id = gv_id).select_related("lop", "monhoc")
+    #lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
+
+    lops = Lop.objects.filter(id__in = lh.values_list('lop_id', flat=True))
+    #lmh = LopMonhoc.objects.filter(id__in = lh.values_list('monhoc_id', flat=True))
+    gv = Hsgv.objects.get(id = gv_id)
+
+    #gvs = Hsgv.objects.filter(id__in = lh.values_list('giaovien_id', flat=True))
+    
+    for l in lops:
+        mhs = LopMonhoc.objects.filter(monhoc_id__in = lh.values_list('monhoc_id', flat=True), lop_id = l.id).select_related("monhoc")
+        for mh in mhs:
+            mh.lhs = Lichhoc.objects.filter(giaovien_id = gv_id, lop_id = l.id, monhoc_id = mh.monhoc_id)
+            mh.sotiet = mh.lhs.aggregate(Sum('sotiet'))['sotiet__sum']
+        l.mhs = mhs
+
+        
+    context = {
+        "lops": lops,
+        "gv": gv,
+    }
+    return render(request, "sms/gv_details.html", context)
+
 @login_required
 def lop81_lst(request, lop_id):
 
@@ -545,6 +619,22 @@ def import_monhoc_dm(request):
                 else:
                     tt = Trungtam(ten=ten)
                     tt.save()
+
+        if 'phong-lst' not in wb.sheetnames:
+            messages.error(request, "File excel khong co thong tin danh sách phòng")
+            #return redirect("ctdt_list")
+
+        else:
+            sheet = wb["phong-lst"]
+            for r in range(2, sheet.max_row+1):
+            #for r in range(sheet.max_row-1, sheet.max_row):
+                ten = sheet.cell(r,1).value
+                #ten = sheet.cell(r,2).value
+                if Phong.objects.filter(ten=ten).exists():
+                    messages.error(request, 'Ten: ' + ten + ' already exists')
+                else:
+                    p = Phong(ten=ten)
+                    p.save()
         messages.success(request, "Import done!")
         return redirect("ctdt_list")
 @login_required
@@ -629,6 +719,36 @@ def import_gv(request):
 
         messages.success(request, "Import thanh cong!")
         return redirect("gv_list")
+
+@login_required
+def import_ns(request):
+    if request.method == "POST":
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+        sheets = wb.sheetnames
+        print(sheets)
+        #if 'hsgv' not in wb.sheetnames:
+        #    messages.error(request, "File excel khong dung format hsgv")
+        #    return redirect("gv_list")
+        sheet = wb["hsns"]
+        for r in range(2, sheet.max_row+1):
+            ma = sheet.cell(r,1).value
+            email = sheet.cell(r,2).value
+            hoten = sheet.cell(r,3).value
+            diachi = sheet.cell(r,4).value
+            quequan = sheet.cell(r,5).value
+            sdt = sheet.cell(r,6).value
+            gioitinh = sheet.cell(r,7).value
+            cccd = sheet.cell(r,8).value
+            if Hsns.objects.filter(ma=ma).exists():
+                messages.error(request, 'Ma: ' + ma + ' already exists')
+            else:
+                ns = Hsns(ma=ma, email=email, hoten=hoten, diachi=diachi, 
+                        quequan=quequan, sdt=sdt, gioitinh=gioitinh, cccd=cccd)
+                ns.save()
+
+        messages.success(request, "Import thanh cong!")
+        return redirect("ns_list")
 
 @login_required
 def export_gv(request):
@@ -807,6 +927,42 @@ def ctdt_monhoc(request, ctdt_id):
         "cms": cms
     }
     return render(request, "sms/monhoc-ctdt.html", context)
+
+@login_required
+def ns_lop(request, ns_id):
+    ls = Lop.objects.all()
+    nls = NsLop.objects.filter(ns_id = ns_id).order_by('lop_id')
+    if request.method == "POST":
+        for l in ls:
+            id = "C"+str(l.id)
+            status = request.POST[id]
+            print(id)
+            print(status)
+            nl = NsLop.objects.get(ns_id = ns_id, lop_id = l.id)
+            nl.status=status
+            nl.save() 
+        #     id = "C"+str(stud.id)
+        #     status = request.POST[id]
+        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
+        #     dd.status=status
+        #     dd.save() 
+        # ttlh.status=1
+        # ttlh.save()
+        messages.success(request, "Cập nhật lớp thành công!")
+        return redirect("ns_list")
+
+    if not nls.first():
+        #create hoc phi record
+        for l in ls:
+            dd = NsLop(ns_id = ns_id, lop_id = l.id)
+            dd.save()
+
+    nls = NsLop.objects.filter(ns_id = ns_id).select_related("lop").order_by('lop_id')
+    context = {
+        "ns_id": ns_id,
+        "nls": nls
+    }
+    return render(request, "sms/ns_lop.html", context)
 
 @login_required
 def single_ctdtmonhoc_old(request, ctdt_id):
@@ -1085,6 +1241,25 @@ def create_gv(request):
     return render(request, "sms/create_gv.html", context)
 
 @login_required
+def create_ns(request):
+    if request.method == "POST":
+        forms = CreateNs(request.POST, request.FILES or None)
+        if Hsns.objects.filter(ma = forms['ma'].value()).first():
+            messages.error(request, "Mã nhân sự đã tồn tại!")
+            return redirect("ns_list")
+        if forms.is_valid():
+            forms.save()
+        messages.success(request, "Tạo mới nhân sự thành công!")
+        return redirect("ns_list")
+    else:
+        forms = CreateNs()
+
+    context = {
+        "forms": forms
+    }
+    return render(request, "sms/create_ns.html", context)
+
+@login_required
 def create_diemdanh(request, lh_id):
     print('hello')
     if request.method == "POST":
@@ -1215,6 +1390,32 @@ def edit_lopmonhoc(request, lmh_id):
     return render(request, "sms/edit_lopmonhoc.html", context)
 
 @login_required
+def edit_ttgv(request, lopmh_id, gv_id):
+
+    if Ttgv.objects.filter(lopmh_id=lopmh_id, gv_id=gv_id).exists():
+        ttgv = Ttgv.objects.get(lopmh_id=lopmh_id, gv_id=gv_id)
+    else:
+        ttgv = Ttgv(lopmh_id=lopmh_id, gv_id=gv_id)
+        ttgv.save()
+
+    ttgv_forms = CreateTtgv(instance=ttgv)
+
+    if request.method == "POST":
+        edit_forms = CreateTtgv(request.POST, request.FILES or None, instance=ttgv)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Cập nhật thông tin thanh toán thành công!")
+            return redirect("gv-lmh-lst", lopmh_id)
+
+    context = {
+        "forms": ttgv_forms,
+        "lopmh_id": lopmh_id,
+        "gv_id": gv_id
+    }
+    return render(request, "sms/edit_ttgv.html", context)
+
+@login_required
 def history_lopmonhoc(request, lmh_id):
 
     lmh = LopMonhoc.objects.select_related("lop", "monhoc").get(id=lmh_id)
@@ -1268,10 +1469,22 @@ def edit_sv(request, sv_id):
     sv = Hssv.objects.get(id=sv_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateSv(instance=sv)
-    print(sv.image)
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if sv.image:
+        mroot = os.path.join(base_dir, 'media',sv.image.name)
+        troot = os.path.join(base_dir, 'static')
+        #print(MEDIA_ROOT)
+        #print(STATIC_ROOT)
+        shutil.copy(mroot, troot + "\\uploads\\" + sv.image.name[8:]) # file will be renamed
+
     if request.method == "POST":
         edit_forms = CreateSv(request.POST, request.FILES or None, instance=sv)
         lop_id = request.POST.get('malop', None)
+        #uploaded_file = UploadedFile.objects.get(pk=file_id)
+        #response = HttpResponse(sv.image, content_type='application/force-download')
+        #response['Content-Disposition'] = f'attachment; filename="{sv.image.name}"'
+        #return response
+
         if edit_forms.is_valid():
             #uploaded_img = edit_forms.save(commit=False)
             #uploaded_img.image_data = edit_forms.cleaned_data['image'].file.read()
@@ -1369,6 +1582,26 @@ def edit_gv(request, gv_id):
     return render(request, "sms/edit_gv.html", context)
 
 @login_required
+def edit_ns(request, ns_id):
+    ns = Hsns.objects.get(id=ns_id)
+    #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
+    ns_forms = CreateNs(instance=ns)
+
+    if request.method == "POST":
+        edit_forms = CreateNs(request.POST, request.FILES or None, instance=ns)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Edit nhân sự Info Successfully!")
+            return redirect("ns_list")
+
+    context = {
+        "forms": ns_forms,
+        "ma": ns.ma
+    }
+    return render(request, "sms/edit_ns.html", context)
+
+@login_required
 def edit_lop(request, lop_id):
     lop = Lop.objects.get(id=lop_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
@@ -1425,3 +1658,155 @@ def delete_teacher(request, teacher_id):
 def react(request):
 
     return render(request, 'sms/product-index.html')
+
+@login_required
+def download_file1(request):
+    path = "uploads/monhoc.xlsx"
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404
+
+@login_required
+def upload_file(request):
+    if request.method == 'POST':
+        form = CreateUploadFile(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "File mẫu được tải lên thành công!")
+            return redirect('upload_file')
+    else:
+        form = CreateUploadFile()
+    files = UploadedFile.objects.all()
+    context = {
+        'form': form,
+        'files': files
+    }
+    return render(request, "sms/file_list.html", context)
+
+@login_required
+def download_file(request, file_id):
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+    response = HttpResponse(uploaded_file.file, content_type='application/force-download')
+    response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}"'
+    return response
+
+@login_required
+def download_file2(request):
+    import pandas as pd
+
+    path = "uploads/pandas_simple.xlsx"
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+
+    # Create a Pandas dataframe from the data.
+    df = pd.DataFrame({'Data': [10, 20, 30, 20, 15, 30, 45]})
+
+    # Create a Pandas Excel writer using XlsxWriter as the engine.
+    writer = pd.ExcelWriter(file_path, engine='xlsxwriter')
+
+    # Convert the dataframe to an XlsxWriter Excel object.
+    df.to_excel(writer, sheet_name='Sheet1')
+
+    # Get the xlsxwriter workbook and worksheet objects.
+    workbook = writer.book
+    worksheet = writer.sheets["Sheet1"]
+
+    # Create a chart object.
+    chart = workbook.add_chart({"type": "column"})
+
+    # Get the dimensions of the dataframe.
+    (max_row, max_col) = df.shape
+
+    # Configure the series of the chart from the dataframe data.
+    chart.add_series({"values": ["Sheet1", 1, 1, max_row, 1]})
+
+    # Insert the chart into the worksheet.
+    worksheet.insert_chart(1, 3, chart)
+
+    writer.close()    # Get the xlsxwriter objects from the dataframe writer object.
+
+    #path = "uploads/monhoc.xlsx"
+    #file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404
+
+    # Save the workbook to response object
+    #workbook.save(response) # Chỉ dùng với openpyxl
+#    writer.close()    # Get the xlsxwriter objects from the dataframe writer object.
+
+    # Return the response object
+ #   return response
+
+@login_required
+def report_hs81(request):
+    hps = Hp81.objects.all().select_related("sv")
+    if request.method == "POST":
+            query_lop = request.POST.get('lop', None)
+            query_tt = request.POST.get('trungtam', None)
+            lh = Lop.objects.all().select_related("trungtam")
+            if query_tt:
+                lh = lh.filter(trungtam__ten__contains=query_tt)
+            if query_lop:
+                lh = lh.filter(lop__ten__contains=query_lop)     
+
+            hps = hps.filter(sv__malop__in=lh.values_list('id', flat=True))
+            messages.success(request, "Tìm kiếm thành công!")
+    paginator = Paginator(hps, 50)
+    page = request.GET.get('page')
+    paged_students = paginator.get_page(page)
+    context = {
+        "hps": paged_students
+    }
+    return render(request, "sms/report_hs81.html", context)
+
+@login_required()
+def reset_pwd(request, ns_id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    ns = Hsns.objects.get(id = ns_id)
+    # Check if username already exists
+    if User.objects.filter(username=ns.ma).exists():
+        user = User.objects.get(username=ns.ma)
+        user.set_password(ns.ma + '@123654')
+        user.save()    
+        messages.success(request, "Reset password thành công!")
+        return redirect('ns_list')    
+    return redirect("ns_list")
+
+@login_required()
+def add_nsuser(request, id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    ns = Hsns.objects.get(id = id)
+    # Check if username already exists
+    if User.objects.filter(username=ns.ma).exists():
+        messages.error(request, 'Username already exists')
+        return redirect('ns_list')    
+    
+    user = User.objects.create_user(
+        username=ns.ma,
+        password=ns.ma + '@123654'
+    )
+    user.save()
+    ns.user = user
+    ns.save()
+    messages.success(request, "Tạo tài khoản cho " + ns.hoten + " thành công")
+    return redirect("ns_list")
+
+@login_required
+def user_changepwd(request):
+
+    if request.method == "POST":
+        user = User.objects.get(username = request.user.username)
+        user.set_password(request.POST.get('password', None))
+        user.save()    
+        messages.success(request, "Thay doi password thanh cong!")
+        return redirect("lop_list")
+    return render(request, "sms/changepwd.html")

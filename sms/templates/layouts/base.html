@@ -83,6 +83,7 @@
 
 
     <!-- Specific Page CSS goes HERE  -->
+   
     {% block stylesheets %}{% endblock stylesheets %}
 
 </head>
@@ -118,6 +119,10 @@
 {% include 'includes/scripts.html' %}
 
 <!-- Specific Page JS goes HERE  -->
+<script>
+    $('input,textarea,select').filter('[required]').parent().parent().find("label").append("(*)");
+</script>
+
 {% block javascripts %}{% endblock javascripts %}
 
 </body>

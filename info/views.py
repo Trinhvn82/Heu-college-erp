@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.contrib import messages
+from sms.models import Hsns
 
 
 User = get_user_model()
@@ -423,3 +425,68 @@ def add_student(request):
     all_classes = Class.objects.order_by('-id')
     context = {'all_classes': all_classes}
     return render(request, 'info/add_student.html', context)
+
+@login_required()
+def add_nsuser(request, id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    ns = Hsns.objects.get(id = id)
+    # Check if username already exists
+    if User.objects.filter(username=ns.ma).exists():
+        messages.error(request, 'Username already exists')
+        return redirect('ns_list')    
+    
+    user = User.objects.create_user(
+        username=ns.ma,
+        password=ns.ma + '@123654'
+    )
+    user.save()
+    ns.user = user
+    ns.save()
+    messages.success(request, "Tạo tài khoản cho " + ns.hoten + " thành công")
+    return redirect("ns_list")
+
+@login_required()
+def reset_pwd(request, ns_id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    ns = Hsns.objects.get(id = ns_id)
+    # Check if username already exists
+    if User.objects.filter(username=ns.ma).exists():
+        user = User.objects.get(username=ns.ma)
+        user.set_password(ns.ma + '@123654')
+        user.save()    
+        messages.success(request, "Reset password thành công!")
+        return redirect('ns_list')    
+    return redirect("ns_list")
+
+@login_required()
+def add_nsuser(request, id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    ns = Hsns.objects.get(id = id)
+    # Check if username already exists
+    if User.objects.filter(username=ns.ma).exists():
+        messages.error(request, 'Username already exists')
+        return redirect('ns_list')    
+    
+    user = User.objects.create_user(
+        username=ns.ma,
+        password=ns.ma + '@123654'
+    )
+    user.save()
+    ns.user = user
+    ns.save()
+    messages.success(request, "Tạo tài khoản cho " + ns.hoten + " thành công")
+    return redirect("ns_list")
+
+@login_required
+def user_changepwd(request):
+
+    if request.method == "POST":
+        user = User.objects.get(username = request.user.username)
+        user.set_password(request.POST.get('password', None))
+        user.save()    
+        messages.success(request, "Thay doi password thanh cong!")
+        return redirect("lop_list")
+    return render(request, "sms/changepwd.html")

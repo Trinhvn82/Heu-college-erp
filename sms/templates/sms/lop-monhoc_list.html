@@ -101,8 +101,12 @@
                                                 <span class="fas fa-edit mr-2"></span>KQ Học tập
                                             </a>
                                             <a class="dropdown-item edit_item"
+                                               href="{% url 'gv-lmh-lst' ct.id %}">
+                                                <span class="fas fa-edit mr-2"></span>Thanh toán cho giảng viên
+                                            </a>
+                                            <a class="dropdown-item edit_item"
                                                href="{% url 'edit_lopmonhoc' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Edit
+                                                <span class="fas fa-edit mr-2"></span>Cập nhật
                                             </a>
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'history_lopmonhoc' ct.id %}">

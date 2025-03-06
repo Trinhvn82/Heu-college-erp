@@ -1,0 +1,173 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Báo cáo kết quả học tập</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <a href="{% url 'export_lh' %}">
+                        <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Report filter</h2>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div><label for="id_ma">Trung tâm:</label><input type="text" name="trungtam" class="form-control" required maxlength="100"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div><label for="id_ma">Lớp:</label><input type="text" name="lop" class="form-control" required maxlength="100"></div>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">Xem báo cáo</button>
+                            </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Lớp/Môn học</th>
+                                <th>Học viên</th>
+                                <th>Loại điểm</th>
+                                <th>Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in lh %}
+                            <tr>
+                                <td></td>
+                                <td>{{ l.ten }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                                {% for mh in l.lmhs %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ mh.monhoc.ten }}</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                    {% for diem in mh.diems %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{ diem.sv.hoten }}</td>
+                                        <td>{{ diem.tp.ten}}</td>
+                                        <td>{{ diem.diem}}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td></td>
+                                        <td><span class="font-weight-bold text-danger">Không có dữ liệu</span></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    {% endfor %}
+                                {% empty %}
+                                {% endfor %}
+                            {% empty %}
+                            <p>Please enter report filter</p>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% if query_tt %}
+        <a href="">
+            <button type="button" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-circle" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z"/>
+                  </svg>                     
+                Download 
+            </button>
+        </a>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-md-12">
+                {% if lh.has_other_pages %}
+                    <ul class="pagination">
+                        {% if lh.has_previous %}
+                            <li class="page-item">
+                                <a href="?page={{lh.previous_page_number}}" class="page-link">Prev</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">Prev</a>
+                            </li>
+                        {% endif %}
+                        {% for i in lh.paginator.page_range %}
+                            {% if lh.number == i %}
+                                <li class="page-item active">
+                                    <a class="page-link">{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if lh.has_next %}
+                            <li class="page-item">
+                                <a href="?page={{lh.next_page_number}}" class="page-link">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

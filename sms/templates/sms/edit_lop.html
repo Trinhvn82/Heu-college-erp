@@ -37,7 +37,7 @@
                         <div class="row">
                             {% for field in forms %}
                             {% if field.name == 'ma' %}
-                            <input hidden type="text" name="ma" class="form-control" value="{{ma}}" required id="id_sogio">
+                            <input hidden type="text" name="ma" class="form-control" value="{{ma}}" id="id_sogio">
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

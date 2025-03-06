@@ -46,10 +46,10 @@
                         <div class="row">
                             {% for field in forms %}
                             {% if field.name == 'msv' %}
-                                <input hidden type="text" name="msv" class="form-control" value="{{msv}}" required id="id_sogio">
+                                <input hidden type="text" name="msv" class="form-control" value="{{msv}}" id="id_sogio">
                                 <img src="{{ img.image_thumbnail }}" width="500px"/>
                             {% elif field.name == 'monhoc' %}
-                                <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" required id="id_sogio">
+                                <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" id="id_sogio">
                             {% elif field.name == 'image' %}
                             <div class="col-md-6 mb-3">
                                 <div>

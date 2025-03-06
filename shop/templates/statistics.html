@@ -24,21 +24,6 @@
             <img class="loader-element animate__animated animate__jackInTheBox" src="/static/assets/img/brand/light.svg" height="60" alt="Volt logo">
         </div>
 
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div>
-                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="fas fa-clipboard mr-2"></span>Báo cáo
-                    <span class="icon icon-small ml-1"><span class="fas fa-chevron-down"></span></span>
-                </button>
-                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
-                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Báo cáo giảng viên</a>
-                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Báo cáo đào tạo</a>
-                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Báo cáo tình hình hoàn thiện hồ sơ</a>
-                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Báo cáo học phí</a>
-                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Báo cáo tình hình chuyên cần </a>
-                </div>
-            </div>
-        </div>
 
         <div class="row item-row">
             <div class="col-12">
@@ -63,45 +48,64 @@
             </div>
         </div>
         <div class="row item-row">
+            <div class="h6 font-weight-normal text-gray mb-2">Tình trạng HS 81 & học phí</div>
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
                     <form id="filterForm">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Tên lớp:</label>
-                                    <select name="lop" class="form-control" required id="lop">
-                                        <option value="" selected>----</option>
+                                <div><label for="id_ma">Chọn lớp:</label>
+                                    <select name="lop" class="form-control" id="lop">
                                         {% for l in lops %}
                                         <option value="{{l.id}}">{{l.ten}}</option>
                                         {% endfor%}
                                     </select>
                                 </div>
                             </div>
-                        
-                            <div class="col-md-6 mb-3">
-                                <div>
-                                    <label for="id_ten">Học kỳ:</label>
-                                    <select name="hk" class="form-control" required id="hk">
-                                        <option value="" selected>----</option>
-                                        {% for hk in hks %}
-                                        <option value="{{hk.id}}">{{hk.id}}</option>
-                                        {% endfor%}
-                                    </select>
-                                </div>
-                            </div>
                             <div class="mt-3">
-                                <input type="submit" class="btn btn-primary" value="Xem thông tin" name="_load">
+                                <input type="submit" class="btn btn-primary" value="Tải thông tin" name="_load">
                             </div>
                             </div>
                     </form>
                 </div>
-            </div>
-            <div class="col-12">
-                <div class="h6 font-weight-normal text-gray mb-2">Tình trạng học phí</div>
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <label for="id_ten">Học kỳ 1</label>
+                    <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hsChart1"></canvas>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hpChart1"></canvas>
+                            </div>
+                        </div>
+                    <label for="id_ten">Học kỳ 2</label>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <canvas id="hpChart"></canvas>
+                                <canvas id="hsChart2"></canvas>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hpChart2"></canvas>
+                            </div>
+                        </div>
+                        <label for="id_ten">Học kỳ 3</label>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hsChart3"></canvas>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hpChart3"></canvas>
+                            </div>
+                        </div>
+
+                        <label for="id_ten">Học kỳ 4</label>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hsChart4"></canvas>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hpChart4"></canvas>
                             </div>
                         </div>
                 </div>
@@ -111,6 +115,8 @@
     <script>
         $(document).ready(function () {
             loadAllCharts();
+              // Load data for the first option
+            loadAllChartsHp($("#lop").children().first().val(),$("#hk").children().first().val());
         });
 
         $("#filterForm").on("submit", (event) => {
@@ -154,7 +160,17 @@
             loadChart(lopsvChart, `/shop/chart/lopsv/`);
         }
         function loadAllChartsHp(lop, hk) {
-            loadChart(hpChart, `/shop/chart/hp/${lop}/${hk}/`);
+            loadChart(hsChart1, `/shop/chart/hs/${lop}/1/`);
+            loadChart(hpChart1, `/shop/chart/hp/${lop}/1/`);
+
+            loadChart(hsChart2, `/shop/chart/hs/${lop}/2/`);
+            loadChart(hpChart2, `/shop/chart/hp/${lop}/2/`);
+
+            loadChart(hsChart3, `/shop/chart/hs/${lop}/3/`);
+            loadChart(hpChart3, `/shop/chart/hp/${lop}/3/`);
+
+            loadChart(hsChart4, `/shop/chart/hs/${lop}/4/`);
+            loadChart(hpChart4, `/shop/chart/hp/${lop}/4/`);
         }
     </script>
     <script>
@@ -190,8 +206,155 @@
                 }
             }
         });
-        let hpCtx = document.getElementById("hpChart").getContext("2d");
-        let hpChart = new Chart(hpCtx, {
+        let hsCtx1 = document.getElementById("hsChart1").getContext("2d");
+        let hsChart1 = new Chart(hsCtx1, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hpCtx1 = document.getElementById("hpChart1").getContext("2d");
+        let hpChart1 = new Chart(hpCtx1, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hsCtx2 = document.getElementById("hsChart2").getContext("2d");
+        let hsChart2 = new Chart(hsCtx2, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hpCtx2 = document.getElementById("hpChart2").getContext("2d");
+        let hpChart2 = new Chart(hpCtx2, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hsCtx3 = document.getElementById("hsChart3").getContext("2d");
+        let hsChart3 = new Chart(hsCtx3, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hpCtx3 = document.getElementById("hpChart3").getContext("2d");
+        let hpChart3 = new Chart(hpCtx3, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hsCtx4 = document.getElementById("hsChart4").getContext("2d");
+        let hsChart4 = new Chart(hsCtx4, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let hpCtx4 = document.getElementById("hpChart4").getContext("2d");
+        let hpChart4 = new Chart(hpCtx4, {
             type: "pie",
             options: {
                 responsive: true,

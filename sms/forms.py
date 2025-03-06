@@ -1,7 +1,7 @@
 ﻿from tkinter.ttk import LabeledScale
 from django import forms
 from .models import Ctdt, Diemdanh, Diemthanhphan, Hocphi, Hsgv, Lichhoc, Lop, TeacherInfo, CtdtMonhoc, Hssv, LopMonhoc
-from .models import LopHk, Monhoc, Hp81
+from .models import LopHk, Monhoc, Hp81, Ttgv, UploadedFile, Hsns
 
 class CreateTeacher(forms.ModelForm):
     class Meta:
@@ -54,6 +54,37 @@ class CreateLichhoc(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
         }
+class CreateNs(forms.ModelForm):
+    class Meta:
+        model = Hsns
+        #fields = "__all__"
+        fields = ('ma', 'hoten','email','phong','diachi', 'quequan','sdt', 'gioitinh','cccd')
+        
+        #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
+        #fields_required = ('lop','trungtam','thoigian','monhoc')
+        labels = {
+            'ma': 'Mã',
+            'email': 'Email',
+            'hoten': 'Họ tên',
+            'phong': 'Phòng',
+            'diachi': 'Đại chỉ',
+            'quequan': 'Quê quán',
+            'sdt': 'SDT',
+            'gioitinh': 'Giới tính',
+            'cccd': 'CCCD'
+        }
+        widgets = {
+            'ma': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.TextInput(attrs={'class': 'form-control'}),
+            'hoten': forms.TextInput(attrs={'class': 'form-control'}),
+            'diachi': forms.TextInput(attrs={'class': 'form-control'}),
+            'quequan': forms.TextInput(attrs={'class': 'form-control'}),
+            'sdt': forms.TextInput(attrs={'class': 'form-control'}),
+            'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
+            'cccd': forms.TextInput(attrs={'class': 'form-control'}),
+            'phong': forms.Select(attrs={'class': 'form-control'}),
+        }
+
 class CreateCtdtMonhoc(forms.ModelForm):
     class Meta:
         model = CtdtMonhoc
@@ -84,6 +115,19 @@ class CreateLopHk(forms.ModelForm):
         widgets = {
             'start_hk': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_hk': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+       }
+
+class CreateUploadFile(forms.ModelForm):
+    class Meta:
+        model = UploadedFile
+        #fields = "__all__"
+        fields = ('file','mota')
+        labels = {
+            'file': 'Chọn file',
+            'mota': 'Mô tả',
+        }
+        widgets = {
+            'mota': forms.TextInput(attrs={'class': 'form-control'}),
        }
 
 class CreateLopMonhoc(forms.ModelForm):
@@ -122,6 +166,23 @@ class CreateDiemdanh(forms.ModelForm):
             'sv': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Giao vien'}),
         }
 
+class CreateTtgv(forms.ModelForm):
+    class Meta:
+        model = Ttgv
+        #fields = "__all__"
+        fields = ('sotien1','sotien2','ghichu', 'gv', 'lopmh')
+        #fields_required = ('lop','trungtam','thoigian','monhoc')
+        labels = {
+            'sotien1': 'Số tiền cần thanh toán',
+            'sotien2': 'Số tiền đã thanh toán',
+            'ghichu': 'Ghi chú',
+        }
+        widgets = {
+            'sotien1': forms.NumberInput(attrs={'class': 'form-control'}),
+            'sotien2': forms.NumberInput(attrs={'class': 'form-control'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control'}),
+        }
+0
 class CreateCtdt(forms.ModelForm):
     class Meta:
         model = Ctdt

@@ -11,5 +11,6 @@ urlpatterns = [
     path("chart/payment-method/<int:year>/", views.payment_method_chart, name="chart-payment-method"),
     path("chart/ctdt/", views.ctdt_chart, name="chart-ctdt"),
     path("chart/lopsv/", views.lopsv_chart, name="chart-lopsv"),
+    path("chart/hs/<int:lop>/<int:hk>/", views.hs_chart, name="chart-hs"),
     path("chart/hp/<int:lop>/<int:hk>/", views.hp_chart, name="chart-hp"),
 ]

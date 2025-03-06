@@ -20,16 +20,24 @@
                         <img class="user-avatar md-avatar rounded-circle" alt="Image placeholder" src="/static/assets/img/team/profile-picture-2.jpg">
                         <div class="media-body ml-2 text-dark align-items-center d-none d-lg-block">
                           <span class="mb-0 font-small font-weight-bold">
-                            Xin chào: {{ request.user.username }}
-                          </span>
+                            {% if request.user.is_superuser %}
+                              Xin chào: {{ request.user.username }}
+                            {% elif request.user.is_nhansu %}
+                              Xin chào nhân sự: {{ request.user.username }}
+                            {% endif %}
+                                    </span>
                         </div>
                       </div>
                     </a>
                     <div class="dropdown-menu dashboard-dropdown dropdown-menu-right mt-2">
-                      <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-cog"></span>Settings</a>
+                      <a class="dropdown-item font-weight-bold" href="#">
+                        <span class="fas fa-cog"></span>Settings</a>
                       <div role="separator" class="dropdown-divider"></div>
-                      <a class="dropdown-item font-weight-bold" href="">
-                          <span class="fas fa-sign-out-alt text-danger"></span>Logout</a>
+                      <a class="dropdown-item font-weight-bold" href="{% url 'changepwd' %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-toggles" viewBox="0 0 16 16">
+                          <path d="M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m2.45 0A3.5 3.5 0 0 1 8 3.5 3.5 3.5 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7"/>
+                        </svg>
+                        <span class="sidebar-icon"></span> Change Password</a>
                     </div>
                   </li>
                 </ul>
