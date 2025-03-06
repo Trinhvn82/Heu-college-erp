@@ -29,63 +29,63 @@
             </div>
         </div>
 
-        <div class="row item-row">
-            <div class="col-12">
-                    <form action="{% url 'ns_lop' ns_id %}" method="post">
-                        {% csrf_token %}
-                        <input class="btn btn-success" type="submit" value="Submit">
-                        <br>
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>STT</th>
-                                                <th>Trung tâm</th>
-                                                <th>Mã Lớp</th>
-                                                <th>Tên Lớp</th>
-                                                <th>Tình trạng</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for nl in nls %}
-                                            <tr>
-                                                <td>{{ forloop.counter }}</td>
-                                                <td>{{ nl.lop.trungtam }}</td>
-                                                <td>{{ nl.lop.ma }}</td>
-                                                <td>{{ nl.lop.ten }}</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                                        {% if nl.status == 1 %}
-                                                        <label class="btn btn-success">
-                                                            <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1" checked> Có
-                                                        </label>
-                    
-                                                        <label class="btn btn-danger">
-                                                            <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0"> Không
-                                                        </label>
-                                                        {% else %}
-                                                        <label class="btn btn-outline-success">
-                                                            <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1"> Có
-                                                        </label>
-                    
-                                                        <label class="btn btn-outline-danger active">
-                                                            <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0" checked> Không
-                                                        </label>
-                                                        {% endif %}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
+        <form action="{% url 'ns_lop' ns_id %}" method="post">
+            {% csrf_token %}
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            <div class="card border-light shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-centered mb-0 rounded">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Trung tâm</th>
+                                    <th>Mã Lớp</th>
+                                    <th>Tên Lớp</th>
+                                    <th>Tình trạng</th>
+                                </tr>
+                            </thead>
+                    <tbody>
+                        {% for nl in nls %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ nl.lop.trungtam }}</td>
+                            <td>{{ nl.lop.ma }}</td>
+                            <td>{{ nl.lop.ten }}</td>
+                            <td>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                    {% if nl.status == 1 %}
+                                    <label class="btn btn-success">
+                                        <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1" checked> Có
+                                    </label>
+
+                                    <label class="btn btn-danger">
+                                        <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0"> Không
+                                    </label>
+                                    {% else %}
+                                    <label class="btn btn-outline-success">
+                                        <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1"> Có
+                                    </label>
+
+                                    <label class="btn btn-outline-danger active">
+                                        <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0" checked> Không
+                                    </label>
+                                    {% endif %}
                                 </div>
-                            </div>
-                        </div>
-                    </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+    </tbody>
+                </table>
+
+                {{ transactions.pagination }}
+
+            </div>
                 </div>
-        </div>
-    </main>
+            </div>
+        </form>
+</main>
 
 {% endblock content %}

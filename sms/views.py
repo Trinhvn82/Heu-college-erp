@@ -878,11 +878,12 @@ def diemdanh_lop(request, lh_id):
         messages.success(request, "Cap nhat diem danh thanh cong!")
         return redirect("lichhoclopmh_list", lmh)
 
-    if not dds.first():
-        #create hoc phi record
-        for stud in svlop:
+
+    for stud in svlop:
+        if not Diemdanh.objects.filter(sv_id = stud.id, lichhoc_id = lh_id).first():
             dd = Diemdanh(sv_id = stud.id, lichhoc_id = lh_id, status=1)
             dd.save()
+
     dds = Diemdanh.objects.select_related("sv").filter(lichhoc_id = lh_id).order_by('sv_id')
     context = {
         "dds": dds,
@@ -915,9 +916,9 @@ def ctdt_monhoc(request, ctdt_id):
         messages.success(request, "Cập nhật môn học thành công!")
         return redirect("ctdt_list")
 
-    if not cms.first():
-        #create hoc phi record
-        for mh in mhs:
+
+    for mh in mhs:
+        if not CtdtMonhoc.objects.filter(ctdt_id = ctdt_id, monhoc_id = mh.id).first():
             dd = CtdtMonhoc(ctdt_id = ctdt_id, monhoc_id = mh.id, hocky=1)
             dd.save()
 
@@ -951,9 +952,9 @@ def ns_lop(request, ns_id):
         messages.success(request, "Cập nhật lớp thành công!")
         return redirect("ns_list")
 
-    if not nls.first():
-        #create hoc phi record
-        for l in ls:
+
+    for l in ls:
+        if not NsLop.objects.filter(ns_id = ns_id, lop_id = l.id).first():
             dd = NsLop(ns_id = ns_id, lop_id = l.id)
             dd.save()
 
