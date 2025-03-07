@@ -612,13 +612,13 @@ def import_monhoc_dm(request):
             sheet = wb["tt-lst"]
             for r in range(2, sheet.max_row+1):
             #for r in range(sheet.max_row-1, sheet.max_row):
-                ten = sheet.cell(r,1).value
-                #ten = sheet.cell(r,2).value
-                if Trungtam.objects.filter(ten=ten).exists():
-                    messages.error(request, 'Ten: ' + ten + ' already exists')
+                ma = sheet.cell(r,1).value
+                ten = sheet.cell(r,2).value
+                if Trungtam.objects.filter(ma=ma).exists():
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
-                    tt = Trungtam(ten=ten)
-                    tt.save()
+                    hp = Trungtam(ma=ma, ten=ten)
+                    hp.save()
 
         if 'phong-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin danh sách phòng")
@@ -628,13 +628,13 @@ def import_monhoc_dm(request):
             sheet = wb["phong-lst"]
             for r in range(2, sheet.max_row+1):
             #for r in range(sheet.max_row-1, sheet.max_row):
-                ten = sheet.cell(r,1).value
-                #ten = sheet.cell(r,2).value
-                if Phong.objects.filter(ten=ten).exists():
-                    messages.error(request, 'Ten: ' + ten + ' already exists')
+                ma = sheet.cell(r,1).value
+                ten = sheet.cell(r,2).value
+                if Phong.objects.filter(ma=ma).exists():
+                    messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
-                    p = Phong(ten=ten)
-                    p.save()
+                    hp = Phong(ma=ma, ten=ten)
+                    hp.save()
         messages.success(request, "Import done!")
         return redirect("ctdt_list")
 @login_required

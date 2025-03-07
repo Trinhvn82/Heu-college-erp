@@ -63,16 +63,13 @@ def report_hs81(request):
     return render(request, "sms/report_hs81.html", context)
 
 @login_required
-def export_hs81(request, query_tt, query_lop):
+def export_hs81(request):
     import pandas as pd
 
     mylist = []
 
     lh = Lop.objects.all().order_by("ten").select_related("trungtam")
-    if query_tt:
-        lh = lh.filter(trungtam__ten__contains=query_tt.strip())
-    if query_lop:
-        lh = lh.filter(ten__contains=query_lop.strip())     
+  
 
     #svs = Hssv.objects.filter(malop__in=lh).select_related("malop").order_by("malop", "msv")
     for l in lh:

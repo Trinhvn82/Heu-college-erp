@@ -30,7 +30,7 @@ urlpatterns = [
     path('report_ttgv/', views_report.report_ttgv, name='report_ttgv'),
     path('report_kqht/', views_report.report_kqht, name='report_kqht',),
 
-    path('export_hs81/<str:query_tt>/<str:query_lop>/', views_report.export_hs81, name='export_hs81'),
+    path('export_hs81/', views_report.export_hs81, name='export_hs81'),
  
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
     path('alllop/', views.lop_list, name='lop_list'),

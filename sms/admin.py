@@ -3,7 +3,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from sms.models import Lop
 from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, LopMonhoc, Hp81
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk
+from .models import LopHk, Phong, Trungtam
 
 admin.site.register(Lop, SimpleHistoryAdmin)
 admin.site.register(Ctdt, SimpleHistoryAdmin)
@@ -23,4 +23,6 @@ admin.site.register(SvStatus, SimpleHistoryAdmin)
 admin.site.register(Hocky, SimpleHistoryAdmin)
 admin.site.register(HocphiStatus, SimpleHistoryAdmin)
 admin.site.register(Loaidiem, SimpleHistoryAdmin)
+admin.site.register(Phong, SimpleHistoryAdmin)
+admin.site.register(Trungtam, SimpleHistoryAdmin)
 #admin.site.register(Purchase)

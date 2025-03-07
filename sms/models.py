@@ -81,6 +81,7 @@ class Ctdt(models.Model):
         return self.ten
 
 class Trungtam(models.Model):
+    ma = models.IntegerField(default= 1)
     ten = models.CharField(max_length=100)
     history = HistoricalRecords()
  
@@ -88,6 +89,7 @@ class Trungtam(models.Model):
         return self.ten
 
 class Phong(models.Model):
+    ma = models.IntegerField(default= 1)
     ten = models.CharField(max_length=100)
     history = HistoricalRecords()
  

@@ -30,9 +30,7 @@
             <div class="btn-toolbar mb-2 mb-md-0">
                 <div class="btn-group">
                     <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
-                    <a href="{% url 'export_sv' %}">
-                        <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
-                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
                 </div>
             </div>
         </div>
@@ -117,6 +115,8 @@
                                 </tbody>
                             </table>
                 </div>
+            </div>
+            <div class="card-body">
                 <a href="{% url 'create_sv' %}">
                     <button type="button" class="btn btn-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
@@ -126,6 +126,7 @@
                         Thêm học viên
                     </button>
                 </a>
+
             </div>
         </div>
 
