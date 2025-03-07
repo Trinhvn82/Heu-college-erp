@@ -81,15 +81,13 @@
                                 <td>{{ teacher.hoten }}</td>
                                 <td>{{ teacher.sdt }}</td>
                                 <td>
-                                    <div class="btn-group">
-                                        <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
-                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="icon icon-sm">
                                                 <span class="fas fa-ellipsis-h icon-dark"></span>
                                             </span>
-                                            <span class="sr-only">Toggle Dropdown</span>
                                         </button>
-                                        <div class="dropdown-menu">
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'edit_gv' teacher.id%}">
                                                 <span class="fas fa-edit mr-2"></span>Edit
