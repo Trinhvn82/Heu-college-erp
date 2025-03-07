@@ -1470,13 +1470,13 @@ def edit_sv(request, sv_id):
     sv = Hssv.objects.get(id=sv_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateSv(instance=sv)
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    if sv.image:
-        mroot = os.path.join(base_dir, 'media',sv.image.name)
-        troot = os.path.join(base_dir, 'static')
+    #base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    #if sv.image:
+    #    mroot = os.path.join(base_dir, 'media',sv.image.name)
+    #    troot = os.path.join(base_dir, 'static')
         #print(MEDIA_ROOT)
         #print(STATIC_ROOT)
-        shutil.copy(mroot, troot + "\\uploads\\" + sv.image.name[8:]) # file will be renamed
+    #    shutil.copy(mroot, troot + "\\uploads\\" + sv.image.name[8:]) # file will be renamed
 
     if request.method == "POST":
         edit_forms = CreateSv(request.POST, request.FILES or None, instance=sv)
@@ -1495,7 +1495,7 @@ def edit_sv(request, sv_id):
 
     context = {
         "forms": lh_forms,
-        "img": sv.image,
+#        "img": sv.image,
         "msv": sv.msv
     }
     return render(request, "sms/edit_sv.html", context)
