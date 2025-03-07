@@ -113,7 +113,7 @@ class Hssv(models.Model):
     msv = models.CharField(max_length=100, blank=True, default='TC0001')
     hoten = models.CharField(max_length=100)
     #image = models.FileField(blank=True)
-    image = models.ImageField(upload_to='uploads/',blank=True)
+    #image = models.ImageField(upload_to='uploads/',blank=True)
     #image_data = models.BinaryField(null=True)
     lop = models.CharField(max_length=100)
     malop = models.ForeignKey(Lop, on_delete=models.CASCADE, default=1)
