@@ -1,218 +1,231 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>HEU Management System</title>
-    {% load static %}
+{% extends "layouts/base.html" %}
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
-            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-            crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-v4-grid-only@1.0.0/dist/bootstrap-grid.min.css">
-    <!-- Bootstrap core CSS -->
-    <link href="{% static '/info/homepage/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+{% block title %} Settings {% endblock %} 
 
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
 
-    <!-- Custom styles for this template -->
-    <link href="{% static '/info/homepage/css/heroic-features.css' %}" rel="stylesheet">
-    <link href="{% static '/info/bootstrap/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+{% block content %}
+                
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script>
+    $(document).ready(function() {
+        $('#lop').select2();
+    });    
+</script>
 
-</head>
+<main class="content">
 
-<body>
+        {% include 'includes/navigation.html' %}
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'index' %}">HEU College</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarResponsive">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link text-capitalize">Welcome {{ request.user }}</a>
-                    </li>
-                    <li class="nav-item">
-                        <form method="post" action="{% url 'logout' %}">
-                            {% csrf_token %}
-                            <input class="btn btn-success" type="submit" value="logout">
-                        </form>
-                    </li>
-                </ul>
-            </div>
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox" src="/static/assets/img/brand/light.svg" height="60" alt="Volt logo">
         </div>
-    </nav>
 
-    <!-- Page Content -->
-    <div class="container">
-        <form id="filterForm">
-            <label for="year">Choose a year:</label>
-            <select name="year" id="year"></select>
-            <input type="submit" class="btn btn-primary" value="Load" name="_load">
-        </form>
-        <div class="row">
-            <div class="col-6">
-                <canvas id="salesChart"></canvas>
-            </div>
-            <div class="col-6">
-                <canvas id="paymentSuccessChart"></canvas>
-            </div>
-            <div class="col-6">
-                <canvas id="spendPerCustomerChart"></canvas>
-            </div>
-            <div class="col-6">
-                <canvas id="paymentMethodChart"></canvas>
-            </div>
-        </div>
-        <script>
-            $(document).ready(function () {
-                $.ajax({
-                    url: "/shop/chart/filter-options/",
-                    type: "GET",
-                    dataType: "json",
-                    success: (jsonResponse) => {
-                        // Load all the options
-                        jsonResponse.options.forEach(option => {
-                            $("#year").append(new Option(option, option));
-                        });
-                        // Load data for the first option
-                        loadAllCharts($("#year").children().first().val());
-                    },
-                    error: () => console.log("Failed to fetch chart filter options!")
-                });
-            });
-
-            $("#filterForm").on("submit", (event) => {
-                event.preventDefault();
-
-                const year = $("#year").val();
-                loadAllCharts(year)
-            });
-
-            function loadChart(chart, endpoint) {
-                $.ajax({
-                    url: endpoint,
-                    type: "GET",
-                    dataType: "json",
-                    success: (jsonResponse) => {
-                        // Extract data from the response
-                        const title = jsonResponse.title;
-                        const labels = jsonResponse.data.labels;
-                        const datasets = jsonResponse.data.datasets;
-
-                        // Reset the current chart
-                        chart.data.datasets = [];
-                        chart.data.labels = [];
-
-                        // Load new data into the chart
-                        chart.options.title.text = title;
-                        chart.options.title.display = true;
-                        chart.data.labels = labels;
-                        datasets.forEach(dataset => {
-                            chart.data.datasets.push(dataset);
-                        });
-                        chart.update();
-                    },
-                    error: () => console.log("Failed to fetch chart data from " + endpoint + "!")
-                });
-            }
-
-            function loadAllCharts(year) {
-                loadChart(salesChart, `/shop/chart/sales/${year}/`);
-                loadChart(spendPerCustomerChart, `/shop/chart/spend-per-customer/${year}/`);
-                loadChart(paymentSuccessChart, `/shop/chart/payment-success/${year}/`);
-                loadChart(paymentMethodChart, `/shop/chart/payment-method/${year}/`);
-            }
-        </script>
-        <script>
-            let salesCtx = document.getElementById("salesChart").getContext("2d");
-            let salesChart = new Chart(salesCtx, {
-                type: "bar",
-                options: {
-                    responsive: true,
-                    title: {
-                        display: false,
-                        text: ""
-                    }
-                }
-            });
-            let spendPerCustomerCtx = document.getElementById("spendPerCustomerChart").getContext("2d");
-            let spendPerCustomerChart = new Chart(spendPerCustomerCtx, {
-                type: "line",
-                options: {
-                    responsive: true,
-                    title: {
-                        display: false,
-                        text: ""
-                    }
-                }
-            });
-            let paymentSuccessCtx = document.getElementById("paymentSuccessChart").getContext("2d");
-            let paymentSuccessChart = new Chart(paymentSuccessCtx, {
-                type: "pie",
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    aspectRatio: 1,
-                    title: {
-                        display: false,
-                        text: ""
-                    },
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 25
-                        }
-                    }
-                }
-            });
-            let paymentMethodCtx = document.getElementById("paymentMethodChart").getContext("2d");
-            let paymentMethodChart = new Chart(paymentMethodCtx, {
-                type: "pie",
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    aspectRatio: 1,
-                    title: {
-                        display: false,
-                        text: ""
-                    },
-                    layout: {
-                        padding: {
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 25
-                        }
-                    }
-                }
-            });
-        </script>
-    </div>
-    <!-- /.container -->
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div>
+                <button class="btn btn-secondary text-dark mr-2 dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fas fa-plus mr-2"></span>Xem Dashboard
+                </button>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Lớp học</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-comment-dots mr-2"></span>Môn học</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-box-open mr-2"></span>Lịch học</a>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="/accounts/logout">Logout</a>
+            </div>
+            <div>
+                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fas fa-clipboard mr-2"></span>Báo cáo
+                    <span class="icon icon-small ml-1"><span class="fas fa-chevron-down"></span></span>
+                </button>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-box-open mr-2"></span>Học viên</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-store mr-2"></span>Kết quả học tập</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-cart-arrow-down mr-2"></span>Học phí</a>
                 </div>
             </div>
         </div>
-    </div>
 
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Học viên theo CTĐT</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="ctdtChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Học viên theo Lớp</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="lopsvChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Tổng hợp học phí</h2>
+                    <form id="filterForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div><label for="id_ma">Tên lớp:</label>
+                                    <select name="lop" class="form-control" required id="lop">
+                                        <option value="" selected>----</option>
+                                        {% for l in lops %}
+                                        <option value="{{l.id}}">{{l.ten}}</option>
+                                        {% endfor%}
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div class="col-md-6 mb-3">
+                                <div>
+                                    <label for="id_ten">Học kỳ:</label>
+                                    <select name="hk" class="form-control" required id="hk">
+                                        <option value="" selected>----</option>
+                                        {% for hk in hks %}
+                                        <option value="{{hk.id}}">{{hk.id}}</option>
+                                        {% endfor%}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <input type="submit" class="btn btn-primary" value="Xem thông tin" name="_load">
+                            </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Tình trạng học phí</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="hpChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <!-- Page Content -->
+    <script>
+        $(document).ready(function () {
+            loadAllCharts();
+        });
 
-</body>
+        $("#filterForm").on("submit", (event) => {
+          event.preventDefault();
 
-</html>
+          const lop = $("#lop").val();
+          const hk = $("#hk").val();
+          loadAllChartsHp(lop, hk)
+        });
+
+        function loadChart(chart, endpoint) {
+            $.ajax({
+                url: endpoint,
+                type: "GET",
+                dataType: "json",
+                success: (jsonResponse) => {
+                    // Extract data from the response
+                    const title = jsonResponse.title;
+                    const labels = jsonResponse.data.labels;
+                    const datasets = jsonResponse.data.datasets;
+
+                    // Reset the current chart
+                    chart.data.datasets = [];
+                    chart.data.labels = [];
+
+                    // Load new data into the chart
+                    chart.options.title.text = title;
+                    chart.options.title.display = true;
+                    chart.data.labels = labels;
+                    datasets.forEach(dataset => {
+                        chart.data.datasets.push(dataset);
+                    });
+                    chart.update();
+                },
+                error: () => console.log("Failed to fetch chart data from " + endpoint + "!")
+            });
+        }
+
+        function loadAllCharts() {
+            loadChart(ctdtChart, `/shop/chart/ctdt/`);
+            loadChart(lopsvChart, `/shop/chart/lopsv/`);
+        }
+        function loadAllChartsHp(lop, hk) {
+            loadChart(hpChart, `/shop/chart/hp/${lop}/${hk}/`);
+        }
+    </script>
+    <script>
+        let ctdtCtx = document.getElementById("ctdtChart").getContext("2d");
+        let ctdtChart = new Chart(ctdtCtx, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let lopsvCtx = document.getElementById("lopsvChart").getContext("2d");
+        let lopsvChart = new Chart(lopsvCtx, {
+            type: "bar",
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: ""
+                }
+            }
+        });
+        let hpCtx = document.getElementById("hpChart").getContext("2d");
+        let hpChart = new Chart(hpCtx, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+    </script>
+    </main>
+    
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
