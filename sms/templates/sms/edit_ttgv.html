@@ -23,18 +23,16 @@
                  src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
         </div>
 
-        <div class="py-4">
-            <nav aria-label="breadcrumb">
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list'}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lop_id%}">Môn học</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'gv-lmh-lst' lopmh_id%}">Thanh toán cho giảng viên</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Cập nhật thông tin</li>
                 </ol>
-            </nav>
-            <div class="d-flex justify-content-between w-100 flex-wrap">
-                <div class="mb-3 mb-lg-0">
-                <h1 class="h4">Cập nhật thông tin thanh toán cho giảng viên</h1>
-                </div>
             </div>
         </div>
 

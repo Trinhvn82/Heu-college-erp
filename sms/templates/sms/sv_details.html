@@ -19,29 +19,20 @@
         </div>
 
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div class="d-block mb-4 mb-md-0">
-                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
-                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                        <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'sv_list' %}">Danh sách học viên</a></li>
-                    </ol>
-                </nav>
-            </div>
             <div class="btn-toolbar mb-2 mb-md-0">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
-                    <a href="{% url 'export_sv' %}">
-                        <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
-                    </a>
-                </div>
-            </div>
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'sv_list' %}">Thông tin học viên</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Qúa trình học tập</li>
+                </ol>
         </div>
-        <h6>Mã: {{msv}}</h6>
-        <h6>Tên: {{ten}}</h6>
+        </div>
+
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
-                <h2 class="h5 mb-4">Qúa trình học tập</h2>
-                <div class="table-responsive">
+                <h6>Mã: {{msv}}</h6>
+                <h6>Tên: {{ten}}</h6>
+                        <div class="table-responsive">
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>

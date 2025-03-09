@@ -23,23 +23,20 @@
                  src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
         </div>
 
-        <div class="py-4">
-            <nav aria-label="breadcrumb">
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'sv_list' %}">Danh sách học viên</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Sửa thông tin học viên</li>
+                    <li class="breadcrumb-item"><a href="{% url 'sv_list' %}">Thông tin học viên</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Sửa thông tin</li>
                 </ol>
-            </nav>
-            <div class="d-flex justify-content-between w-100 flex-wrap">
-                <div class="mb-3 mb-lg-0">
-                <h1 class="h4">Sửa thông tin học viên có mã {{msv}}</h1>
-                </div>
             </div>
         </div>
 
         <div class="row item-row">
             <div class="col-12">
+                <h6>Mã học viên {{msv}}</h6>
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
                     <form action="" enctype="multipart/form-data" method="post">
                         {% csrf_token %}

@@ -20,46 +20,47 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item"><a href="">Môn học</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"> Kết quả học tập</li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'diem-lmh-lst' lmh_id%}">Điểm thành phần</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Kết quả học tập</li>
                 </ol>
             </div>
         </div>
 
-        <div class="row item-row">
-            <div class="col-12">
-                <form action="#" method="post">
-                    {% csrf_token %}
-                    <input class="btn btn-success" type="submit" value="Submit">
-                    <table class="table table-responsive-sm table-bordered table-striped table-sm">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Mã</th>
-                                <th>Họ tên</th>
-                                <th>Môn học</th>
-                                <th>Điểm thành phần</th>
-                                <th>Điểm</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for diem in diems %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ diem.sv.msv }}</td>
-                                <td>{{ diem.sv.hoten }}</td>
-                                <td>{{ diem.monhoc.ten }}</td>
-                                <td>{{ diem.tp.ten }}</td>
-                                <td>
-                                    <input type="number" name="C{{ diem.sv_id }}-{{ diem.tp_id }}" min="0" max="10" value="{{ diem.diem }}">
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </form>
-                </div>
-        </div>
-    </main>
+        <form action="#" method="post">
+            {% csrf_token %}
+            <input class="btn btn-success" type="submit" value="Submit">
+            <div class="row item-row">
+                <div class="col-12">
+                        <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Mã</th>
+                                    <th>Họ tên</th>
+                                    <th>Môn học</th>
+                                    <th>Điểm thành phần</th>
+                                    <th>Điểm</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for diem in diems %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ diem.sv.msv }}</td>
+                                    <td>{{ diem.sv.hoten }}</td>
+                                    <td>{{ diem.monhoc.ten }}</td>
+                                    <td>{{ diem.tp.ten }}</td>
+                                    <td>
+                                        <input type="number" name="C{{ diem.sv_id }}-{{ diem.tp_id }}" min="0" max="10" value="{{ diem.diem }}">
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+            </div>
+        </form>
+</main>
 
 {% endblock content %}

@@ -296,6 +296,7 @@ def diem_lmh_lst(request, lmh_id):
             lol.append({ "ma":ld.ma,"ten": ld.ten, "st": 0})
     context = {
         "tenlop": tenlop,
+        "lop_id": lop_id,
         "lds": lds,
         "lmh_id":lmh_id,
         "lol":lol,
@@ -420,6 +421,7 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
     context = {
         "diems": diems,
         "tenlop": tenlop,
+        "lop_id": lop_id,
         "lds": lds,
         "lmh_id":lmh_id,
         "tenmh": tenmh
@@ -1055,6 +1057,7 @@ def create_lichhoc(request):
 
 @login_required
 def create_hp81(request, sv_id):
+    lop_id = Hssv.objects.get(id = sv_id).malop_id    
     if request.method == "POST":
         hk_id = request.POST.get('hk', None)
         forms = CreateHp81(request.POST, request.FILES or None)
@@ -1071,6 +1074,7 @@ def create_hp81(request, sv_id):
         forms = CreateHp81()
     context = {
         "sv_id": sv_id,
+        "lop_id": lop_id,
         "forms": forms
     }
     return render(request, "sms/create_hp81.html", context)
@@ -1392,7 +1396,7 @@ def edit_lopmonhoc(request, lmh_id):
 
 @login_required
 def edit_ttgv(request, lopmh_id, gv_id):
-
+    lop_id = LopMonhoc.objects.get(id=lopmh_id).lop_id
     if Ttgv.objects.filter(lopmh_id=lopmh_id, gv_id=gv_id).exists():
         ttgv = Ttgv.objects.get(lopmh_id=lopmh_id, gv_id=gv_id)
     else:
@@ -1411,6 +1415,7 @@ def edit_ttgv(request, lopmh_id, gv_id):
 
     context = {
         "forms": ttgv_forms,
+        "lop_id": lop_id,
         "lopmh_id": lopmh_id,
         "gv_id": gv_id
     }
@@ -1544,6 +1549,7 @@ def edit_hp81(request, hp81_id):
     hp = Hp81.objects.get(id=hp81_id)
     sv_id = hp.sv_id
     hk_id = hp.hk_id
+    lop_id = Hssv.objects.get(id = sv_id).malop_id
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateHp81(instance=hp)
 
@@ -1558,6 +1564,7 @@ def edit_hp81(request, hp81_id):
     context = {
         "forms": lh_forms,
         "sv_id": sv_id,
+        "lop_id": lop_id,
         "hk_id": hk_id
     }
     return render(request, "sms/edit_hp81.html", context)
