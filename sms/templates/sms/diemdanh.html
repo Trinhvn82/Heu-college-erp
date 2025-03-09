@@ -14,31 +14,29 @@
                  src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
         </div>
 
-        <div class="py-4">
-            <nav aria-label="breadcrumb">
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="">Lớp</a></li>
-                    <li class="breadcrumb-item"><a href="">Môn học</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'lichhoclopmh_list' lmh%}">Lịch học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list'%}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lichhoclopmh_list' lmh.id%}">Lịch học</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Điểm danh</li>
                 </ol>
-            </nav>
-            <div class="d-flex justify-content-between w-100 flex-wrap">
-                <div class="mb-3 mb-lg-0">
-                    <h4 class="h4">Điểm danh</h4>
-                </div>
             </div>
         </div>
 
-        <form action="{% url 'diemdanh_list' lh_id%}" method="post">
+        <form action="{% url 'diemdanh_list' ttlh.id%}" method="post">
             {% csrf_token %}
-            <div class="mt-3">
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </div>
             <div class="card border-light shadow-sm mb-4">
                 <div class="card-body">
-                    <div class="table-responsive">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                    <div class="card-body">
+                        <h6>Môn học: {{mh.ten}}</h6>
+                        <h6>Lịch học: {{ttlh.thoigian}}</h6>
+                        <div class="table-responsive">
                         <table class="table table-centered mb-0 rounded">
                             <thead class="thead-light">
                                 <tr>

@@ -895,8 +895,9 @@ def diemdanh_list(request, lh_id):
 def diemdanh_lop(request, lh_id):
     ttlh = Lichhoc.objects.get(id = lh_id)
     svlop = Hssv.objects.filter(malop_id = ttlh.lop_id)
+    mh = Monhoc.objects.get(id = ttlh.monhoc_id)
     dds = Diemdanh.objects.filter(lichhoc_id = lh_id).order_by('sv_id')
-    lmh = LopMonhoc.objects.get(lop_id = ttlh.lop_id, monhoc_id =ttlh.monhoc_id).id
+    lmh = LopMonhoc.objects.get(lop_id = ttlh.lop_id, monhoc_id =ttlh.monhoc_id)
     #sv = Hssv.objects.filter(malop_id = ttlh.lop_id)
     if request.method == "POST":
         for stud in svlop:
@@ -919,8 +920,8 @@ def diemdanh_lop(request, lh_id):
     dds = Diemdanh.objects.select_related("sv").filter(lichhoc_id = lh_id).order_by('sv_id')
     context = {
         "dds": dds,
-        "lh_id": lh_id,
         "lmh": lmh,
+        "mh": mh,
         "ttlh": ttlh
     }
     return render(request, "sms/diemdanh.html", context)
