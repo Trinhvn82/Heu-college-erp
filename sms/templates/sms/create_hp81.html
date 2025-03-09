@@ -28,8 +28,8 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'svlop_list' lop_id%}">Học viên</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv_id %}">Hồ sơ 81 - Học phí</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.malop_id%}">Học viên</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv.id %}">Hồ sơ 81 - Học phí</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Tạo mới</li>
                 </ol>
             </nav>
@@ -37,6 +37,8 @@
 
         <div class="row item-row">
             <div class="col-12">
+                <h6>Mã: {{sv.msv}}</h6>
+                <h6>Học viên: {{sv.hoten}}</h6>
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
                     <form action="" method="post">
                         {% csrf_token %}

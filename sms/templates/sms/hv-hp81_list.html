@@ -24,7 +24,7 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'svlop_list' lop_id %}">Học viên</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.malop_id %}">Học viên</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81 - Học phí</li>
                 </ol>
     </div>
@@ -33,7 +33,8 @@
 
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
-                <h6>Học viên: {{ten}}</h6>
+                <h6>Mã: {{sv.msv}}</h6>
+                <h6>Học viên: {{sv.hoten}}</h6>
                 <div class="table-responsive">
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
@@ -84,7 +85,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="{% url 'create_hp81' sv_id %}">
+                <a href="{% url 'create_hp81' sv.id %}">
                     <button type="button" class="btn btn-primary">Thêm mới</button>
             </a>
         </div>

@@ -1040,9 +1040,7 @@ def hv_hp81_list(request, sv_id):
         lop_id = sv.malop_id
         context = {
             "hp81s": hp81s,
-            "ten": sv.hoten,
-            "lop_id": lop_id,
-            "sv_id": sv_id
+            "sv": sv
         }
         return render(request, "sms/hv-hp81_list.html", context)
 
@@ -1087,7 +1085,7 @@ def create_lichhoc(request):
 
 @login_required
 def create_hp81(request, sv_id):
-    lop_id = Hssv.objects.get(id = sv_id).malop_id    
+    sv = Hssv.objects.get(id = sv_id) 
     if request.method == "POST":
         hk_id = request.POST.get('hk', None)
         forms = CreateHp81(request.POST, request.FILES or None)
@@ -1103,8 +1101,7 @@ def create_hp81(request, sv_id):
     else:
         forms = CreateHp81()
     context = {
-        "sv_id": sv_id,
-        "lop_id": lop_id,
+        "sv": sv,
         "forms": forms
     }
     return render(request, "sms/create_hp81.html", context)
@@ -1426,12 +1423,15 @@ def edit_lopmonhoc(request, lmh_id):
 
 @login_required
 def edit_ttgv(request, lopmh_id, gv_id):
-    lop_id = LopMonhoc.objects.get(id=lopmh_id).lop_id
     if Ttgv.objects.filter(lopmh_id=lopmh_id, gv_id=gv_id).exists():
         ttgv = Ttgv.objects.get(lopmh_id=lopmh_id, gv_id=gv_id)
     else:
         ttgv = Ttgv(lopmh_id=lopmh_id, gv_id=gv_id)
         ttgv.save()
+
+    lmh = LopMonhoc.objects.get(id=lopmh_id)
+    gv=Hsgv.objects.get(id=gv_id)
+    mh=Monhoc.objects.get(id=lmh.monhoc_id)
 
     ttgv_forms = CreateTtgv(instance=ttgv)
 
@@ -1445,9 +1445,9 @@ def edit_ttgv(request, lopmh_id, gv_id):
 
     context = {
         "forms": ttgv_forms,
-        "lop_id": lop_id,
-        "lopmh_id": lopmh_id,
-        "gv_id": gv_id
+        "lmh": lmh,
+        "mh": mh,
+        "gv": gv
     }
     return render(request, "sms/edit_ttgv.html", context)
 
@@ -1579,7 +1579,7 @@ def edit_hp81(request, hp81_id):
     hp = Hp81.objects.get(id=hp81_id)
     sv_id = hp.sv_id
     hk_id = hp.hk_id
-    lop_id = Hssv.objects.get(id = sv_id).malop_id
+    sv = Hssv.objects.get(id = hp.sv_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateHp81(instance=hp)
 
@@ -1593,8 +1593,7 @@ def edit_hp81(request, hp81_id):
 
     context = {
         "forms": lh_forms,
-        "sv_id": sv_id,
-        "lop_id": lop_id,
+        "sv": sv,
         "hk_id": hk_id
     }
     return render(request, "sms/edit_hp81.html", context)
