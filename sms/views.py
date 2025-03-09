@@ -536,6 +536,9 @@ def import_monhoc_dm(request):
                 sogio_lt = sheet.cell(r,5).value
                 sogio_th = sheet.cell(r,6).value
                 sogio_kt = sheet.cell(r,7).value
+                if not ma or not ten or not chuongtrinh:
+                    messages.error(request, 'Ma, ten, chuong trinh không có thông tin')
+                    continue
                 if Monhoc.objects.filter(ma=ma, ten=ten, chuongtrinh=chuongtrinh).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
@@ -552,6 +555,9 @@ def import_monhoc_dm(request):
             #for r in range(sheet.max_row-1, sheet.max_row):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
+                if not ma or not ten:
+                    messages.error(request, 'Ma, ten không có thông tin')
+                    continue
                 if Hocky.objects.filter(ma=ma).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
@@ -568,6 +574,9 @@ def import_monhoc_dm(request):
             #for r in range(sheet.max_row-1, sheet.max_row):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
+                if not ma or not ten:
+                    messages.error(request, 'Ma, ten không có thông tin')
+                    continue
                 if Loaidiem.objects.filter(ma=ma).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
@@ -582,6 +591,9 @@ def import_monhoc_dm(request):
             sheet = wb["hp-st"]
             for r in range(2, sheet.max_row+1):
             #for r in range(sheet.max_row-1, sheet.max_row):
+                if not ma or not ten:
+                    messages.error(request, 'Ma, ten không có thông tin')
+                    continue
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
                 if HocphiStatus.objects.filter(ma=ma).exists():
@@ -600,6 +612,9 @@ def import_monhoc_dm(request):
             #for r in range(sheet.max_row-1, sheet.max_row):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
+                if not ma or not ten:
+                    messages.error(request, 'Ma, ten không có thông tin')
+                    continue
                 if SvStatus.objects.filter(ma=ma).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
@@ -616,6 +631,9 @@ def import_monhoc_dm(request):
             #for r in range(sheet.max_row-1, sheet.max_row):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
+                if not ma or not ten:
+                    messages.error(request, 'Ma, ten không có thông tin')
+                    continue
                 if Trungtam.objects.filter(ma=ma).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
@@ -632,6 +650,9 @@ def import_monhoc_dm(request):
             #for r in range(sheet.max_row-1, sheet.max_row):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
+                if not ma or not ten:
+                    messages.error(request, 'Ma, ten không có thông tin')
+                    continue
                 if Phong.objects.filter(ma=ma).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
@@ -673,6 +694,9 @@ def import_lopsv(request, lop_id):
             v17 = sheet.cell(r,17).value
             v18 = sheet.cell(r,18).value
             #print(type(v4))
+            if not v1 or not v2:
+                messages.error(request, 'Ma, ten không có thông tin')
+                continue
             if Hssv.objects.filter(msv=v1).exists():
                 messages.error(request, 'Mã: ' + v1+ ' already exists')
             elif type(v4) is not datetime:
@@ -712,6 +736,9 @@ def import_gv(request):
             stk = sheet.cell(r,14).value
             bank = sheet.cell(r,15).value
             branch = sheet.cell(r,16).value
+            if not ma or not email or not hoten:
+                messages.error(request, 'Ma, email, ten không có thông tin')
+                continue
             if Hsgv.objects.filter(ma=ma).exists():
                 messages.error(request, 'Ma: ' + ma + ' already exists')
             else:
@@ -742,6 +769,9 @@ def import_ns(request):
             sdt = sheet.cell(r,6).value
             gioitinh = sheet.cell(r,7).value
             cccd = sheet.cell(r,8).value
+            if not ma or not email or not hoten:
+                messages.error(request, 'Ma, email, ten không có thông tin')
+                continue
             if Hsns.objects.filter(ma=ma).exists():
                 messages.error(request, 'Ma: ' + ma + ' already exists')
             else:
