@@ -185,7 +185,7 @@ class Hsns(models.Model):
     gioitinh = models.CharField(max_length=100, blank=True)
     cccd = models.CharField(max_length=100, blank=True)
     ghichu = models.CharField(max_length=500, blank=True)
-    phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True)
+    phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True, blank=True)
     history = HistoricalRecords()
  
     def __str__(self):
