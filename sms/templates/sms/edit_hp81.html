@@ -28,7 +28,7 @@
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.malop_id%}">Học viên</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv.id %}">Hồ sơ 81 - Học phí</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv.id %}">Học phí 81</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Cập nhật</li>
                 </ol>
     </div>
@@ -49,10 +49,6 @@
                                 <input hidden type="number" name="sv" class="form-control" value="{{sv.id}}" id="id_sogio">
                             {% elif field.name == 'hk' %}
                                 <input hidden type="number" name="hk" class="form-control" value="{{hk_id}}" id="id_sogio">
-                            {% elif field.name == 'ghichu' %}
-                                <div class="col-md-12 mb-3">
-                                    <div>{{ field.label_tag }}{{ field }}</div>
-                                </div>
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

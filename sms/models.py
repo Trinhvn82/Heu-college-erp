@@ -223,6 +223,10 @@ class LopMonhoc(models.Model):
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
     hsdt = models.CharField(max_length=500, default= "", blank= True)
+    hsdt1 = models.BooleanField(default= False)
+    hsdt2 = models.BooleanField(default= False)
+    hsdt3 = models.BooleanField(default= False)     
+    hsdt4 = models.BooleanField(default= False)
     history = HistoricalRecords()
     def __str__(self):
         return self.monhoc.ten
@@ -265,13 +269,6 @@ class Hocphi(models.Model):
         return self.lop.ten + "-" + self.sv.hoten
 
 class Hp81(models.Model):
-    #hk = models.IntegerField()
-    tt_choice = (
-        ("Thiếu", "Thiếu"),
-        ("Đủ", "Đủ"),
-    )
-    hs81_st = models.CharField(choices=tt_choice, max_length=20)
-    thoigian = models.DateField(default= None, blank= True)
     ghichu = models.TextField(default= "", max_length=500,blank= True)
     sotien1 = models.IntegerField(default= 0, blank= True)
     sotien2 = models.IntegerField(default= 0, blank= True)
@@ -285,23 +282,28 @@ class Hp81(models.Model):
         return self.hk.ten
 
 class Hs81(models.Model):
+    #hk = models.IntegerField()
+    tt_choice = (
+        ("Thiếu", "Thiếu"),
+        ("Đủ", "Đủ"),
+    )
+    status = models.CharField(choices=tt_choice, max_length=20)
+    thoigian = models.DateField(default= None, blank= True)
+    ddn = models.BooleanField(default= False)
+    cntn = models.BooleanField(default= False)
+    btn = models.BooleanField(default= False)
+    xnct = models.BooleanField(default= False)
+    cccd = models.BooleanField(default= False)
+    cccdbo = models.BooleanField(default= False)
+    cccdme = models.BooleanField(default= False)
+    gks = models.BooleanField(default= False)
+    ghichu = models.TextField(default= "", max_length=500,blank= True)
+    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    hk = models.IntegerField()
-    dondn = models.CharField(default= "", max_length=50)
-    cntn = models.CharField(default= "", max_length=50)
-    bangtn = models.CharField(default= "", max_length=50)
-    xnct = models.CharField(default= "", max_length=50)
-    cccd = models.CharField(default= "", max_length=50)
-    cccdbo = models.CharField(default= "", max_length=50)
-    cccdme = models.CharField(default= "", max_length=50)
-    gks = models.CharField(default= "", max_length=50)
-    ghichu = models.CharField(default= "", max_length=500)
-    status = models.IntegerField(default= 0)
     history = HistoricalRecords()
- 
     def __str__(self):
-        return self.lop.ma + "-"+ self.sv.hoten
+        return self.hk.ten
+
 
 class Diemdanh(models.Model):
     status = models.IntegerField(default=1)
@@ -320,8 +322,15 @@ class DiemdanhAll(models.Model):
     def __str__(self):
         return self.ten
 
+class LogDiem(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return self.created_at
+
 class Loaidiem(models.Model):
     ma = models.IntegerField(default= 1)
+    trunglap = models.IntegerField(default= 1)
+    heso = models.IntegerField(default= 1)
     ten = models.CharField(max_length=100)
     history = HistoricalRecords()
     def __str__(self):
@@ -336,6 +345,7 @@ class Diemthanhphan(models.Model):
     tp = models.ForeignKey(Loaidiem, on_delete=models.CASCADE)
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
+    log = models.ForeignKey(LogDiem, on_delete=models.CASCADE, null= True)
     history = HistoricalRecords()
     def __str__(self):
         return self.sv.hoten + "-" + self.monhoc.ten + "-" + self.tp.ten

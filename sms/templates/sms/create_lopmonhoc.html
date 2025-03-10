@@ -56,7 +56,7 @@
                     
                                 </div>
                             </div>
-                            {% else %}
+                            {% elif field.name == 'ngaystart' or field.name == 'ngayend' or field.name == 'status'%}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
                                 </div>

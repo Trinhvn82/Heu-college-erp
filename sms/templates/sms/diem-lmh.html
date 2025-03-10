@@ -20,8 +20,8 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lop_id%}">Môn học</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'diem-lmh-lst' lmh_id%}">Điểm thành phần</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'diemtp-lmh-lst' lmh.id%}">Điểm thành phần</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Kết quả học tập</li>
                 </ol>
             </div>
@@ -30,6 +30,7 @@
         <form action="#" method="post">
             {% csrf_token %}
             <input class="btn btn-success" type="submit" value="Submit">
+            <input hidden type="number" name="log" class="form-control" value="{{log.id}}" id="id_sogio">
             <div class="row item-row">
                 <div class="col-12">
                         <table class="table table-responsive-sm table-bordered table-striped table-sm">

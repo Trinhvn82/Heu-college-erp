@@ -23,7 +23,7 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Học viên - Hồ sơ 81 - Học phí</li>
+                    <li class="breadcrumb-item active" aria-current="page">Học viên - Hồ sơ - Học phí</li>
                 </ol>
         </div>
         </div>
@@ -87,8 +87,12 @@
                                                         <span class="fas fa-edit mr-2"></span>Edit
                                                     </a>
                                                     <a class="dropdown-item edit_item"
+                                                       href="{% url 'hv_hs81_list' student.id %}">
+                                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81
+                                                    </a>
+                                                    <a class="dropdown-item edit_item"
                                                        href="{% url 'hv_hp81_list' student.id %}">
-                                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81 & học phí
+                                                        <span class="fas fa-edit mr-2"></span>Học phí 81
                                                     </a>
                                                     <a class="dropdown-item text-danger delete_item"
                                                        data-href="">

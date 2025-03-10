@@ -1,7 +1,7 @@
 ﻿from tkinter.ttk import LabeledScale
 from django import forms
 from .models import Ctdt, Diemdanh, Diemthanhphan, Hocphi, Hsgv, Lichhoc, Lop, TeacherInfo, CtdtMonhoc, Hssv, LopMonhoc
-from .models import LopHk, Monhoc, Hp81, Ttgv, UploadedFile, Hsns
+from .models import LopHk, Monhoc, Hp81, Hs81, Ttgv, UploadedFile, Hsns
 
 class CreateTeacher(forms.ModelForm):
     class Meta:
@@ -134,13 +134,16 @@ class CreateLopMonhoc(forms.ModelForm):
     class Meta:
         model = LopMonhoc
         #fields = "__all__"
-        fields = ('lop','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt')
+        fields = ('lop','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4')
         labels = {
             'monhoc': 'Mon hoc',
             'ngaystart': 'Ngay bat dau',
             'ngayend': 'Ngay ket thuc',
             'status': 'Trang thai',
-            'hsdt': 'Ho so dao tao'
+            'hsdt1': 'Tên hồ sơ đào tạo 1',
+            'hsdt2': 'Tên hồ sơ đào tạo 2',
+            'hsdt3': 'Tên hồ sơ đào tạo 3',
+            'hsdt4': 'Tên hồ sơ đào tạo 4',
         }
         widgets = {
             'lop': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
@@ -233,24 +236,53 @@ class CreateHp81(forms.ModelForm):
     class Meta:
         model = Hp81
         #fields = "__all__"
-        fields = ('hk','hs81_st','status', 'thoigian', 'sotien1', 'sotien2', 'ghichu', 'sv')
+        fields = ('hk','status', 'sotien1', 'sotien2', 'ghichu', 'sv')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'hk': 'Học kỳ',
-            'hs81_st': 'Tình trạng hồ sơ',
             'status': 'Tình trạng học phí',
-            'thoigian': 'Tgian giải ngân dự kiến',
             'sotien1': 'Số tiền giải ngân dự kiến',
             'sotien2': 'Số tiền thực nhận từ học viên',
             'ghichu': 'Ghi chú',
             #'mhs': 'Môn học của lớp'
         }
         widgets = {
-            'hs81_st': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
-            'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'sotien1': forms.NumberInput(attrs={'class': 'form-control'}),
             'sotien2': forms.NumberInput(attrs={'class': 'form-control'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control'}),
+            'hk': forms.Select(attrs={'class': 'form-control'}),
+            'sv': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+class CreateHs81(forms.ModelForm):
+    # mhs = forms.ModelMultipleChoiceField(
+    #     queryset=Monhoc.objects.all(),
+    #     widget=forms.SelectMultiple,
+    # )
+    class Meta:
+        model = Hs81
+        #fields = "__all__"
+        fields = ('hk','status', 'thoigian', 'ddn', 'cntn','btn', 'xnct','cccd', 'cccdbo','cccdme', 'gks', 'sv')
+        #fields_required = ('lop','trungtam','thoigian','monhoc')
+        labels = {
+            'hk': 'Học kỳ',
+            'status': 'Tình trạng',
+            'thoigian': 'Tgian giải ngân dự kiến',
+            'ddn': 'Đơn đề nghị',
+            'cntn': 'Chứng nhận tốt nghiệp',
+            'btn': 'Bằng tốt nghiệp',
+            'xnct': 'Xác nhận cư trú',
+            'cccd': 'CCCD',
+            'cccdbo': 'CCCD Bố',
+            'cccdme': 'CCCD Mẹ',
+            'gks': 'Giấy khai sinh',
+            'ghichu': 'Ghi chú',
+            #'mhs': 'Môn học của lớp'
+        }
+        widgets = {
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control'}),
             'hk': forms.Select(attrs={'class': 'form-control'}),
             'sv': forms.Select(attrs={'class': 'form-control'}),

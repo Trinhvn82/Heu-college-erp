@@ -25,7 +25,7 @@
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.malop_id %}">Học viên</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81 - Học phí</li>
+                    <li class="breadcrumb-item active" aria-current="page">Học phí 81</li>
                 </ol>
     </div>
         </div>
@@ -40,8 +40,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>Học kỳ</th>
-                                <th>Tình trạng Hs81</th>
-                                <th>Tình trạng Học phí</th>
+                                <th>Trạng thái</th>
                                 <th>Số tiền dự kiến</th>
                                 <th>Số tiền thực nhận</th>
                                 <th>Tác nghiệp</th>
@@ -51,7 +50,6 @@
                             {% for ct in hp81s %}
                             <tr>
                                 <td>{{ ct.hk }}</td>
-                                <td>{{ ct.hs81_st }}</td>
                                 <td>{{ ct.status }}</td>
                                 <td>{{ ct.sotien1 }}</td>
                                 <td>{{ ct.sotien2 }}</td>

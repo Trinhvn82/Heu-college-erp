@@ -18,43 +18,39 @@
                  src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
         </div>
 
+
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
             <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Môn học</li>
+                    <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.malop_id %}">Học viên</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81</li>
                 </ol>
-            </div>
+    </div>
         </div>
 
 
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
+                <h6>Mã: {{sv.msv}}</h6>
+                <h6>Học viên: {{sv.hoten}}</h6>
                 <div class="table-responsive">
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
-                                <th>Môn học</th>
-                                <th>Tgian bắt đầu</th>
-                                <th>Tgian kết thúc</th>
-                                <th>Tình trạng</th>
+                                <th>Học kỳ</th>
+                                <th>Trạng thái</th>
+                                <th>Tgian giải ngân dự kiến</th>
                                 <th>Tác nghiệp</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for ct in lm %}
+                            {% for ct in hs81s %}
                             <tr>
-                                <td>{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
-                                <td>{{ ct.ngaystart }}</td>
-                                <td>{{ ct.ngayend }}</td>
-                                <td>
-                                {% if ct.status == 'Đã hoàn thành'%}
-                                    <span class="font-weight-bold text-success">{{ ct.status }}</span>
-                                {%else%}
-                                    <span class="font-weight-bold">{{ ct.status }}</span>
-                                {%endif%}
-                                </td>
+                                <td>{{ ct.hk }}</td>
+                                <td>{{ ct.status }}</td>
+                                <td>{{ ct.thoigian }}</td>
                                 <td>
                                     <div>
                                         <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -64,19 +60,7 @@
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'lichhoclopmh_list' ct.id  %}">
-                                                <span class="fas fa-edit mr-2"></span>Lịch hoc
-                                            </a>
-                                            <a class="dropdown-item edit_item"
-                                               href="{% url 'diemtp-lmh-lst' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>KQ Học tập
-                                            </a>
-                                            <a class="dropdown-item edit_item"
-                                               href="{% url 'gv-lmh-lst' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Thanh toán cho giáo viên
-                                            </a>
-                                            <a class="dropdown-item edit_item"
-                                               href="{% url 'edit_lopmonhoc' ct.id %}">
+                                               href="{% url 'edit_hs81' ct.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Cập nhật
                                             </a>
                                             <a class="dropdown-item edit_item"
@@ -97,10 +81,10 @@
                 </div>
             </div>
             <div class="card-body">
-                <a href="{% url 'create_lopmonhoc' lop_id %}">
+                <a href="{% url 'create_hs81' sv.id %}">
                     <button type="button" class="btn btn-primary">Thêm mới</button>
-                </a>
-            </div>
+            </a>
+        </div>
         </div>
 
     </main>

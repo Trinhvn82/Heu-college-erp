@@ -20,9 +20,9 @@ User = get_user_model()
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns
+from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns, LogDiem
 from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
-from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs
+from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
@@ -305,6 +305,33 @@ def diem_lmh_lst(request, lmh_id):
     return render(request, "sms/diem-lmh-lst.html", context)
 
 @login_required
+def diemtp_lmh_lst(request, lmh_id):
+
+    #students = Hssv.objects.all()
+    lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
+    mh_id = LopMonhoc.objects.get(id = lmh_id).monhoc_id
+
+    tenlop = Lop.objects.get(id = lop_id).ma
+    tenmh = Monhoc.objects.get(id = mh_id).ten
+    lds= Loaidiem.objects.all()
+    lol=[]
+    diems = Diemthanhphan.objects.all()
+    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    lds= Loaidiem.objects.all().order_by('ma')
+    for ld in lds:
+        log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('-id')
+        ld.log= log
+    context = {
+        "tenlop": tenlop,
+        "lop_id": lop_id,
+        "lds": lds,
+        "lmh_id":lmh_id,
+        "lol":lol,
+        "tenmh": tenmh
+    }
+    return render(request, "sms/diemtp-lmh-lst.html", context)
+
+@login_required
 def gv_lmh_lst(request, lmh_id):
 
     #lmh = LopMonhoc.objects.get(id = lmh_id)
@@ -384,6 +411,7 @@ def lop81_lst(request, lop_id):
         "lop_id":lop_id
     }
     return render(request, "sms/lop81-lst.html", context)
+
 @login_required
 def diem_lmh_dtp(request, lmh_id, dtp_id):
 
@@ -407,14 +435,17 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
                 mark.status = 1
                 mark.save()
         messages.success(request, "Cap nhat diem thanh cong!")
-        return redirect("lop_monhoc", lop_id)
+        return redirect("diemtp-lmh-lst", lmh_id)
 
 
     if not diems.first():
         #create mark record
+        log = LogDiem()
+        log.save()
         for stud in stud_list:
             for ld in lds:
-                mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = ld.ma, monhoc_id=mh_id)
+                mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = ld.ma, monhoc_id=mh_id, log=log) 
+                #mark.log = log
                 mark.save()
         diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
 
@@ -427,6 +458,88 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
         "tenmh": tenmh
     }
     return render(request, "sms/diem-lmh.html", context)
+
+@login_required
+def create_diemtp(request, lmh_id, dtp_id):
+
+    #students = Hssv.objects.all()
+    #lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop", "monhoc")[0]
+
+    #tenlop = Lop.objects.get(id = lop_id).ma
+    #tenmh = Monhoc.objects.get(id = mh_id).ten
+
+    stud_list = Hssv.objects.filter(malop_id = lmh.lop_id)
+    #lds= Loaidiem.objects.filter(ma=dtp_id)
+    #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
+    if request.method == "POST":
+        for stud in stud_list:
+            id = "C"+str(stud.id)+"-"+str(dtp_id)
+            diem = request.POST[id]
+            log_id = request.POST["log"]
+            mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
+            mark.diem = diem
+            mark.status = 1
+            mark.save()
+        messages.success(request, "Cap nhat diem thanh cong!")
+        return redirect("diemtp-lmh-lst", lmh_id)
+
+
+    #create mark record
+    log = LogDiem()
+    log.save()
+    for stud in stud_list:
+        mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log=log) 
+        #mark.log = log
+        mark.save()
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
+
+    context = {
+        "diems": diems,
+        "dtp_id": dtp_id,
+        "log": log,
+        "lmh":lmh
+    }
+    return render(request, "sms/diem-lmh.html", context)
+
+@login_required
+def edit_diemtp(request, lmh_id, dtp_id, log_id):
+
+    #students = Hssv.objects.all()
+    #lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop", "monhoc")[0]
+
+    #tenlop = Lop.objects.get(id = lop_id).ma
+    #tenmh = Monhoc.objects.get(id = mh_id).ten
+
+    stud_list = Hssv.objects.filter(malop_id = lmh.lop_id)
+    #lds= Loaidiem.objects.filter(ma=dtp_id)
+    #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
+    if request.method == "POST":
+        for stud in stud_list:
+            id = "C"+str(stud.id)+"-"+str(dtp_id)
+            diem = request.POST[id]
+            mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
+            mark.diem = diem
+            mark.status = 1
+            mark.save()
+        messages.success(request, "Cap nhat diem thanh cong!")
+        return redirect("diemtp-lmh-lst", lmh_id)
+
+
+    #create mark record
+    log = LogDiem(id = log_id)
+    #log.save()
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
+
+    context = {
+        "diems": diems,
+        "dtp_id": dtp_id,
+        "log": log,
+        "lmh":lmh
+    }
+    return render(request, "sms/diem-lmh.html", context)
+
 @login_required
 def lop81_hk(request, lop_id, hk_ma):
 
@@ -909,7 +1022,7 @@ def diemdanh_lop(request, lh_id):
         #ttlh.status=1
         #ttlh.save()
         messages.success(request, "Cap nhat diem danh thanh cong!")
-        return redirect("lichhoclopmh_list", lmh)
+        return redirect("lichhoclopmh_list", lmh.id)
 
 
     for stud in svlop:
@@ -1046,6 +1159,17 @@ def hv_hp81_list(request, sv_id):
         return render(request, "sms/hv-hp81_list.html", context)
 
 @login_required
+def hv_hs81_list(request, sv_id):
+        hs81s = Hs81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
+        sv = Hssv.objects.get(id = sv_id)
+        lop_id = sv.malop_id
+        context = {
+            "hs81s": hs81s,
+            "sv": sv
+        }
+        return render(request, "sms/hv-hs81_list.html", context)
+
+@login_required
 def single_hs81lop(request, lop_id):
         ctdtmonhs811 = Hs81.objects.filter(lop_id = lop_id, hk = 1).select_related("sv", "lop")
         ctdtmonhs812 = Hs81.objects.filter(lop_id = lop_id, hk = 2).select_related("sv", "lop")
@@ -1106,6 +1230,29 @@ def create_hp81(request, sv_id):
         "forms": forms
     }
     return render(request, "sms/create_hp81.html", context)
+
+@login_required
+def create_hs81(request, sv_id):
+    sv = Hssv.objects.get(id = sv_id) 
+    if request.method == "POST":
+        hk_id = request.POST.get('hk', None)
+        forms = CreateHs81(request.POST, request.FILES or None)
+        if Hs81.objects.filter(hk_id = hk_id, sv_id=sv_id).first():
+            #messages.success(request, "Mon hoc da ton taij!")
+            messages.error(request, "Bản ghi đã tồn tại!")
+        else:
+            lop = request.POST.get('lop', None)
+            if forms.is_valid():
+                forms.save()
+                messages.success(request, "Bản ghi duoc tao thanh cong!")
+                return redirect("hv_hs81_list", sv_id)
+    else:
+        forms = CreateHs81()
+    context = {
+        "sv": sv,
+        "forms": forms
+    }
+    return render(request, "sms/create_hs81.html", context)
 
 @login_required
 def create_lichhoclm(request, lopmh_id):
@@ -1598,6 +1745,30 @@ def edit_hp81(request, hp81_id):
         "hk_id": hk_id
     }
     return render(request, "sms/edit_hp81.html", context)
+
+@login_required
+def edit_hs81(request, hs81_id):
+    hs = Hs81.objects.get(id=hs81_id)
+    sv_id = hs.sv_id
+    hk_id = hs.hk_id
+    sv = Hssv.objects.get(id = hs.sv_id)
+    #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
+    lh_forms = CreateHs81(instance=hs)
+
+    if request.method == "POST":
+        edit_forms = CreateHs81(request.POST, request.FILES or None, instance=hs)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Edit Info Successfully!")
+            return redirect("hv_hs81_list", sv_id)
+
+    context = {
+        "forms": lh_forms,
+        "sv": sv,
+        "hk_id": hk_id
+    }
+    return render(request, "sms/edit_hs81.html", context)
 
 @login_required
 def edit_gv(request, gv_id):

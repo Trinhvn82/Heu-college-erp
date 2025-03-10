@@ -38,7 +38,19 @@
                                 <input hidden type="number" name="lop" class="form-control" value="{{lop_id}}" id="id_sogio">
                             {% elif field.name == 'monhoc' %}
                                 <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" id="id_sogio">
-                            {% else %}
+                            {% elif field.name == 'ngaystart' or field.name == 'ngayend' or field.name == 'status'%}
+                                <div class="col-md-6 mb-3">
+                                    <div>{{ field.label_tag }}{{ field }}</div>
+                                </div>
+                            {% endif %}
+                            {% endfor %}
+                            <div class="col-md-12 mb-3">
+                                <div>
+                                    <label for="id_ngaystart">Hồ sơ đào tạo (tick vào tên hồ sơ khả dụng):</label>
+                                </div>
+                            </div>
+                            {% for field in forms %}
+                            {% if field.name == 'hsdt1' or field.name == 'hsdt2' or field.name == 'hsdt3' or field.name == 'hsdt4'%}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
                                 </div>

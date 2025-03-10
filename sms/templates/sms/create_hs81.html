@@ -29,7 +29,7 @@
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.malop_id%}">Học viên</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv.id %}">Học phí 81</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hv_hs81_list' sv.id %}">Hồ sơ 81</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Tạo mới</li>
                 </ol>
             </nav>
@@ -46,7 +46,19 @@
                             {% for field in forms %}
                             {% if field.name == 'sv' %}
                                 <input hidden type="number" name="sv" class="form-control" value="{{sv.id}}" id="id_sogio">
-                            {% else %}
+                            {% elif field.name == 'hk' or field.name == 'status' or field.name == 'thoigian'%}
+                                <div class="col-md-6 mb-3">
+                                    <div>{{ field.label_tag }}{{ field }}</div>
+                                </div>
+                            {% endif %}
+                            {% endfor %}
+                            <div class="col-md-12 mb-3">
+                                <div>
+                                    <label for="id_ngaystart">Hồ sơ 81 (tick vào tên hồ sơ khả dụng):</label>
+                                </div>
+                            </div>
+                            {% for field in forms %}
+                            {% if field.name == 'ddn' or field.name == 'cntn' or field.name == 'btn' or field.name == 'xnct' or field.name == 'cccd' or field.name == 'cccdbo' or field.name == 'cccdme' or field.name == 'gks'%}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
                                 </div>
