@@ -24,6 +24,8 @@
                               Xin chào: {{ request.user.username }}
                             {% elif request.user.is_nhansu %}
                               Xin chào nhân sự: {{ request.user.username }}
+                            {% else %}
+                              Xin chào: {{ request.user.username }}
                             {% endif %}
                                     </span>
                         </div>

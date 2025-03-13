@@ -36,9 +36,6 @@
                         <table class="table table-centered mb-0 rounded">
                             <thead class="thead-light">
                                 <tr>
-                                    <th>STT</th>
-                                    <th>Chương trình</th>
-                                    <th>Mã</th>
                                     <th>Tên</th>
                                     <th>Tình trạng</th>
                                 </tr>
@@ -46,10 +43,7 @@
                     <tbody>
                         {% for ct in cms %}
                         <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ ct.monhoc.chuongtrinh }}</td>
-                            <td>{{ ct.monhoc.ma }}</td>
-                            <td>{{ ct.monhoc.ten }}</td>
+                            <td>{{ forloop.counter }}:{{ ct.monhoc.chuongtrinh }}-{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
                             <td>
                                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                     {% if ct.status == 1 %}

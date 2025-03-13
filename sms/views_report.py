@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam
+from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, LogDiem
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -47,7 +47,7 @@ def report_hs81(request):
 
         #svs = Hssv.objects.filter(malop__in=lh).select_related("malop").order_by("malop", "msv")
         for l in lh:
-            svs = Hssv.objects.filter(malop_id=l.id).order_by("msv")
+            svs = Hssv.objects.filter(lop_id=l.id).order_by("msv")
             for sv in svs:
                 sv.hp81 = Hp81.objects.filter(sv=sv).order_by("hk")
             l.svs = svs
@@ -77,7 +77,7 @@ def export_hs81(request):
         data={"Mã":"","Tên":l.ten, "Học kỳ":"","Hồ sơ":"","Học phí":"","Số tiền được giải ngân":"","Số tiền trường nhận":""}
         mylist.append(data)
 
-        svs = Hssv.objects.filter(malop_id=l.id).order_by("msv")
+        svs = Hssv.objects.filter(lop_id=l.id).order_by("msv")
         for sv in svs:
             data={"Mã":sv.msv,"Tên":sv.hoten, "Học kỳ":"","Hồ sơ":"","Học phí":"","Số tiền được giải ngân":"","Số tiền trường nhận":""}
             mylist.append(data)
@@ -148,7 +148,7 @@ def report_kqht(request):
         for l in lh:
             lmhs = LopMonhoc.objects.filter(lop_id=l.id).select_related("monhoc").order_by("ngaystart")
             for lmh in lmhs:
-                svs = Hssv.objects.filter(malop_id=l.id)
+                svs = Hssv.objects.filter(lop_id=l.id)
                 lmh.diems = Diemthanhphan.objects.filter(monhoc_id=lmh.monhoc.id, status =1, sv_id__in= svs.values_list('id', flat=True)).select_related("sv","tp").order_by("sv_id", "tp_id")
             l.lmhs = lmhs
 
@@ -162,3 +162,222 @@ def report_kqht(request):
         "query_lop": query_lop
     }
     return render(request, "sms/report_kqht.html", context)
+
+@login_required
+def import_hs81(request, lop_id):
+    if request.method == "POST":
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+        if 'hs81' not in wb.sheetnames:
+            messages.error(request, "File excel khong dung format")
+            return redirect("svlop_list", lop_id)
+
+        sheet = wb["hs81"]
+        #for r in range(3, sheet.max_row+1):
+        #maxid=500
+        #for r in range(3, 44):
+        for r in range(2, sheet.max_row+1):
+            #maxid = maxid+1
+            v1 = sheet.cell(r,1).value
+            v2 = sheet.cell(r,2).value
+            v3 = sheet.cell(r,3).value
+            v4 = sheet.cell(r,4).value
+            v5 = sheet.cell(r,5).value
+
+            v6 = sheet.cell(r,6).value
+            v7 = sheet.cell(r,7).value
+            v8 = sheet.cell(r,8).value
+            v9 = sheet.cell(r,9).value
+
+            v10 = sheet.cell(r,10).value
+            v11 = sheet.cell(r,11).value
+            v12 = sheet.cell(r,12).value
+            v13 = sheet.cell(r,13).value
+            v14 = sheet.cell(r,14).value
+            #print(type(v4))
+            if not v1 or not v2 or not v3:
+                messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
+                continue
+            if not Hssv.objects.filter(msv=v1,lop_id = lop_id).exists():
+                messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
+                continue
+            else:
+                sv=Hssv.objects.get(msv=v1)
+                if v4 == 1:
+                    status = "Đủ"
+                else:
+                    status = "Thiếu"
+                if type(v5) is not datetime:
+                    v5 = None
+                if Hs81.objects.filter(sv=sv, hk_id = v3).exists():
+                    hs81 = Hs81.objects.filter(sv=sv, hk_id = v3)[0]
+                    hs81.status = status
+                    hs81.thoigian = v5
+                else:
+                    hs81 = Hs81(sv=sv, hk_id = v3, status=status, thoigian=v5)
+                
+                hs81.ddn = True if v6 == 1 else False
+                hs81.cntn = True if v7 == 1 else False
+                hs81.btn = True if v8 == 1 else False
+                hs81.xnct = True if v9 == 1 else False
+                hs81.cccd = True if v10 == 1 else False
+                hs81.cccdbo = True if v11 == 1 else False
+                hs81.cccdme = True if v12 == 1 else False
+                hs81.gks = True if v13 == 1 else False
+                hs81.ghichu = v14
+                hs81.save()
+
+        messages.success(request, "Import thông tin hồ sơ 81 thành công!")
+        return redirect("svlop_list", lop_id)
+@login_required
+def import_hp81(request, lop_id):
+    if request.method == "POST":
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+        if 'hp81' not in wb.sheetnames:
+            messages.error(request, "File excel khong dung format")
+            return redirect("svlop_list", lop_id)
+
+        sheet = wb["hp81"]
+        #for r in range(3, sheet.max_row+1):
+        #maxid=500
+        #for r in range(3, 44):
+        for r in range(2, sheet.max_row+1):
+            #maxid = maxid+1
+            v1 = sheet.cell(r,1).value
+            v2 = sheet.cell(r,2).value
+            v3 = sheet.cell(r,3).value
+            v4 = sheet.cell(r,4).value
+            v5 = sheet.cell(r,5).value
+            v6 = sheet.cell(r,6).value
+            v7 = sheet.cell(r,7).value
+            #print(type(v4))
+            if not v1 or not v2 or not v3:
+                messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
+                continue
+            if not Hssv.objects.filter(msv=v1, lop_id = lop_id).exists():
+                messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
+                continue
+            elif v5 and type(v5) is not datetime:
+                messages.error(request, 'Mã: ' + v1 + ' Ngày thu: ' + v5 + ' sai định dạng ngày (m/d/yy)')
+                continue
+            else:
+                sv=Hssv.objects.get(msv=v1, lop_id = lop_id)
+                if not v4:
+                    status = 1
+                else:
+                    status = v4
+                if Hp81.objects.filter(sv=sv, hk_id = v3).exists():
+                    hp81 = Hp81.objects.filter(sv=sv, hk_id = v3)[0]
+                else:
+                    hp81 = Hp81(sv=sv, hk_id = v3)
+                
+                hp81.status_id = status
+                hp81.thoigian = v5
+                hp81.sotien1 = v6
+                hp81.sotien2 = v7
+                hp81.save()
+                print(sv.hoten)
+
+        messages.success(request, "Import thông tin học phí 81 thành công!")
+        return redirect("svlop_list", lop_id)
+    
+@login_required
+def import_diemtp(request, lmh_id, ld_id):
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
+    ld = Loaidiem.objects.get(id = ld_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+    #teachers = Hsgv.objects.all().order_by('hoten')
+    if request.method == "POST":
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+        if 'diemtp' not in wb.sheetnames:
+            messages.error(request, "File excel khong dung format")
+            return redirect("diemtp-lmh-lst", lmh_id)
+
+        sheet = wb["diemtp"]
+        #for r in range(3, sheet.max_row+1):
+        #maxid=500
+        #for r in range(3, 44):
+        log = LogDiem()
+        log.save()
+        for r in range(2, sheet.max_row+1):
+            #maxid = maxid+1
+            v1 = sheet.cell(r,1).value
+            v2 = sheet.cell(r,2).value
+            v3 = sheet.cell(r,3).value
+            #print(type(v4))
+            if not v1 or not v2 or not v3:
+                messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
+                continue
+            if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id).exists():
+                messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
+                continue
+            if not (v3 >=0 and v3<=10):
+                messages.error(request, 'Mã: ' + v1+ ' không có điểm')
+                continue
+            sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id)[0]
+            mark = Diemthanhphan(diem =v3, sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, status=1, log=log) 
+            #mark.log = log
+            mark.save()
+
+        messages.success(request, "Import thông tin điểm thành công!")
+        return redirect("diemtp-lmh-lst", lmh_id)
+
+    context = {
+        "lmh": lmh,
+        "ld": ld
+    }
+    return render(request, "sms/import_diemtp.html", context)
+
+@login_required
+def import_edit_diemtp(request, lmh_id, ld_id, log_id):
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
+    ld = Loaidiem.objects.get(id = ld_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+    #teachers = Hsgv.objects.all().order_by('hoten')
+    if request.method == "POST":
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+        if 'diemtp' not in wb.sheetnames:
+            messages.error(request, "File excel khong dung format")
+            return redirect("diemtp-lmh-lst", lmh_id)
+
+        sheet = wb["diemtp"]
+        #for r in range(3, sheet.max_row+1):
+        #maxid=500
+        #for r in range(3, 44):
+        log = LogDiem.objects.get(id = log_id)
+        log.capnhat_at = datetime.now()
+        log.save()
+        #log.save()
+        for r in range(2, sheet.max_row+1):
+            #maxid = maxid+1
+            v1 = sheet.cell(r,1).value
+            v2 = sheet.cell(r,2).value
+            v3 = sheet.cell(r,3).value
+            #print(type(v4))
+            if not v1 or not v2 or not v3:
+                messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
+                continue
+            if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id).exists():
+                messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
+                continue
+            if not (v3 >=0 and v3<=10):
+                messages.error(request, 'Mã: ' + v1+ ' không có điểm')
+                continue
+            sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id)[0]
+            if Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log).exists():
+                mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log)[0]
+                mark.diem = v3
+                mark.save()
+
+        messages.success(request, "Import thông tin điểm thành công!")
+        return redirect("diemtp-lmh-lst", lmh_id)
+
+    context = {
+        "lmh": lmh,
+        "log_id": log_id,
+        "ld": ld
+    }
+    return render(request, "sms/import_edit_diemtp.html", context)

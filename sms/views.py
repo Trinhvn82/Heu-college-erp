@@ -22,7 +22,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
 from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns, LogDiem
 from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
-from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81
+from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81, CreateLopHk
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
@@ -145,7 +145,7 @@ def sv_list(request):
 def sv_lop(request, lop_id):
     #students = Hssv.objects.all()
     tenlop = Lop.objects.get(id = lop_id).ten
-    students = Hssv.objects.filter(malop_id = lop_id).order_by('msv')
+    students = Hssv.objects.filter(lop_id = lop_id).order_by('msv')
     paginator = Paginator(students, 100)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
@@ -243,7 +243,7 @@ def diem_lmh(request, lmh_id):
     tenlop = Lop.objects.get(id = lop_id).ma
     tenmh = Monhoc.objects.get(id = mh_id).ten
 
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     lds= Loaidiem.objects.all()
     diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
@@ -286,7 +286,7 @@ def diem_lmh_lst(request, lmh_id):
     lds= Loaidiem.objects.all()
     lol=[]
     diems = Diemthanhphan.objects.all()
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     lds= Loaidiem.objects.all()
     for ld in lds:
         st = Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.ma, status = 1).first()
@@ -316,7 +316,7 @@ def diemtp_lmh_lst(request, lmh_id):
     lds= Loaidiem.objects.all()
     lol=[]
     diems = Diemthanhphan.objects.all()
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     lds= Loaidiem.objects.all().order_by('ma')
     for ld in lds:
         log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('-id')
@@ -390,7 +390,7 @@ def lop81_lst(request, lop_id):
 
     lol=[]
     diems = Hs81.objects.all()
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     hks= Hocky.objects.all()
     for hk in hks:
         ft1 = Hs81.objects.filter(lop_id=lop_id, hk= hk.ma,status = 1).first()
@@ -422,7 +422,7 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
     tenlop = Lop.objects.get(id = lop_id).ma
     tenmh = Monhoc.objects.get(id = mh_id).ten
 
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     lds= Loaidiem.objects.filter(ma=dtp_id)
     diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
@@ -469,7 +469,7 @@ def create_diemtp(request, lmh_id, dtp_id):
     #tenlop = Lop.objects.get(id = lop_id).ma
     #tenmh = Monhoc.objects.get(id = mh_id).ten
 
-    stud_list = Hssv.objects.filter(malop_id = lmh.lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
@@ -512,10 +512,13 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
     #tenlop = Lop.objects.get(id = lop_id).ma
     #tenmh = Monhoc.objects.get(id = mh_id).ten
 
-    stud_list = Hssv.objects.filter(malop_id = lmh.lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
+        log = LogDiem.objects.get(id = log_id)
+        log.capnhat_at = datetime.now()
+        log.save()
         for stud in stud_list:
             id = "C"+str(stud.id)+"-"+str(dtp_id)
             diem = request.POST[id]
@@ -545,7 +548,7 @@ def lop81_hk(request, lop_id, hk_ma):
 
     tenlop = Lop.objects.get(id = lop_id).ma
     hks= Hocky.objects.filter(ma=hk_ma)
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     hss = Hs81.objects.all().select_related("sv").filter(sv__in=stud_list, hk=hk_ma).order_by('sv_id')
     if request.method == "POST":
         for stud in stud_list:
@@ -588,7 +591,7 @@ def lophp_hk(request, lop_id, hk_ma):
     tenlop = Lop.objects.get(id = lop_id).ma
     hks= Hocky.objects.filter(ma=hk_ma)
     st= HocphiStatus.objects.all()
-    stud_list = Hssv.objects.filter(malop_id = lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lop_id)
     hps = Hocphi.objects.all().select_related("sv").filter(sv__in=stud_list, hk=hk_ma).order_by('sv_id')
     if request.method == "POST":
         for stud in stud_list:
@@ -649,8 +652,8 @@ def import_monhoc_dm(request):
                 sogio_lt = sheet.cell(r,5).value
                 sogio_th = sheet.cell(r,6).value
                 sogio_kt = sheet.cell(r,7).value
-                if not ma or not ten or not chuongtrinh:
-                    messages.error(request, 'Ma, ten, chuong trinh không có thông tin')
+                if not ma or not ten or not chuongtrinh or not sotinchi:
+                    messages.error(request, 'Ma, ten, chuong trinh không đủ có thông tin bắt buộc')
                     continue
                 if Monhoc.objects.filter(ma=ma, ten=ten, chuongtrinh=chuongtrinh).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
@@ -687,13 +690,15 @@ def import_monhoc_dm(request):
             #for r in range(sheet.max_row-1, sheet.max_row):
                 ma = sheet.cell(r,1).value
                 ten = sheet.cell(r,2).value
-                if not ma or not ten:
+                trunglap = sheet.cell(r,3).value
+                heso = sheet.cell(r,4).value
+                if not ma or not ten or not trunglap or not heso:
                     messages.error(request, 'Ma, ten không có thông tin')
                     continue
                 if Loaidiem.objects.filter(ma=ma).exists():
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
-                    ld = Loaidiem(ma=ma, ten=ten)
+                    ld = Loaidiem(ma=ma, ten=ten,trunglap=trunglap, heso=heso)
                     ld.save()
 
         if 'hp-st' not in wb.sheetnames:
@@ -793,19 +798,29 @@ def import_lopsv(request, lop_id):
             v3 = sheet.cell(r,3).value
             v4 = sheet.cell(r,4).value
             v5 = sheet.cell(r,5).value
-            #v6 = sheet.cell(r,6).value
-            #v7 = sheet.cell(r,7).value
-            #v8 = sheet.cell(r,8).value
+            v6 = sheet.cell(r,6).value
+            v7 = sheet.cell(r,7).value
+            v8 = sheet.cell(r,8).value
             v9 = sheet.cell(r,9).value
-            #v10 = sheet.cell(r,10).value
-            #v11 = sheet.cell(r,11).value
-            #v12 = sheet.cell(r,12).value
+            v10 = sheet.cell(r,10).value
+            v11 = sheet.cell(r,11).value
+            v12 = sheet.cell(r,12).value
             v13 = sheet.cell(r,13).value
             v14 = sheet.cell(r,14).value
             v15 = sheet.cell(r,15).value
             v16 = sheet.cell(r,16).value
             v17 = sheet.cell(r,17).value
             v18 = sheet.cell(r,18).value
+            v19 = sheet.cell(r,19).value
+            v20 = sheet.cell(r,20).value
+            v21 = sheet.cell(r,21).value
+            v22 = sheet.cell(r,22).value
+            v23 = sheet.cell(r,23).value
+            v24 = sheet.cell(r,24).value
+            v25 = sheet.cell(r,25).value
+            v26 = sheet.cell(r,26).value
+            v27 = sheet.cell(r,27).value
+            v28 = sheet.cell(r,28).value
             #print(type(v4))
             if not v1 or not v2:
                 messages.error(request, 'Ma, ten không có thông tin')
@@ -815,7 +830,36 @@ def import_lopsv(request, lop_id):
             elif type(v4) is not datetime:
                 messages.error(request, 'Mã: ' + v1 + ' Namsinh: ' + v4 + ' not in date format')
             else:
-                sv = Hssv(msv=v1, hoten = v2, lop = v3, namsinh=v4, gioitinh=v5, diachi=v9, cccd=v13, hotenbo=v14, hotenme=v15,sdths=v16, sdtph=v17, ghichu=v18, malop_id=lop_id)
+                sv = Hssv(
+                    msv=v1, 
+                    hoten = v2, 
+#                    lop = v3, 
+                    namsinh=v4, 
+                    gioitinh=v5, 
+                    dantoc=v6, 
+                    noisinh=v7, 
+                    quequan=v8, 
+                    diachi=v9, 
+                    xa=v10, 
+                    huyen=v11, 
+                    tinh=v12, 
+                    cccd=v13, 
+                    hotenbo=v14, 
+                    hotenme=v15,
+                    sdths=v16, 
+                    sdtph=v17, 
+                    hs_syll= True if v18 == 1 else False,
+                    hs_pxt= True if v19 == 1 else False,
+                    hs_btn= True if v20 == 1 else False,
+                    hs_gcntttt= True if v21 == 1 else False,
+                    hs_hbthcs= True if v22 == 1 else False,
+                    hs_cccd= True if v23 == 1 else False,
+                    hs_gks= True if v24 == 1 else False,
+                    hs_shk= True if v25 == 1 else False,
+                    hs_a34= True if v26 == 1 else False,
+                    hs_status= "Đủ" if v27 == 1 else "Thiếu",
+                    ghichu=v28, 
+                    lop_id=lop_id)
                 sv.save()
 
         messages.success(request, "Import thanh cong!")
@@ -828,35 +872,80 @@ def import_gv(request):
         wb = openpyxl.load_workbook(excel_file)
         sheets = wb.sheetnames
         print(sheets)
-        #if 'hsgv' not in wb.sheetnames:
-        #    messages.error(request, "File excel khong dung format hsgv")
-        #    return redirect("gv_list")
+        if 'hsgv' not in wb.sheetnames:
+            messages.error(request, "File excel khong dung format")
+            return redirect("gv_list")
+
         sheet = wb["hsgv"]
         for r in range(2, sheet.max_row+1):
-            ma = sheet.cell(r,1).value
-            email = sheet.cell(r,2).value
-            hoten = sheet.cell(r,3).value
-            diachi = sheet.cell(r,4).value
-            quequan = sheet.cell(r,5).value
-            sdt = sheet.cell(r,6).value
-            gioitinh = sheet.cell(r,7).value
-            cccd = sheet.cell(r,8).value
-            tthn = sheet.cell(r,9).value
-            dantoc = sheet.cell(r,10).value
-            loaihd = sheet.cell(r,11).value
-            hocham = sheet.cell(r,12).value
-            hocvi = sheet.cell(r,13).value
-            stk = sheet.cell(r,14).value
-            bank = sheet.cell(r,15).value
-            branch = sheet.cell(r,16).value
-            if not ma or not email or not hoten:
-                messages.error(request, 'Ma, email, ten không có thông tin')
+            v1 = sheet.cell(r,1).value
+            v2 = sheet.cell(r,2).value
+            v3 = sheet.cell(r,3).value
+            v4 = sheet.cell(r,4).value
+            v5 = sheet.cell(r,5).value
+            v6 = sheet.cell(r,6).value
+            v7 = sheet.cell(r,7).value
+            v8 = sheet.cell(r,8).value
+            v9 = sheet.cell(r,9).value
+            v10 = sheet.cell(r,10).value
+            v11 = sheet.cell(r,11).value
+            v12 = sheet.cell(r,12).value
+            v13 = sheet.cell(r,13).value
+            v14 = sheet.cell(r,14).value
+            v15 = sheet.cell(r,15).value
+            v16 = sheet.cell(r,16).value
+            v17 = sheet.cell(r,17).value
+            v18 = sheet.cell(r,18).value
+            v19 = sheet.cell(r,19).value
+            v20 = sheet.cell(r,20).value
+            v21 = sheet.cell(r,21).value
+            v22 = sheet.cell(r,22).value
+            v23 = sheet.cell(r,23).value
+            v24 = sheet.cell(r,24).value
+            v25 = sheet.cell(r,25).value
+            v26 = sheet.cell(r,26).value
+            v27 = sheet.cell(r,27).value
+            v28 = sheet.cell(r,28).value
+            v29 = sheet.cell(r,29).value
+            if not v1 or not v2 or not v4 or not v7 or not v9:
+                messages.error(request, 'Dòng ' + str(r+1) + ' Trường bắt buộc thiếu thông tin')
                 continue
-            if Hsgv.objects.filter(ma=ma).exists():
-                messages.error(request, 'Ma: ' + ma + ' already exists')
+            if Hsgv.objects.filter(ma=v1).exists():
+                messages.error(request, 'Ma: ' + v1 + ' already exists')
+            elif (v3 and type(v3) is not datetime) or (v5 and type(v5) is not datetime) or (v20 and type(v20) is not datetime) or (v21 and type(v21) is not datetime):
+                messages.error(request, 'Dòng ' + str(r+1) + ' có trường date không đúng định dạng')
             else:
-                gv = Hsgv(ma=ma, email=email, hoten=hoten, diachi=diachi, 
-                        quequan=quequan, sdt=sdt, gioitinh=gioitinh, cccd=cccd, tthn=tthn)
+                gv = Hsgv(
+                    ma = v1,
+                    hoten = v2,
+                    namsinh = v3,
+                    cccd = v4,
+                    ngaycap = v5,
+                    noicap = v6,
+                    diachi = v7,
+                    sdt = v8,
+                    email = v9,
+                    mst = v10,
+                    bhxh = v11,
+                    dongbhxh = v12,
+                    stk = v13,
+                    nh = v14,
+                    cn = v15,
+                    trinhdo = v16,
+                    truongtn = v17,
+                    nganhtn = v18,
+                    shdtg = v19,
+                    ngayky = v20,
+                    ngayhh = v21,
+                    hs_btn = True if v22 == 1 else False,
+                    hs_bd = True if v23 == 1 else False,
+                    hs_cc = True if v24 == 1 else False,
+                    hs_syll = True if v25 == 1 else False,
+                    hs_ccta = True if v26 == 1 else False,
+                    hs_ccth = True if v27 == 1 else False,
+                    hs_status = "Đủ" if v28 == 1 else "Thiếu",
+                    ghichu = v29
+                )
                 gv.save()
 
         messages.success(request, "Import thanh cong!")
@@ -912,11 +1001,11 @@ def export_gv(request):
     return response
 
 @login_required
-def export_sv(request):
+def export_lopsv(request, lop_id):
     # Query the Person model to get all records
-    gvs = Hssv.objects.all().values()
+    svs = Hssv.objects.all().filter(lop_id=lop_id).values().order_by("msv")
     # Convert the QuerySet to a DataFrame
-    df = pd.DataFrame(list(gvs))
+    df = pd.DataFrame(list(svs))
 
     # Define the Excel file response
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -1007,11 +1096,11 @@ def diemdanh_list(request, lh_id):
 @login_required
 def diemdanh_lop(request, lh_id):
     ttlh = Lichhoc.objects.get(id = lh_id)
-    svlop = Hssv.objects.filter(malop_id = ttlh.lop_id)
+    svlop = Hssv.objects.filter(lop_id = ttlh.lop_id)
     mh = Monhoc.objects.get(id = ttlh.monhoc_id)
     dds = Diemdanh.objects.filter(lichhoc_id = lh_id).order_by('sv_id')
     lmh = LopMonhoc.objects.get(lop_id = ttlh.lop_id, monhoc_id =ttlh.monhoc_id)
-    #sv = Hssv.objects.filter(malop_id = ttlh.lop_id)
+    #sv = Hssv.objects.filter(lop_id = ttlh.lop_id)
     if request.method == "POST":
         for stud in svlop:
             id = "C"+str(stud.id)
@@ -1151,7 +1240,7 @@ def lop_monhoc(request, lop_id):
 def hv_hp81_list(request, sv_id):
         hp81s = Hp81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
         sv = Hssv.objects.get(id = sv_id)
-        lop_id = sv.malop_id
+        lop_id = sv.lop_id
         context = {
             "hp81s": hp81s,
             "sv": sv
@@ -1162,7 +1251,7 @@ def hv_hp81_list(request, sv_id):
 def hv_hs81_list(request, sv_id):
         hs81s = Hs81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
         sv = Hssv.objects.get(id = sv_id)
-        lop_id = sv.malop_id
+        lop_id = sv.lop_id
         context = {
             "hs81s": hs81s,
             "sv": sv
@@ -1295,8 +1384,8 @@ def create_ctdtmonhoc(request):
 @login_required
 #@permission_required('sms.add_lopmonhoc', raise_exception=True)
 def create_lopmonhoc(request, lop_id):
-    if not request.user.has_perm('sms.add_lopmonhoc'):
-        return HttpResponseForbidden("Bạn không có quyền thực hiện thao tác thêm môn học!")
+#    if not request.user.has_perm('sms.add_lopmonhoc'):
+#        return HttpResponseForbidden("Bạn không có quyền thực hiện thao tác thêm môn học!")
     if request.method == "POST":
         monhoc_id = request.POST.get('monhoc', None)
         if LopMonhoc.objects.filter(monhoc_id = monhoc_id, lop_id=lop_id).first():
@@ -1391,7 +1480,10 @@ def create_sv(request):
                 #uploaded_img.save()
                 forms.save()
                 messages.success(request, "Tạo mới học viên thành công!")
-                return redirect("svlop_list", forms.instance.malop_id)
+                if forms.instance.lop_id:
+                    return redirect("svlop_list", forms.instance.lop_id)
+                else:
+                    return redirect("sv_list")
     else:
         forms = CreateSv()
 
@@ -1663,7 +1755,7 @@ def edit_sv(request, sv_id):
 
     if request.method == "POST":
         edit_forms = CreateSv(request.POST, request.FILES or None, instance=sv)
-        lop_id = request.POST.get('malop', None)
+        #lop_id = request.POST.get('lop', None)
         #uploaded_file = UploadedFile.objects.get(pk=file_id)
         #response = HttpResponse(sv.image, content_type='application/force-download')
         #response['Content-Disposition'] = f'attachment; filename="{sv.image.name}"'
@@ -1672,9 +1764,11 @@ def edit_sv(request, sv_id):
         if edit_forms.is_valid():
             #uploaded_img = edit_forms.save(commit=False)
             #uploaded_img.image_data = edit_forms.cleaned_data['image'].file.read()
-            edit_forms.save()
+            sv = edit_forms.save()
             messages.success(request, "Edit Học viên Info Successfully!")
-            return redirect("svlop_list", lop_id)
+            if sv.lop:
+                return redirect("svlop_list", sv.lop.id)
+            return redirect("sv_list")
 
     context = {
         "forms": lh_forms,
@@ -1686,7 +1780,7 @@ def edit_sv(request, sv_id):
 @login_required
 def details_sv(request, sv_id):
     sv = Hssv.objects.get(id=sv_id)
-    lmh = LopMonhoc.objects.filter(lop_id = sv.malop_id).select_related("monhoc")
+    lmh = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc")
     dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
     #ld = Loaidiem.objects.all()
     hks = Hocky.objects.all()
@@ -1839,6 +1933,53 @@ def edit_lop(request, lop_id):
         "lhk": lhk
     }
     return render(request, "sms/edit_lop.html", context)
+
+@login_required
+def edit_lop_new(request, lop_id):
+    lop = Lop.objects.get(id=lop_id)
+    hk1 = LopHk.objects.get(lop_id=lop_id, hk_id=1)
+    hk2 = LopHk.objects.get(lop_id=lop_id, hk_id=2)
+    hk3 = LopHk.objects.get(lop_id=lop_id, hk_id=3)
+    hk4 = LopHk.objects.get(lop_id=lop_id, hk_id=4)
+    #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
+    lop_forms = CreateLop(instance=lop,prefix='formlop')
+    hk1_forms = CreateLopHk(instance=hk1,prefix='formhk1')
+    hk2_forms = CreateLopHk(instance=hk2,prefix="formhk2")
+    hk3_forms = CreateLopHk(instance=hk3,prefix="formhk3")
+    hk4_forms = CreateLopHk(instance=hk4,prefix="formhk4")
+
+    #lhk = LopHk.objects.select_related("hk").filter(lop_id=lop_id)
+
+    if request.method == "POST":
+        edit_flop = CreateLop(request.POST,request.FILES or None, instance=lop, prefix='formlop')
+        edit_fhk1 = CreateLopHk(request.POST,request.FILES or None, instance=hk1, prefix='formhk1')
+        edit_fhk2 = CreateLopHk(request.POST,request.FILES or None, instance=hk2, prefix='formhk2')
+        edit_fhk3 = CreateLopHk(request.POST,request.FILES or None, instance=hk3, prefix='formhk3')
+        edit_fhk4 = CreateLopHk(request.POST,request.FILES or None, instance=hk4, prefix='formhk4')
+
+        if edit_flop.is_valid():
+            edit_flop.save()
+            messages.success(request, "Cập nhật thông tin lớp thành công!")
+        if edit_fhk1.is_valid() and edit_fhk2.is_valid() and edit_fhk3.is_valid() and edit_fhk4.is_valid():
+            edit_fhk1.save()
+            edit_fhk2.save()
+            edit_fhk3.save()
+            edit_fhk4.save()
+            messages.success(request, "Cập nhật thông tin HK thành công!")
+        return redirect("lop_list")
+    context = {
+        "lop_forms": lop_forms,
+        "lop": lop,
+        "hk1": hk1,
+        "hk2": hk2,
+        "hk3": hk3,
+        "hk4": hk4,
+        "hk1_forms": hk1_forms,
+        "hk2_forms": hk2_forms,
+        "hk3_forms": hk3_forms,
+        "hk4_forms": hk4_forms,
+    }
+    return render(request, "sms/edit_lop-new.html", context)
 
 def edit_teacher(request, pk):
     teacher_edit = TeacherInfo.objects.get(id=pk)

@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save, post_delete
 from datetime import timedelta
+
 from simple_history.models import HistoricalRecords
 
 # Create your models here.
@@ -89,7 +90,6 @@ class Class(models.Model):
     def __str__(self):
         d = Dept.objects.get(name=self.dept)
         return '%s : %d %s' % (d.name, self.sem, self.section)
-
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)

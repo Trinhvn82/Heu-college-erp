@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Cập nhật môn học {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list'%}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lichhoclopmh_list' lmh.id%}">Lịch học</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Điểm danh</li>
+                </ol>
+            </div>
+        </div>
+
+        <form action="{% url 'diemdanh_list' ttlh.id%}" method="post">
+            {% csrf_token %}
+            <div class="card border-light shadow-sm mb-4">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                    <div class="card-body">
+                        <h6>Môn học: {{mh.ten}}</h6>
+                        <h6>Lịch học: {{ttlh.thoigian}}</h6>
+                        <div class="table-responsive">
+                        <table class="table table-centered mb-0 rounded">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã</th>
+                                    <th>Ten học vien</th>
+                                    <th>Sdt</th>
+                                    <th>Status</th>
+                                </tr>
+                </thead>
+                    <tbody>
+                        {% for ct in dds %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ ct.sv.msv }}</td>
+                            <td>{{ ct.sv.hoten }}</td>
+                            <td>{{ ct.sv.sdths }}</td>
+                            <td>
+                                {% if ct.status == 1 %}
+                                    <select name="C{{ ct.sv.id }}" class="col-md-2 mb-2 form-control" id="id_lop">
+                                        <option value="1" selected>Có mặt</option>
+                                        <option value="0">Vắng mặt</option>
+                                    </select>
+                                {% else %}
+                                    <select name="C{{ ct.sv.id }}" class="col-md-2 mb-2 form-control" id="id_lop">
+                                        <option value="1"></option>Có mặt</option>
+                                        <option value="0" selected>Vắng mặt</option>
+                                    </select>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+</tbody>
+                </table>
+
+                {{ transactions.pagination }}
+
+            </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+{% endblock content %}

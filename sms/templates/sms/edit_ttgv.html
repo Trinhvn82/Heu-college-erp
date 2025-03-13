@@ -46,17 +46,9 @@
                         <div class="row">
                             {% for field in forms %}
                             {% if field.name == 'gv' %}
-                                <input hidden type="text" name="gv" class="form-control" value="{{gv_id}}" required id="id_sogio">
+                                <input hidden type="text" name="gv" class="form-control" value="{{gv.id}}" id="id_sogio">
                             {% elif field.name == 'lopmh' %}
-                                <input hidden type="number" name="lopmh" class="form-control" value="{{lopmh_id}}" required id="id_sogio">
-                            {% elif field.name == 'image' %}
-                            <div class="col-md-6 mb-3">
-                                <div>
-                                    <label for="id_image">Ảnh:</label>
-                                    <input type="file" name="image" accept="image/*" id="id_image">   
-                                    <img src="/media/{{ img }}" width="500px"/>
-                                </div>
-                            </div>
+                                <input hidden type="number" name="lopmh" class="form-control" value="{{lmh.id}}" id="id_sogio">
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

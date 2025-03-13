@@ -1,6 +1,6 @@
 import psycopg2
 
-conn = psycopg2.connect(database="temp1",
+conn = psycopg2.connect(database="temp3",
                         host="localhost",
                         user="postgres",
                         password="123654",
@@ -48,7 +48,7 @@ ALTER COLUMN branch DROP NOT NULL,
 ALTER COLUMN thoihanhd DROP NOT NULL,
 ALTER COLUMN hsgv DROP NOT NULL
 """
-cursor.execute(query)
+#cursor.execute(query)
 
 #LopMonhoc
 
@@ -85,7 +85,6 @@ cursor.execute(query)
 
 query = """
 ALTER TABLE sms_hocphi
-ALTER COLUMN thoigian DROP NOT NULL,
 ALTER COLUMN sotien DROP NOT NULL,
 ALTER COLUMN ghichu DROP NOT NULL,
 ALTER COLUMN status DROP NOT NULL
@@ -95,7 +94,6 @@ cursor.execute(query)
 
 query = """
 ALTER TABLE sms_hp81
-ALTER COLUMN thoigian DROP NOT NULL,
 ALTER COLUMN sotien1 DROP NOT NULL,
 ALTER COLUMN sotien2 DROP NOT NULL,
 ALTER COLUMN ghichu DROP NOT NULL
@@ -144,7 +142,7 @@ ALTER COLUMN branch DROP NOT NULL,
 ALTER COLUMN thoihanhd DROP NOT NULL,
 ALTER COLUMN hsgv DROP NOT NULL
 """
-cursor.execute(query)
+#cursor.execute(query)
 
 #LopMonhoc
 
@@ -181,7 +179,6 @@ cursor.execute(query)
 
 query = """
 ALTER TABLE sms_historicalhocphi
-ALTER COLUMN thoigian DROP NOT NULL,
 ALTER COLUMN sotien DROP NOT NULL,
 ALTER COLUMN ghichu DROP NOT NULL,
 ALTER COLUMN status DROP NOT NULL
@@ -191,7 +188,6 @@ cursor.execute(query)
 
 query = """
 ALTER TABLE sms_historicalhp81
-ALTER COLUMN thoigian DROP NOT NULL,
 ALTER COLUMN sotien1 DROP NOT NULL,
 ALTER COLUMN sotien2 DROP NOT NULL,
 ALTER COLUMN ghichu DROP NOT NULL

@@ -20,7 +20,7 @@ urlpatterns = [
 
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),
-    path('export-sv/', views.export_sv, name='export_sv'),
+    path('export-sv/<int:lop_id>/', views.export_lopsv, name='export_lopsv'),
     path('import-gv/', views.import_gv, name='import_gv'),
     path('import-ns/', views.import_ns, name='import_ns'),
     path('export-gv/', views.export_gv, name='export_gv'),
@@ -31,6 +31,10 @@ urlpatterns = [
     path('report_kqht/', views_report.report_kqht, name='report_kqht',),
 
     path('export_hs81/', views_report.export_hs81, name='export_hs81'),
+    path('import_hs81/<int:lop_id>/', views_report.import_hs81, name='import_hs81'),
+    path('import_hp81/<int:lop_id>/', views_report.import_hp81, name='import_hp81'),
+    path('import_diemtp/<int:lmh_id>/<int:ld_id>/', views_report.import_diemtp, name='import_diemtp'),
+    path('import_edit_diemtp/<int:lmh_id>/<int:ld_id>/<int:log_id>/', views_report.import_edit_diemtp, name='import_edit_diemtp'),
  
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
     path('alllop/', views.lop_list, name='lop_list'),
@@ -64,6 +68,7 @@ urlpatterns = [
     path('CreateDiem/<int:lh_id>/', views.create_diem, name='create_diem'),
     path('CreateLop/', views.create_lop, name='create_lop'),
     path('EditLop/<int:lop_id>/', views.edit_lop, name='edit_lop'),
+    path('EditLop-new/<int:lop_id>/', views.edit_lop_new, name='edit_lop_new'),
     path('CreateSinhvien/', views.create_sv, name='create_sv'),
     path('EditSinhvien/<int:sv_id>/', views.edit_sv, name='edit_sv'),
     path('detailsSinhvien/<int:sv_id>/', views.details_sv, name='details_sv'),

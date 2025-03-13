@@ -124,7 +124,7 @@ def ctdt_chart(request):
                 inner join sms_lop l
                     on l.ctdt_id = c.id
                 inner join sms_hssv s
-                    on s.malop_id = l.id
+                    on s.lop_id = l.id
                 group by c.id
                 order by c.id
             """
@@ -152,10 +152,10 @@ def ctdt_chart(request):
 @login_required
 def hs_chart(request, lop, hk):
     query = """
-                select max(sv.id) as id, coalesce(hp.hs81_st,'Chưa nhập dữ liệu') as labels,count(coalesce(hp.hs81_st,'Chưa nhập dữ liệu')) as data from sms_hssv sv
-                left outer join public.sms_hp81 hp
-                    on sv.id = hp.sv_id and hp.hk_id=%s and sv.malop_id=%s
-                group by hp.hs81_st 
+                select max(sv.id) as id, coalesce(hs.status,'Chưa nhập dữ liệu') as labels,count(coalesce(hs.status,'Chưa nhập dữ liệu')) as data from sms_hssv sv
+                left outer join public.sms_hs81 hs
+                    on sv.id = hs.sv_id and hs.hk_id=%s and sv.lop_id=%s
+                group by hs.status
             """
 
     ctdts = RawRP.objects.raw(query,[hk, lop] )
@@ -187,7 +187,7 @@ def hp_chart(request, lop, hk):
                     (select sv_id, hk_id, st.ten from public.sms_hp81
                     inner join public.sms_hocphistatus st
                         on status_id = st.id) as hp
-                    on sv.id = hp.sv_id and hp.hk_id=%s and sv.malop_id=%s
+                    on sv.id = hp.sv_id and hp.hk_id=%s and sv.lop_id=%s
 				 group by hp.ten
             """
 
@@ -219,7 +219,7 @@ def lopsv_chart(request):
                 inner join sms_trungtam tt
                     on tt.id = l.trungtam_id
                 inner join sms_hssv s
-                    on s.malop_id = l.id
+                    on s.lop_id = l.id
                 group by l.trungtam_id
                 order by l.trungtam_id       
             """

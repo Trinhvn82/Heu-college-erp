@@ -10,7 +10,7 @@
 <script>
     $(document).ready(function() {
         $('#id_malop').select2();
-    });    
+    });
 </script>
 
     <main class="content">
@@ -36,7 +36,7 @@
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <form action="" enctype="multipart/form-data" method="post">
+                    <form action="" enctype="multipart/form-data" method="post" id="id_sv">
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
@@ -54,5 +54,8 @@
             </div>
         </div>
     </main>
-
+    <script>
+        document.querySelectorAll('#id_sv input, #id_sv select, #id_sv button, #id_sv textarea').forEach(elem => elem.disabled = true);    
+    </script>
+    
 {% endblock content %}

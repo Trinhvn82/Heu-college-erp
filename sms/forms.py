@@ -236,10 +236,11 @@ class CreateHp81(forms.ModelForm):
     class Meta:
         model = Hp81
         #fields = "__all__"
-        fields = ('hk','status', 'sotien1', 'sotien2', 'ghichu', 'sv')
+        fields = ('hk','status', 'thoigian', 'sotien1', 'sotien2', 'ghichu', 'sv')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'hk': 'Học kỳ',
+            'thoigian': 'Ngày thu',
             'status': 'Tình trạng học phí',
             'sotien1': 'Số tiền giải ngân dự kiến',
             'sotien2': 'Số tiền thực nhận từ học viên',
@@ -248,6 +249,7 @@ class CreateHp81(forms.ModelForm):
         }
         widgets = {
             'status': forms.Select(attrs={'class': 'form-control'}),
+            'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'sotien1': forms.NumberInput(attrs={'class': 'form-control'}),
             'sotien2': forms.NumberInput(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control'}),
@@ -263,7 +265,7 @@ class CreateHs81(forms.ModelForm):
     class Meta:
         model = Hs81
         #fields = "__all__"
-        fields = ('hk','status', 'thoigian', 'ddn', 'cntn','btn', 'xnct','cccd', 'cccdbo','cccdme', 'gks', 'sv')
+        fields = ('hk','status', 'thoigian', 'ddn', 'cntn','btn', 'xnct','cccd', 'cccdbo','cccdme', 'gks', 'ghichu','sv')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'hk': 'Học kỳ',
@@ -291,78 +293,125 @@ class CreateHs81(forms.ModelForm):
 class CreateSv(forms.ModelForm):
     class Meta:
         model = Hssv
-        #fields = "__all__"
-        fields = ('msv','hoten','malop', 'namsinh','gioitinh', 'dantoc','noisinh', 'quequan','diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph', 'status', 'ghichu')
+        fields = "__all__"
+        exclude = ['user',]
+        #fields = ('msv','hoten','malop', 'namsinh','gioitinh', 'dantoc','noisinh', 'quequan','diachi','xa','huyen','tinh', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph', 'status', 'ghichu')
         #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'msv': 'Mã học viên',
             'hoten': 'Họ tên',
-            'malop': 'Tên lớp',
+            'lop': 'Tên lớp',
             'namsinh': 'Năm sinh',
             'gioitinh': 'Gioi tính',
             'dantoc': 'Dân tộc',
             'noisinh': 'Nơi sinh',
             'quequan': 'Quê quán',
-            'diachi': 'Địa chỉ thương trú',
+            'diachi': 'Địa chỉ thường trú',
+            'xa': 'Xã',
+            'huyen': 'Huyện',
+            'tinh': 'Tỉnh',
             'cccd': 'CCCD',
             'hotenbo': 'Họ tên bố',
             'hotenme': 'Họ tên mẹ',
             'sdths': 'SĐT học sinh',
             'sdtph': 'SĐT phụ huynh',
-            'status': 'Trạng thái',
-            'ghichu': 'Ghi chú'
+            'status': 'Trạng thái học viên',
+            'hs_syll' : 'Sơ yếu lý lịch',
+            'hs_pxt' : 'Phiếu xét tuyển',
+            'hs_btn' : 'Bằng TN',
+            'hs_gcntttt' : 'Giay CNTTTT',
+            'hs_hbthcs' : 'Học bạ THCS',
+            'hs_cccd' : 'CCCD',
+            'hs_gks' : 'Giấy khai sinh',
+            'hs_shk' : 'Sổ HK',
+            'hs_a34' : 'Ảnh 3x4',
+            'hs_status': 'Trạng thái hồ sơ',
+            'ghichu': 'Ghi chú',
         }
         widgets = {
             'msv': forms.TextInput(attrs={'class': 'form-control'}),
             'hoten': forms.TextInput(attrs={'class': 'form-control'}),
-            'malop': forms.Select(attrs={'class': 'form-control'}),
+            'lop' : forms.Select(attrs={'class': 'form-control'}),
             'namsinh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
             'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
             'dantoc': forms.TextInput(attrs={'class': 'form-control'}),
             'noisinh': forms.TextInput(attrs={'class': 'form-control'}),
             'quequan': forms.TextInput(attrs={'class': 'form-control'}),
             'diachi': forms.TextInput(attrs={'class': 'form-control'}),
+            'xa': forms.TextInput(attrs={'class': 'form-control'}),
+            'huyen': forms.TextInput(attrs={'class': 'form-control'}),
+            'tinh': forms.TextInput(attrs={'class': 'form-control'}),
             'cccd': forms.TextInput(attrs={'class': 'form-control'}),
             'hotenbo': forms.TextInput(attrs={'class': 'form-control'}),
             'hotenme': forms.TextInput(attrs={'class': 'form-control'}),
             'sdths': forms.TextInput(attrs={'class': 'form-control'}),
             'sdtph': forms.TextInput(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
+            'hs_status' : forms.Select(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
         }
 
 class CreateGv(forms.ModelForm):
     class Meta:
         model = Hsgv
-        #fields = "__all__"
-        fields = ('ma', 'hoten','email','diachi', 'quequan','sdt', 'gioitinh','cccd', 'thoihanhd', 'hsgv')
-        
-        #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
-        #fields_required = ('lop','trungtam','thoigian','monhoc')
+        fields = "__all__"
+        exclude = ['user',]
         labels = {
             'ma': 'Mã',
-            'email': 'Email',
             'hoten': 'Họ tên',
-            'diachi': 'Đại chỉ',
-            'quequan': 'Quê quán',
-            'sdt': 'SDT',
-            'gioitinh': 'Giới tính',
+            'namsinh': 'Năm sinh',
             'cccd': 'CCCD',
-            'thoihanhd': 'Thời hạn hợp đồng',
-            'hsgv': 'Thông tin hồ sơ giáo viên'
+            'ngaycap': 'Ngày cáp',
+            'noicap': 'Nơi cấp',
+            'diachi': 'Địa chỉ',
+            'sdt': 'SĐT',
+            'email': 'Email',
+            'mst': 'Mã số thuế',
+            'bhxh': 'Mã số BHXH',
+            'dongbhxh': 'Nơi đóng BHXH',
+            'stk': 'STK',
+            'nh': 'Ngân hàng',
+            'cn': 'Chi nhánh',
+            'trinhdo': 'Trình độ',
+            'truongtn': 'Trường tốt nghiệp',
+            'nganhtn': 'Ngành tốt nghiệp',
+            'shdtg': 'Số HĐ Thỉnh giảng',
+            'ngayky': 'Ngày ký',
+            'ngayhh': 'Ngày hết hạn',
+            'hs_btn' : 'Bằng Tốt nghiệp',
+            'hs_bd' : 'Bảng điểm',
+            'hs_cc' : 'Chứng chỉ NVSP/dạy nghề',
+            'hs_syll' : 'Sơ yếu lý lịch',
+            'hs_ccta' : 'Chứng chỉ tiếng Anh',
+            'hs_ccth' : 'Chứng chỉ tin học',
+            'hs_status' : 'Tình trạng hồ sơ',
+            'ghichu' : 'Ghi chú',
         }
         widgets = {
             'ma': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.TextInput(attrs={'class': 'form-control'}),
             'hoten': forms.TextInput(attrs={'class': 'form-control'}),
-            'diachi': forms.TextInput(attrs={'class': 'form-control'}),
-            'quequan': forms.TextInput(attrs={'class': 'form-control'}),
-            'sdt': forms.TextInput(attrs={'class': 'form-control'}),
-            'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
+            'namsinh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
             'cccd': forms.TextInput(attrs={'class': 'form-control'}),
-            'thoihanhd': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
-            'hsgv': forms.Textarea(attrs={'class': 'form-control'}),
+            'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            'noicap': forms.TextInput(attrs={'class': 'form-control'}),
+            'diachi': forms.TextInput(attrs={'class': 'form-control'}),
+            'sdt': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.TextInput(attrs={'class': 'form-control'}),
+            'mst': forms.TextInput(attrs={'class': 'form-control'}),
+            'bhxh': forms.TextInput(attrs={'class': 'form-control'}),
+            'dongbhxh': forms.TextInput(attrs={'class': 'form-control'}),
+            'stk': forms.TextInput(attrs={'class': 'form-control'}),
+            'nh': forms.TextInput(attrs={'class': 'form-control'}),
+            'cn': forms.TextInput(attrs={'class': 'form-control'}),
+            'trinhdo': forms.Select(attrs={'class': 'form-control'}),
+            'truongtn': forms.TextInput(attrs={'class': 'form-control'}),
+            'nganhtn': forms.TextInput(attrs={'class': 'form-control'}),
+            'shdtg': forms.TextInput(attrs={'class': 'form-control'}),
+            'ngayky': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            'ngayhh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            'hs_status': forms.Select(attrs={'class': 'form-control'}),
+            'ghichu' : forms.Textarea(attrs={'class': 'form-control'}),
         }
 
 class CreateHocphi(forms.ModelForm):
