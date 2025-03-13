@@ -310,14 +310,14 @@ def import_diemtp(request, lmh_id, ld_id):
             if not v1 or not v2 or not v3:
                 messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
                 continue
-            if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id).exists():
+            if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id).exists():
                 messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
                 continue
             if not (v3 >=0 and v3<=10):
                 messages.error(request, 'Mã: ' + v1+ ' không có điểm')
                 continue
-            sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id)[0]
-            mark = Diemthanhphan(diem =v3, sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, status=1, log=log) 
+            sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id)[0]
+            mark = Diemthanhphan(diem =v3, sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, log=log) 
             #mark.log = log
             mark.save()
 

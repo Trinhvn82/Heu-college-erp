@@ -371,7 +371,7 @@ class Loaidiem(models.Model):
 
 class Diemthanhphan(models.Model):
     #ghichu = models.CharField(max_length=300)
-    diem = models.IntegerField()
+    diem = models.DecimalField(max_digits=5, decimal_places=1)
     status = models.IntegerField(default= 0)
     tp = models.ForeignKey(Loaidiem, on_delete=models.CASCADE)
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)

@@ -469,7 +469,7 @@ def create_diemtp(request, lmh_id, dtp_id):
     #tenlop = Lop.objects.get(id = lop_id).ma
     #tenmh = Monhoc.objects.get(id = mh_id).ten
 
-    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
@@ -489,7 +489,7 @@ def create_diemtp(request, lmh_id, dtp_id):
     log = LogDiem()
     log.save()
     for stud in stud_list:
-        mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log=log) 
+        mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log=log) 
         #mark.log = log
         mark.save()
     diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
@@ -512,7 +512,7 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
     #tenlop = Lop.objects.get(id = lop_id).ma
     #tenmh = Monhoc.objects.get(id = mh_id).ten
 
-    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
@@ -521,11 +521,12 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
         log.save()
         for stud in stud_list:
             id = "C"+str(stud.id)+"-"+str(dtp_id)
-            diem = request.POST[id]
-            mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
-            mark.diem = diem
-            mark.status = 1
-            mark.save()
+            if request.POST.get(id, False):
+                diem = request.POST.get(id, False)
+                mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log_id=log_id)
+                mark.diem = diem
+                mark.status = 1
+                mark.save()
         messages.success(request, "Cap nhat diem thanh cong!")
         return redirect("diemtp-lmh-lst", lmh_id)
 
@@ -533,7 +534,7 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
     #create mark record
     log = LogDiem(id = log_id)
     #log.save()
-    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc.id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
 
     context = {
         "diems": diems,
