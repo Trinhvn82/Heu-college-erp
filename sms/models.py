@@ -82,6 +82,11 @@ class Monhoc(models.Model):
     sogio_kt = models.IntegerField(null=True)
     history = HistoricalRecords()
  
+    class Meta:
+        verbose_name = "Môn học"
+        verbose_name_plural = "Môn học"
+        ordering = ["-id"]
+
     def __str__(self):
         #return self.ten
         return self.chuongtrinh +': ' + self.ma + '-' + self.ten
@@ -99,6 +104,11 @@ class Ctdt(models.Model):
     khoahoc = models.IntegerField()
     history = HistoricalRecords()
  
+    class Meta:
+        verbose_name = "Danh mục CTĐT"
+        verbose_name_plural = "Danh mục CTĐT"
+        ordering = ["-id"]
+
     def __str__(self):
         return self.ten
 
@@ -240,8 +250,14 @@ class CtdtMonhoc(models.Model):
     ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Chương trình đào tạo môn học"
+        verbose_name_plural = "Chương trình đào tạo môn học"
+        ordering = ["id"]
+
     def __str__(self):
-        return self.hocky
+        return self.ctdt.ten
     
 class NsLop(models.Model):
     ns = models.ForeignKey(Hsns, on_delete=models.CASCADE)

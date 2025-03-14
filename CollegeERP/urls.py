@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('heuadmin/', admin.site.urls),
     path('', include('sms.urls')),
 #    path('info/', include('info.urls')),
     path('shop/', include('shop.urls')),
