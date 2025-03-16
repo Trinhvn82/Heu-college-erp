@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-from sms.models import Hsns
+from sms.models import Hsns, Hsgv
 
 
 User = get_user_model()
@@ -427,24 +427,25 @@ def add_student(request):
     return render(request, 'info/add_student.html', context)
 
 @login_required()
-def add_nsuser(request, id):
+def add_gvuser(request, id):
     if not request.user.is_superuser:
         return redirect("/")
-    ns = Hsns.objects.get(id = id)
+    gv = Hsgv.objects.get(id = id)
     # Check if username already exists
-    if User.objects.filter(username=ns.ma).exists():
+    if User.objects.filter(username="gv_"+gv.ma).exists():
         messages.error(request, 'Username already exists')
         return redirect('ns_list')    
     
     user = User.objects.create_user(
-        username=ns.ma,
-        password=ns.ma + '@123654'
+        username="gv_"+gv.ma,
+        first_name = gv.hoten,
+        password=gv.ma + '@123654'
     )
     user.save()
-    ns.user = user
-    ns.save()
-    messages.success(request, "Tạo tài khoản cho " + ns.hoten + " thành công")
-    return redirect("ns_list")
+    gv.user = user
+    gv.save()
+    messages.success(request, "Tạo tài khoản cho " + gv.hoten + " thành công")
+    return redirect("gv_list")
 
 @login_required()
 def reset_pwd(request, ns_id):
@@ -452,13 +453,25 @@ def reset_pwd(request, ns_id):
         return redirect("/")
     ns = Hsns.objects.get(id = ns_id)
     # Check if username already exists
-    if User.objects.filter(username=ns.ma).exists():
-        user = User.objects.get(username=ns.ma)
-        user.set_password(ns.ma + '@123654')
-        user.save()    
+    if ns.user:
+        ns.user.set_password(ns.ma + '@123654')
+        ns.user.save()    
         messages.success(request, "Reset password thành công!")
         return redirect('ns_list')    
     return redirect("ns_list")
+
+@login_required()
+def reset_pwd_gv(request, gv_id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    gv = Hsgv.objects.get(id = gv_id)
+    # Check if username already exists
+    if gv.user:
+        gv.user.set_password(gv.ma + '@123654')
+        gv.user.save()    
+        messages.success(request, "Reset password thành công!")
+        return redirect('gv_list')    
+    return redirect("gv_list")
 
 @login_required()
 def add_nsuser(request, id):
@@ -466,12 +479,12 @@ def add_nsuser(request, id):
         return redirect("/")
     ns = Hsns.objects.get(id = id)
     # Check if username already exists
-    if User.objects.filter(username=ns.ma).exists():
+    if User.objects.filter(username="ns_" +ns.ma).exists():
         messages.error(request, 'Username already exists')
         return redirect('ns_list')    
     
     user = User.objects.create_user(
-        username=ns.ma,
+        username="ns_" +ns.ma,
         first_name = ns.hoten,
         password=ns.ma + '@123654'
     )

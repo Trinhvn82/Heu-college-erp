@@ -130,26 +130,22 @@ class CreateLopMonhoc(forms.ModelForm):
     class Meta:
         model = LopMonhoc
         #fields = "__all__"
-        fields = ('lop','hk','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4')
+        fields = ('lop','hk','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4', 'hsdt5', 'hsdt6', 'hsdt7', 'hsdt')
         labels = {
             'hk': 'Học kỳ',
             'monhoc': 'Môn học',
             'ngaystart': 'Ngày bắt đầu',
             'ngayend': 'Ngày kết thúc',
             'status': 'Trạng thái',
-            'hsdt1': 'Tên hồ sơ đào tạo 1',
-            'hsdt2': 'Tên hồ sơ đào tạo 2',
-            'hsdt3': 'Tên hồ sơ đào tạo 3',
-            'hsdt4': 'Tên hồ sơ đào tạo 4',
         }
         widgets = {
-            'lop': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
+            'lop': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Lớp'}),
             'hk': forms.Select(attrs={'class': 'form-control'}),
             'monhoc': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'ngaystart': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'ngayend': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'hsdt': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
+            'hsdt': forms.Textarea(attrs={'class': 'form-control'}),
        }
         
 class CreateDiemdanh(forms.ModelForm):

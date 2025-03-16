@@ -32,7 +32,7 @@ import pandas as pd
 from django.http import HttpResponseForbidden,HttpResponse
 
 
-#@login_required
+@login_required
 def index(request):
     if request.user.is_superuser or request.user.is_supervisor:
         return redirect("shop-statistics")

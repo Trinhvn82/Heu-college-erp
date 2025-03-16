@@ -85,6 +85,48 @@ class Hocky(models.Model):
     def __str__(self):
         return self.ten
 
+class HeDT(models.Model):
+    ma = models.IntegerField(default= 1)
+    ten = models.CharField(max_length=20)
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Hệ đào tạo"
+        verbose_name_plural = "Danh mục Hệ đào tạo"
+        unique_together = ('ma',)
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.ten
+
+class Khoahoc(models.Model):
+    ma = models.IntegerField(default= 1)
+    ten = models.CharField(max_length=20)
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Khóa học"
+        verbose_name_plural = "Danh mục Khóa học"
+        unique_together = ('ma',)
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.ten
+
+class Nganh(models.Model):
+    ma = models.IntegerField(default= 1)
+    ten = models.CharField(max_length=20)
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Ngành đào tạo"
+        verbose_name_plural = "Danh mục Ngành đào tạo"
+        unique_together = ('ma',)
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.ten
+
 class Monhoc(models.Model):
     ma = models.CharField(max_length=100)
     ten = models.CharField(max_length=100)
@@ -381,11 +423,14 @@ class LopMonhoc(models.Model):
     hk = models.ForeignKey(Hocky, on_delete=models.CASCADE, default= 1)
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    hsdt = models.TextField(max_length=500, default= "", blank= True, null=True, verbose_name="Hồ sơ đào tạo")
-    hsdt1 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 1")
-    hsdt2 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 2")
-    hsdt3 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 3")   
-    hsdt4 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 4")
+    hsdt = models.TextField(max_length=500, default= "", blank= True, null=True, verbose_name="Ghi chú Xác nhận giảng dạy")
+    hsdt1 = models.BooleanField(default= False, verbose_name="Tiến độ, kế hoạch, CTĐT")
+    hsdt2 = models.BooleanField(default= False, verbose_name="Phiếu báo giảng")
+    hsdt3 = models.BooleanField(default= False, verbose_name="Giáo án")   
+    hsdt4 = models.BooleanField(default= False, verbose_name="Sổ tay giảng viên")
+    hsdt5 = models.BooleanField(default= False, verbose_name="Danh sách học sinh ký thi")
+    hsdt6 = models.BooleanField(default= False, verbose_name="Bài thi")   
+    hsdt7 = models.BooleanField(default= False, verbose_name="Đề thi/đáp án")
     history = HistoricalRecords()
 
     class Meta:

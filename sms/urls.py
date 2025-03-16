@@ -1,8 +1,7 @@
 from django.urls import path, include
 from . import views, views_report
 from django.contrib import admin
-from info.views import add_nsuser, reset_pwd, user_changepwd, ns_quyen
-
+from info.views import add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -109,6 +108,10 @@ urlpatterns = [
 
     path('add-ns/<int:id>/', add_nsuser, name='add_ns'),
     path('resetpwd/<int:ns_id>/', reset_pwd, name='reset_pwd'),
+
+    path('add-gv/<int:id>/', add_gvuser, name='add_gv'),
+    path('resetpwd-gv/<int:gv_id>/', reset_pwd_gv, name='reset_pwd_gv'),
+
     path('changepwd/', user_changepwd, name='changepwd'),
 ]
 admin.site.site_url = None

@@ -64,7 +64,13 @@
                         <tbody>
                             {% for teacher in teachers %}
                             <tr>
-                                <td>{{ teacher.ma }}</td>
+                                <td>
+                                {% if teacher.user %}
+                                    <span class="font-weight-bold text-success">{{ teacher.ma }}</span>
+                                {%else%}
+                                    <span class="font-weight-bold">{{ teacher.ma }}</span>
+                                {%endif%}
+                                </td>
                                 <td>{{ teacher.hoten }}</td>
                                 <td>{{ teacher.sdt }}</td>
                                 <td>
@@ -91,7 +97,18 @@
                                             href="{% url 'details_gv' teacher.id %}">
                                              <span class="fas fa-edit mr-2"></span>Qúa trình giảng dạy
                                          </a>
-                                         <a class="dropdown-item text-danger delete_item"
+                                         {% if teacher.user %}
+                                         <a class="dropdown-item edit_item"
+                                             href="{% url 'reset_pwd_gv' teacher.id%}">
+                                              <span class="fas fa-edit mr-2"></span>Reset Password
+                                         </a>
+                                         {%else%}
+                                         <a class="dropdown-item edit_item"
+                                             href="{% url 'add_gv' teacher.id%}">
+                                              <span class="fas fa-edit mr-2"></span>Tạo user
+                                         </a>
+                                         {%endif%}
+                                      <a class="dropdown-item text-danger delete_item"
                                                data-href="">
                                                 <span class="fas fa-trash-alt mr-2"></span>Remove
                                             </a>

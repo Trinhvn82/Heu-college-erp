@@ -4,7 +4,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from sms.models import Lop
 from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, LopMonhoc, Hp81
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk, Phong, Trungtam, LogDiem, NsLop, NsPhong
+from .models import LopHk, Phong, Trungtam, LogDiem, NsLop, NsPhong,HeDT,Khoahoc,Nganh
 
 # tickets/admin.py
 
@@ -147,12 +147,18 @@ admin.site.register(Hp81, SimpleHistoryAdmin)
 admin.site.register(Diemthanhphan, DiemTPAdmin)
 admin.site.register(LopHk, LopHKAdmin)
 #admin.site.register(Hocphi, SimpleHistoryAdmin)
-admin.site.register(SvStatus, DanhmucAdmin)
+admin.site.register(Loaidiem, LoaiDiemAdmin)
+
 admin.site.register(Hocky, DanhmucAdmin)
 admin.site.register(HocphiStatus, DanhmucAdmin)
-admin.site.register(Loaidiem, LoaiDiemAdmin)
+admin.site.register(SvStatus, DanhmucAdmin)
 admin.site.register(Phong, DanhmucAdmin)
+
+admin.site.register(HeDT, DanhmucAdmin)
 admin.site.register(Trungtam, DanhmucAdmin)
+admin.site.register(Khoahoc, DanhmucAdmin)
+admin.site.register(Nganh, DanhmucAdmin)
+
 admin.site.register(LogDiem, SimpleHistoryAdmin)
 
 #admin.site.register(Purchase)
