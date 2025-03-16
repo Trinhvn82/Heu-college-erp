@@ -196,10 +196,7 @@ def lichhoc_lopmh(request, lopmh_id):
 
     context = {
         "lh": paged_students,
-        "lopmh_id": lopmh_id,
-        "lop_id": lmh.lop_id,
-        "monhoc_id": lmh.monhoc_id,
-        "monhoc": lmh.monhoc.ten
+        "lmh": lmh,
     }
     return render(request, "sms/lichhoc-lopmh_list.html", context)
 @login_required
@@ -1441,8 +1438,7 @@ def create_lichhoclm(request, lopmh_id):
     forms = CreateLichhoc()
     context = {
         "forms": forms,
-        "lop_id": lmh.lop_id,
-        "monhoc_id": lmh.monhoc_id
+        "lmh": lmh
     }
     return render(request, "sms/create_lichhoclm.html", context)
 
@@ -1803,7 +1799,7 @@ def history_lopmonhoc(request, lmh_id):
 @login_required
 def edit_lichhoc(request, lh_id):
     lh = Lichhoc.objects.get(id=lh_id)
-    lmh_id = LopMonhoc.objects.get(lop_id=lh.lop_id, monhoc_id=lh.monhoc_id).id
+    lmh = LopMonhoc.objects.filter(lop_id=lh.lop_id, monhoc_id=lh.monhoc_id).select_related("lop", "monhoc")[0]
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateLichhoc(instance=lh)
 
@@ -1813,13 +1809,11 @@ def edit_lichhoc(request, lh_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Mon hoc Info Successfully!")
-            return redirect("lichhoclopmh_list", lmh_id)
+            return redirect("lichhoclopmh_list", lmh.id)
 
     context = {
         "forms": lh_forms,
-        "lop_id": lh.lop_id,
-        "monhoc_id": lh.monhoc_id
-#        "monhoc_id": monhoc_id
+        "lmh": lmh
     }
     return render(request, "sms/edit_lichhoc.html", context)
 @login_required

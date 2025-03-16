@@ -28,7 +28,8 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lichhoclopmh_list' lmh.id%}">Lịch học</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Tạo lịch học</li>
                 </ol>
         </div>
@@ -42,9 +43,9 @@
                         <div class="row">
                             {% for field in forms %}
                             {% if field.name == 'lop' %}
-                                <input hidden type="number" name="lop" class="form-control" value="{{lop_id}}" id="id_sogio">
+                                <input hidden type="number" name="lop" class="form-control" value="{{lmh.lop_id}}" id="id_sogio">
                             {% elif field.name == 'monhoc' %}
-                                <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" id="id_sogio">
+                                <input hidden type="number" name="monhoc" class="form-control" value="{{lmh.monhoc_id}}" id="id_sogio">
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
