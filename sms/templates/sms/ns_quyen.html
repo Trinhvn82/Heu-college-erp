@@ -20,14 +20,13 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'ns_list' %}">Thông tin nhân sự</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Gán lớp</li>
+                    <li class="breadcrumb-item active" aria-current="page">Gán quyền</li>
                 </ol>
             </div>
         </div>
 
-        <h6>Tên nhân sự: {{ns.hoten}}</h6>
-        <div class="card border-light shadow-sm mb-4">
-                <form action="{% url 'ns_lop' ns.id %}" method="post">
+            <div class="card border-light shadow-sm mb-4">
+                <form action="{% url 'ns_quyen' ns_id %}" method="post">
                     {% csrf_token %}
                     <div class="card-body">
                         <div class="table-responsive">
@@ -35,36 +34,32 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th>STT</th>
-                                    <th>Trung tâm</th>
-                                    <th>Mã Lớp</th>
-                                    <th>Tên Lớp</th>
-                                    <th>Tình trạng</th>
+                                    <th>Tên nhóm quyền</th>
+                                    <th>Gán quyền</th>
                                 </tr>
                             </thead>
                     <tbody>
-                        {% for nl in nls %}
+                        {% for gr in groups %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ nl.lop.trungtam }}</td>
-                            <td>{{ nl.lop.ma }}</td>
-                            <td>{{ nl.lop.ten }}</td>
+                            <td>{{ gr.name }}</td>
                             <td>
                                 <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                    {% if nl.status == 1 %}
+                                    {% if gr.status == 1 %}
                                     <label class="btn btn-success">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1" checked> Có
+                                        <input type="radio" name="C{{ gr.id }}" id="option1" autocomplete="off" value="1" checked> Có
                                     </label>
 
                                     <label class="btn btn-danger">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0"> Không
+                                        <input type="radio" name="C{{ gr.id }}" id="option2" autocomplete="off" value="0"> Không
                                     </label>
                                     {% else %}
                                     <label class="btn btn-outline-success">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1"> Có
+                                        <input type="radio" name="C{{ gr.id }}" id="option1" autocomplete="off" value="1"> Có
                                     </label>
 
                                     <label class="btn btn-outline-danger active">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0" checked> Không
+                                        <input type="radio" name="C{{ gr.id }}" id="option2" autocomplete="off" value="0" checked> Không
                                     </label>
                                     {% endif %}
                                 </div>

@@ -38,7 +38,7 @@
             <div class="col-12">
                 <h6>Mã giáo viên: {{ma}}</h6>
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <form action="" method="post">
+                    <form action="" method="post" {% if not perms.sms.change_hsgv %} id ="id_disabled" {% endif %}>
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
@@ -62,4 +62,9 @@
             </div>
         </div>
     </main>
+    <script>
+        document.querySelectorAll('#id_disabled input, #id_disabled select, #id_disabled button, #id_disabled textarea').forEach(elem => elem.disabled = true);    
+        document.querySelectorAll('#id_disabled button').forEach(elem => elem.hidden = true);    
+    </script>
+    
 {% endblock content %}

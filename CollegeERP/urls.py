@@ -2,10 +2,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
+admin.site.site_title = "TicketsPlus site admin"
+admin.site.site_header = "TicketsPlus administration"
+admin.site.index_title = "Site administration"
+
+
 urlpatterns = [
     path('heuadmin/', admin.site.urls),
     path('', include('sms.urls')),
-#    path('info/', include('info.urls')),
+    path('info/', include('info.urls')),
     path('shop/', include('shop.urls')),
     path('sms/', include('sms.urls')),
     path('dashboard/', include('dashboard.urls')),

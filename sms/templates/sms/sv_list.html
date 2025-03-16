@@ -22,7 +22,7 @@
             <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item active" aria-current="page">TThông tin học viên</li>
+                    <li class="breadcrumb-item active" aria-current="page">Thông tin học viên</li>
                 </ol>
             </div>
         </div>
@@ -108,6 +108,7 @@
                             </table>
                 </div>
             </div>
+            {% if perms.sms.add_hssv %}
             <div class="card-body">
                 <a href="{% url 'create_sv' %}">
                     <button type="button" class="btn btn-primary">
@@ -120,6 +121,7 @@
                 </a>
 
             </div>
+            {% endif %}
         </div>
 
 

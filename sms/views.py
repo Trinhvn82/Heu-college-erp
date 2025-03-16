@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop
+from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop, GvLop, GvMonhoc
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -34,10 +34,17 @@ from django.http import HttpResponseForbidden,HttpResponse
 
 #@login_required
 def index(request):
-    #if request.user.is_teacher:
-    #if request.user:
+    if request.user.is_superuser or request.user.is_supervisor:
+        return redirect("shop-statistics")
+    elif request.user.is_phr:
+        return redirect("gv_list")
+    elif request.user.is_pctsv:
+        return redirect("sv_list")
+    elif request.user.is_internalstaff:
+        return redirect("lop_list")
+     #if request.user:
         #return render(request, 'sms/lop-list.html')
-    return redirect("shop-statistics")
+        return redirect("shop-statistics")
     #return render(request, 'info/logout.html')
 
 # Teacher Views
@@ -1035,16 +1042,19 @@ def export_lh(request):
 
 @login_required
 def lop_list(request):
-    #if not request.user.username:
-    #    messages.error(request, "Login required")
-    #    return redirect("login")
-    #from django.contrib.auth.models import User
 
-    #user = User.objects.all()
-    #user = User.objects.create_user(username='john',
-    #                             email='jlennon@beatles.com',
-    #                             password='glass onion')
-    lop = Lop.objects.all().select_related("ctdt").order_by('id')
+    if request.user.is_superuser or request.user.is_supervisor:
+        lop = Lop.objects.all().select_related("ctdt").order_by('id')
+    elif request.user.is_internalstaff:
+
+        ns = Hsns.objects.get(user_id = request.user.id)
+
+        nl = NsLop.objects.filter(ns_id = ns.id, status = 1)
+        #gvs = Hsgv.objects.filter(id__in = lh.values_list('giaovien_id', flat=True))
+        lop = Lop.objects.filter(id__in=[ns.lop_id for ns in nl]).select_related("ctdt").order_by('id')
+    else:
+        return HttpResponseForbidden("Bạn không có quyền truy cập trang này")
+
     print(Lop.history.all())
     #print(request.user.username)
     paginator = Paginator(lop, 20)
@@ -1155,7 +1165,7 @@ def ctdt_monhoc(request, ctdt_id):
 
     for mh in mhs:
         if not CtdtMonhoc.objects.filter(ctdt_id = ctdt_id, monhoc_id = mh.id).first():
-            dd = CtdtMonhoc(ctdt_id = ctdt_id, monhoc_id = mh.id, hocky=1)
+            dd = CtdtMonhoc(ctdt_id = ctdt_id, monhoc_id = mh.id)
             dd.save()
 
     cms = CtdtMonhoc.objects.filter(ctdt_id = ctdt_id).select_related("monhoc").order_by('monhoc_id')
@@ -1167,6 +1177,8 @@ def ctdt_monhoc(request, ctdt_id):
 
 @login_required
 def ns_lop(request, ns_id):
+
+    ns = Hsns.objects.get(id = ns_id)
     ls = Lop.objects.all()
     nls = NsLop.objects.filter(ns_id = ns_id).order_by('lop_id')
     if request.method == "POST":
@@ -1188,7 +1200,6 @@ def ns_lop(request, ns_id):
         messages.success(request, "Cập nhật lớp thành công!")
         return redirect("ns_list")
 
-
     for l in ls:
         if not NsLop.objects.filter(ns_id = ns_id, lop_id = l.id).first():
             dd = NsLop(ns_id = ns_id, lop_id = l.id)
@@ -1196,10 +1207,80 @@ def ns_lop(request, ns_id):
 
     nls = NsLop.objects.filter(ns_id = ns_id).select_related("lop").order_by('lop_id')
     context = {
-        "ns_id": ns_id,
+        "ns": ns,
         "nls": nls
     }
     return render(request, "sms/ns_lop.html", context)
+
+@login_required
+def gv_lop(request, gv_id):
+    ls = Lop.objects.all()
+    nls = GvLop.objects.filter(gv_id = gv_id).order_by('lop_id')
+    if request.method == "POST":
+        for l in ls:
+            id = "C"+str(l.id)
+            status = request.POST[id]
+            print(id)
+            print(status)
+            nl = GvLop.objects.get(gv_id = gv_id, lop_id = l.id)
+            nl.status=status
+            nl.save() 
+        #     id = "C"+str(stud.id)
+        #     status = request.POST[id]
+        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
+        #     dd.status=status
+        #     dd.save() 
+        # ttlh.status=1
+        # ttlh.save()
+        messages.success(request, "Cập nhật lớp thành công!")
+        return redirect("gv_list")
+
+    for l in ls:
+        if not GvLop.objects.filter(gv_id = gv_id, lop_id = l.id).first():
+            dd = GvLop(gv_id = gv_id, lop_id = l.id)
+            dd.save()
+
+    gls = GvLop.objects.filter(gv_id = gv_id).select_related("lop").order_by('lop_id')
+    context = {
+        "gv_id": gv_id,
+        "gls": gls
+    }
+    return render(request, "sms/gv_lop.html", context)
+
+@login_required
+def gv_monhoc(request, gv_id):
+    mhs = Monhoc.objects.all()
+    nls = GvMonhoc.objects.filter(gv_id = gv_id).order_by('monhoc_id')
+    if request.method == "POST":
+        for mh in mhs:
+            id = "C"+str(mh.id)
+            status = request.POST[id]
+            print(id)
+            print(status)
+            gmh = GvMonhoc.objects.get(gv_id = gv_id, monhoc_id = mh.id)
+            gmh.status=status
+            gmh.save() 
+        #     id = "C"+str(stud.id)
+        #     status = request.POST[id]
+        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
+        #     dd.status=status
+        #     dd.save() 
+        # ttlh.status=1
+        # ttlh.save()
+        messages.success(request, "Cập nhật môn học thành công!")
+        return redirect("gv_list")
+
+    for mh in mhs:
+        if not GvMonhoc.objects.filter(gv_id = gv_id, monhoc_id = mh.id).first():
+            dd = GvMonhoc(gv_id = gv_id, monhoc_id = mh.id)
+            dd.save()
+
+    gms = GvMonhoc.objects.filter(gv_id = gv_id).select_related("monhoc").order_by('monhoc_id')
+    context = {
+        "gv_id": gv_id,
+        "gms": gms
+    }
+    return render(request, "sms/gv_monhoc.html", context)
 
 @login_required
 def single_ctdtmonhoc_old(request, ctdt_id):

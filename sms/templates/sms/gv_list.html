@@ -77,7 +77,15 @@
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'edit_gv' teacher.id%}">
-                                                <span class="fas fa-edit mr-2"></span>Edit
+                                                <span class="fas fa-edit mr-2"></span>Cập nhật
+                                            </a>
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'gv_lop' teacher.id%}">
+                                                 <span class="fas fa-edit mr-2"></span>Gán Lớp
+                                            </a>
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'gv_monhoc' teacher.id%}">
+                                                <span class="fas fa-edit mr-2"></span>Gán Môn học
                                             </a>
                                             <a class="dropdown-item edit_item"
                                             href="{% url 'details_gv' teacher.id %}">
@@ -97,12 +105,15 @@
                 </div>
 
             </div>
+            {% if perms.sms.add_hsgv %}
             <div class="card-body">
                 <a href="{% url 'create_gv' %}">
                 <button type="button" class="btn btn-primary">Thêm giáo viên</button>
             </a>
-        </div>
+            </div>
+            {% endif %}
     </div>
+        {% if perms.sms.add_hsgv %}
 
         <div class="row item-row">
             <div class="col-12">
@@ -125,7 +136,7 @@
                 </div>
             </div>
         </div>
-
+        {% endif %}
         
         <div class="row">
             <div class="col-md-12">

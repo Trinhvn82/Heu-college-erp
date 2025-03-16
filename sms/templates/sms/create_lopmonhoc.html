@@ -37,7 +37,7 @@
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <form action="" method="post" {% if 'sms.add_lopmonhoc' not in perms %} id ="id_disabled" {% endif %}>
+                    <form action="" method="post" >
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
@@ -56,7 +56,7 @@
                     
                                 </div>
                             </div>
-                            {% elif field.name == 'ngaystart' or field.name == 'ngayend' or field.name == 'status'%}
+                            {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
                                 </div>
@@ -72,9 +72,5 @@
             </div>
         </div>
     </main>
-    <script>
-        document.querySelectorAll('#id_disabled input, #id_disabled select, #id_disabled button, #id_disabled textarea').forEach(elem => elem.disabled = true);    
-        document.querySelectorAll('#id_disabled button').forEach(elem => elem.hidden = true);    
-    </script>
 
 {% endblock content %}

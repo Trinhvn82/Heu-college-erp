@@ -92,9 +92,13 @@
                                             </a>
                                             <a class="dropdown-item edit_item"
                                                 href="{% url 'ns_lop' ns.id%}">
-                                                 <span class="fas fa-edit mr-2"></span>Gán lớp
+                                                 <span class="fas fa-edit mr-2"></span>Gán Lớp
                                             </a>
                                             {% if ns.user %}
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'ns_quyen' ns.id%}">
+                                                <span class="fas fa-edit mr-2"></span>Gán quyền
+                                            </a>
                                             <a class="dropdown-item edit_item"
                                                 href="{% url 'reset_pwd' ns.id%}">
                                                  <span class="fas fa-edit mr-2"></span>Reset Password
@@ -119,13 +123,16 @@
                 </div>
 
             </div>
+            {% if perms.sms.add_hsns %}
             <div class="card-body">
                 <a href="{% url 'create_ns' %}">
-                <button type="button" class="btn btn-primary">Thêm nhân sự</button>
-                </a>    
+                    <button type="button" class="btn btn-primary">Tạo mới</button>
+                </a>
             </div>
+            {% endif %}
         </div>
 
+        {% if perms.sms.add_hsns %}
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
@@ -147,7 +154,7 @@
                 </div>
             </div>
         </div>
-
+        {% endif %}
         
         <div class="row">
             <div class="col-md-12">

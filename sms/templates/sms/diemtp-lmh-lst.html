@@ -53,6 +53,7 @@
                             <td></td>
                             
                             <td>
+                                {% if perms.sms.add_diemthanhphan %}
                                 {% if not ld.log or ld.trunglap > 0%}
                                 <!-- <a href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}">
                                     <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
@@ -84,6 +85,7 @@
                                     </div>
                                 </div>
                                 {% endif%}
+                                {% endif%}
                             </td>
                         </tr>
                         {% for log in ld.log %}
@@ -95,6 +97,8 @@
                             <td>{{ log.capnhat_at|date:'Y-m-d H:i' }}</td>
                             
                             <td>
+                                {% if perms.sms.change_diemthanhphan %}
+
                                 <!-- <a href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}">
                                     <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
                                 </a>
@@ -122,6 +126,7 @@
                                         </a>
                                     </div>
                                 </div>
+                                {% endif%}
                             </td>
                         </tr>
                         {% endfor %}

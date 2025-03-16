@@ -472,6 +472,7 @@ def add_nsuser(request, id):
     
     user = User.objects.create_user(
         username=ns.ma,
+        first_name = ns.hoten,
         password=ns.ma + '@123654'
     )
     user.save()
@@ -490,3 +491,99 @@ def user_changepwd(request):
         messages.success(request, "Thay doi password thanh cong!")
         return redirect("lop_list")
     return render(request, "sms/changepwd.html")
+
+@login_required
+def ns_quyen(request, ns_id):
+    from django.contrib.auth.models import Group
+
+    ns = Hsns.objects.get(id = ns_id)
+    user = User.objects.get(id=ns.user_id)
+    groups = Group.objects.all()
+    if request.method == "POST":
+        for gr in groups:
+            id = "C"+str(gr.id)
+            print(id)
+            print(request.POST[id])
+            if request.POST[id] == "1" :
+                user.groups.add(gr)
+                print(id)
+                print("add group")
+            else:
+                user.groups.remove(gr)
+                print(id)
+                print("remove group")
+        
+        #     id = "C"+str(stud.id)
+        #     status = request.POST[id]
+        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
+        #     dd.status=status
+        #     dd.save() 
+        # ttlh.status=1
+        # ttlh.save()
+        messages.success(request, "Cập nhật lớp thành công!")
+        return redirect("ns_list")
+    lol=[]
+    for gr in groups:
+        if user.groups.filter(name = gr.name).exists():
+            lol.append({ "name":gr.name,"status": 1})
+            gr.status = 1
+        else:
+            gr.status = 0
+            lol.append({ "name":gr.name,"status": 0})
+
+    #groups = Group.objects.all()
+    context = {
+        "ns_id": ns_id,
+        "groups": groups
+    }
+    return render(request, "sms/ns_quyen.html", context)
+
+@login_required
+def add_groups(request):
+    from django.contrib.auth.models import Group
+    from django.contrib.auth.models import Permission
+
+    group = Group.objects.create(name = "CTSV Test")
+
+    permission = Permission.objects.get(codename='add_hssv')
+    group.permissions.add(permission)
+    
+    group.save()
+
+    group = Group.objects.create(name = "Đào tạo Test")
+
+    permission = Permission.objects.get(codename='add_lichhoc')
+    group.permissions.add(permission)
+    
+    permission = Permission.objects.get(codename='add_lopmonhoc')
+    group.permissions.add(permission)
+
+    group.save()
+
+    group = Group.objects.create(name = "Kê toán Test")
+
+    permission = Permission.objects.get(codename='add_hp81')
+    group.permissions.add(permission)
+    
+
+    group.save()
+
+    group = Group.objects.create(name = "Nhân sự Test")
+
+    permission = Permission.objects.get(codename='add_hsgv')
+    group.permissions.add(permission)
+    
+
+    group.save()
+
+    group = Group.objects.create(name = "Giao viên Test")
+
+    permission = Permission.objects.get(codename='add_diemdanh')
+    group.permissions.add(permission)
+    
+    permission = Permission.objects.get(codename='add_diemthanhphan')
+    group.permissions.add(permission)
+
+    group.save()
+
+    return redirect("ns_list")

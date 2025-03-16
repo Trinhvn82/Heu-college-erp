@@ -1,7 +1,7 @@
 from django.urls import path, include
 from . import views, views_report
 from django.contrib import admin
-from info.views import add_nsuser, reset_pwd, user_changepwd
+from info.views import add_nsuser, reset_pwd, user_changepwd, ns_quyen
 
 
 urlpatterns = [
@@ -16,7 +16,12 @@ urlpatterns = [
     path('allsv/', views.sv_list, name='sv_list'),
     path('allgv/', views.gv_list, name='gv_list'),
     path('allns/', views.ns_list, name='ns_list'),
+
     path('ns_lop/<int:ns_id>/', views.ns_lop, name='ns_lop'),
+    path('ns_quyen/<int:ns_id>/', ns_quyen, name='ns_quyen'),
+
+    path('gv_lop/<int:gv_id>/', views.gv_lop, name='gv_lop'),
+    path('gv_monhoc/<int:gv_id>/', views.gv_monhoc, name='gv_monhoc'),
 
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),

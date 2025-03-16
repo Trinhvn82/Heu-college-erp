@@ -45,7 +45,16 @@
                         <tbody>
                             {% for ct in lm %}
                             <tr>
+                                {% if perms.sms.view_lopmonhoc or  perms.sms.change_lopmonhoc %}
+                                <td>
+                                    <a href="{% url 'edit_lopmonhoc' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}
+                                    </a>
+                                </td>
+                                {% else %}
                                 <td>{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                                {% endif %}
+
                                 <td>{{ ct.ngaystart }}</td>
                                 <td>{{ ct.ngayend }}</td>
                                 <td>
@@ -63,30 +72,36 @@
                                             </span>
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.view_lichhoc %}
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'lichhoclopmh_list' ct.id  %}">
                                                 <span class="fas fa-edit mr-2"></span>Lịch hoc
                                             </a>
+                                            {% endif %}
+                                            {% if perms.sms.view_diemthanhphan %}
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'diemtp-lmh-lst' ct.id %}">
                                                 <span class="fas fa-edit mr-2"></span>KQ Học tập
                                             </a>
+                                            {% endif %}
+                                            {% if perms.sms.view_ttgv %}
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'gv-lmh-lst' ct.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Thanh toán cho giáo viên
                                             </a>
-                                            <a class="dropdown-item edit_item"
-                                               href="{% url 'edit_lopmonhoc' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Cập nhật
-                                            </a>
+                                            {% endif %}
+                                            {% if perms.sms.add_lopmonhoc or perms.sms.change_lopmonhoc  or perms.sms.view_lopmonho %}
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'history_lopmonhoc' ct.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Lịch sử thay đổi
                                             </a>
+                                            {% endif %}
+                                            {% if perms.sms.delete_lopmonhoc %}
                                             <a class="dropdown-item text-danger delete_item"
                                                data-href="">
                                                 <span class="fas fa-trash-alt mr-2"></span>Remove
                                             </a>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -96,11 +111,13 @@
                     </table>
                 </div>
             </div>
+            {% if perms.sms.add_lopmonhoc %}
             <div class="card-body">
                 <a href="{% url 'create_lopmonhoc' lop_id %}">
                     <button type="button" class="btn btn-primary">Thêm mới</button>
                 </a>
             </div>
+            {% endif %}
         </div>
 
     </main>

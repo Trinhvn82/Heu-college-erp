@@ -22,8 +22,8 @@
                           <span class="mb-0 font-small font-weight-bold">
                             {% if request.user.is_superuser %}
                               Xin chào: {{ request.user.username }}
-                            {% elif request.user.is_nhansu %}
-                              Xin chào nhân sự: {{ request.user.username }}
+                            {% elif request.user.is_internalstaff %}
+                              Xin chào: {{ request.user.first_name }}
                             {% else %}
                               Xin chào: {{ request.user.username }}
                             {% endif %}

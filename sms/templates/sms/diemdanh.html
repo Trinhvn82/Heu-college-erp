@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <form action="{% url 'diemdanh_list' ttlh.id%}" method="post">
+        <form action="{% url 'diemdanh_list' ttlh.id%}" method="post" {% if perms.sms.add_diemdanh or perms.sms.change_diemdanh %} id ="id_enabled" {% else %} id ="id_disabled" {% endif %}>
             {% csrf_token %}
             <div class="card border-light shadow-sm mb-4">
                 <div class="card-body">
@@ -55,26 +55,38 @@
                             <td>{{ ct.sv.hoten }}</td>
                             <td>{{ ct.sv.sdths }}</td>
                             <td>
-                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                {% if perms.sms.add_diemdanh or perms.sms.change_diemdanh %}
+                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
 
+                                        {% if ct.status == 1 %}
+                                        <label class="btn btn-success">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Present
+                                        </label>
+    
+                                        <label class="btn btn-danger">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Absent
+                                        </label>
+                                        {% else %}
+                                        <label class="btn btn-outline-success">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Present
+                                        </label>
+    
+                                        <label class="btn btn-outline-danger active">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked> Absent
+                                        </label>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
                                     {% if ct.status == 1 %}
-                                    <label class="btn btn-success">
-                                        <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Present
-                                    </label>
-
-                                    <label class="btn btn-danger">
-                                        <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Absent
+                                    <label class="btn btn-outline-success">
+                                        Có mặt
                                     </label>
                                     {% else %}
-                                    <label class="btn btn-outline-success">
-                                        <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Present
-                                    </label>
-
                                     <label class="btn btn-outline-danger active">
-                                        <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked> Absent
+                                        Vắng mặt
                                     </label>
                                     {% endif %}
-                                </div>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -89,4 +101,9 @@
         </form>
     </main>
 
+<script>
+    document.querySelectorAll('#id_disabled input, #id_disabled select, #id_disabled button, #id_disabled textarea').forEach(elem => elem.disabled = true);    
+    document.querySelectorAll('#id_disabled button').forEach(elem => elem.hidden = true);    
+</script>
+    
 {% endblock content %}

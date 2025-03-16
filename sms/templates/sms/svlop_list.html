@@ -69,7 +69,15 @@
                                     {% for student in students %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
+                                        {% if perms.sms.view_hssv or perms.sms.change_hssv %}
+                                        <td>
+                                            <a href="{% url 'edit_sv' student.id %}">
+                                                <span class="fas fa-edit mr-2"></span>{{ student.msv }}
+                                            </a>
+                                        </td>
+                                        {% else %}
                                         <td>{{ student.msv }}</td>
+                                        {% endif %}
                                         <td>{{ student.hoten }}</td>
                                         <td>{{ student.cccd }}</td>
                                         <td>
@@ -82,22 +90,24 @@
                                                     <span class="sr-only">Toggle Dropdown</span>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item edit_item"
-                                                       href="{% url 'edit_sv' student.id %}">
-                                                        <span class="fas fa-edit mr-2"></span>Cập nhập
-                                                    </a>
+                                                    {% if perms.sms.view_hs81 %}
                                                     <a class="dropdown-item edit_item"
                                                        href="{% url 'hv_hs81_list' student.id %}">
                                                         <span class="fas fa-edit mr-2"></span>Hồ sơ 81
                                                     </a>
+                                                    {% endif %}
+                                                    {% if perms.sms.view_hp81 %}
                                                     <a class="dropdown-item edit_item"
                                                        href="{% url 'hv_hp81_list' student.id %}">
                                                         <span class="fas fa-edit mr-2"></span>Học phí 81
                                                     </a>
+                                                    {% endif %}
+                                                    {% if perms.sms.delete_hssv %}
                                                     <a class="dropdown-item text-danger delete_item"
                                                        data-href="">
                                                         <span class="fas fa-trash-alt mr-2"></span>Remove
                                                     </a>
+                                                    {% endif %}
                                                 </div>
                                             </div>
 
@@ -109,6 +119,7 @@
                                 </div>
             </div>
         </div>
+        {% if perms.sms.add_hssv %}
         <div class="row item-row">
             <div class="col-md-6 mb-3">
                 <div>
@@ -121,7 +132,6 @@
                 </div>
             </div>
         </div>
-
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
@@ -143,7 +153,9 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
+        {% if perms.sms.add_hs81 %}
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
@@ -165,6 +177,9 @@
                 </div>
             </div>
         </div>
+        {% endif %}
+
+        {% if perms.sms.add_hp81 %}
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
@@ -186,6 +201,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
 
         <div class="row">
             <div class="col-md-12">

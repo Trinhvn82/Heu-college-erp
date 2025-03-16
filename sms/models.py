@@ -62,6 +62,12 @@ class HocphiStatus(models.Model):
     ma = models.IntegerField(default= 1)
     ten = models.CharField(max_length=100)
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Trạng thái Học phí"
+        verbose_name_plural = "Danh mục Trạng thái Học phí"
+        unique_together = ('ma',)
+        ordering = ["id"]
     def __str__(self):
         return self.ten
 
@@ -69,6 +75,13 @@ class Hocky(models.Model):
     ma = models.IntegerField(default= 1)
     ten = models.CharField(max_length=20)
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Học kỳ"
+        verbose_name_plural = "Danh mục Học kỳ"
+        unique_together = ('ma',)
+        ordering = ["id"]
+
     def __str__(self):
         return self.ten
 
@@ -84,7 +97,8 @@ class Monhoc(models.Model):
  
     class Meta:
         verbose_name = "Môn học"
-        verbose_name_plural = "Môn học"
+        verbose_name_plural = "Danh mục Môn học"
+        unique_together = ('ma','ten','chuongtrinh')
         ordering = ["-id"]
 
     def __str__(self):
@@ -95,6 +109,12 @@ class SvStatus(models.Model):
     ma = models.IntegerField(default= 1)
     ten = models.CharField(max_length=100)
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Trạng thái học viên"
+        verbose_name_plural = "Danh mục Trạng thái học viên"
+        ordering = ["id"]
+        unique_together = ('ma',)
+
     def __str__(self):
         return self.ten
         
@@ -105,18 +125,24 @@ class Ctdt(models.Model):
     history = HistoricalRecords()
  
     class Meta:
-        verbose_name = "Danh mục CTĐT"
+        verbose_name = "Chương trinh đào tạo"
         verbose_name_plural = "Danh mục CTĐT"
+        unique_together = ('ten',)
         ordering = ["-id"]
 
     def __str__(self):
         return self.ten
 
 class Trungtam(models.Model):
-    ma = models.IntegerField(default= 1)
-    ten = models.CharField(max_length=100)
+    ma = models.IntegerField(default= 1,verbose_name="Mã Trung tâm")
+    ten = models.CharField(max_length=100,verbose_name="Tên Trung tâm")
     history = HistoricalRecords()
  
+    class Meta:
+        verbose_name = "Trung tâm"
+        verbose_name_plural = "Danh mục Trung tâm"
+        ordering = ["id"]
+        unique_together = ('ma',)
     def __str__(self):
         return self.ten
 
@@ -125,17 +151,30 @@ class Phong(models.Model):
     ten = models.CharField(max_length=100)
     history = HistoricalRecords()
  
+    class Meta:
+        verbose_name = "Phòng"
+        verbose_name_plural = "Danh mục Phòng"
+        ordering = ["id"]
+        unique_together = ('ma',)
+
     def __str__(self):
         return self.ten
 
 class Lop(models.Model):
-    ma = models.CharField(max_length=100)
-    ten = models.CharField(max_length=100)
+    ma = models.CharField(max_length=100,verbose_name="Mã Lớp")
+    ten = models.CharField(max_length=100,verbose_name="Tên Lớp")
     #trungtam = models.CharField(max_length=100)
-    trungtam = models.ForeignKey(Trungtam, on_delete=models.CASCADE)
-    ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE)
+    trungtam = models.ForeignKey(Trungtam, on_delete=models.CASCADE,verbose_name="Trung tâm")
+    ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE,verbose_name="Chương trình đào tạo")
     # mhs = models.ManyToManyField(Monhoc, default= None , blank= True)
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Lớp"
+        verbose_name_plural = "Danh sác Lớp"
+        unique_together = ('ma',)
+        ordering = ["-id"]
+
     def __str__(self):
         return self.ma
 
@@ -178,9 +217,15 @@ class Hssv(models.Model):
     hs_a34 = models.BooleanField(default= False)
     hs_status = models.CharField(choices=st_choice, max_length=50, blank=True)
 
-    ghichu = models.CharField(max_length=500, blank=True, null=True)
+    ghichu = models.TextField(max_length=500, blank=True, null=True)
 
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Học viên"
+        verbose_name_plural = "Danh sách học viên"
+        ordering = ["msv",]
+        unique_together = ('msv',)
+
     def __str__(self):
         return self.hoten
 
@@ -218,9 +263,15 @@ class Hsgv(models.Model):
     hs_ccta = models.BooleanField(default= False)
     hs_ccth = models.BooleanField(default= False)
     hs_status = models.CharField(choices=st_choice, max_length=50, blank=True)
-    ghichu = models.CharField(max_length=500, blank=True, null=True)
+    ghichu = models.TextField(max_length=500, blank=True, null=True)
     history = HistoricalRecords()
  
+    class Meta:
+        verbose_name = "Giáo viên"
+        verbose_name_plural = "Danh sách Giáo viên"
+        ordering = ["ma",]
+        unique_together = ('ma',)
+
     def __str__(self):
         return self.hoten
 
@@ -235,17 +286,23 @@ class Hsns(models.Model):
     sdt = models.CharField(max_length=100, blank=True, null=True)
     gioitinh = models.CharField(max_length=100, blank=True, null=True)
     cccd = models.CharField(max_length=100, blank=True, null=True)
-    ghichu = models.CharField(max_length=500, blank=True, null=True)
-    phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True, blank=True)
+    ghichu = models.TextField(max_length=500, blank=True, null=True)
+    #phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True, blank=True)
     history = HistoricalRecords()
  
+    class Meta:
+        verbose_name = "Nhân sự"
+        verbose_name_plural = "Danh sách Nhân sự"
+        ordering = ["ma",]
+        unique_together = ('ma',)
+
     def __str__(self):
         return self.hoten
     
     
 class CtdtMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
-    hocky = models.IntegerField()
+    #hocky = models.IntegerField()
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
     ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE)
     status = models.IntegerField(default= 0)
@@ -254,7 +311,8 @@ class CtdtMonhoc(models.Model):
     class Meta:
         verbose_name = "Chương trình đào tạo môn học"
         verbose_name_plural = "Chương trình đào tạo môn học"
-        ordering = ["id"]
+        unique_together = ('ctdt','monhoc',)
+        ordering = ['ctdt','-monhoc',]
 
     def __str__(self):
         return self.ctdt.ten
@@ -264,23 +322,77 @@ class NsLop(models.Model):
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Nhân sự lớp"
+        verbose_name_plural = "Danh sác Nhân sự lớp"
+        unique_together = ('ns','lop',)
+        ordering = ["-id"]
+
     def __str__(self):
         return self.lop.ten
     
+class GvLop(models.Model):
+    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
+    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+    status = models.IntegerField(default= 0)
+    history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Gíao viên lớp"
+        verbose_name_plural = "Danh sác Giao viên lớp"
+        unique_together = ('gv','lop',)
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.lop.ten
+
+class GvMonhoc(models.Model):
+    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
+    status = models.IntegerField(default= 0)
+    history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Gíao viên Môn học   "
+        verbose_name_plural = "Danh sác Giao viên Môn học"
+        unique_together = ('gv','monhoc',)
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.lop.ten
+
+class NsPhong(models.Model):
+    ns = models.ForeignKey(Hsns, on_delete=models.CASCADE)
+    phong = models.ForeignKey(Phong, on_delete=models.CASCADE)
+    status = models.IntegerField(default= 0)
+    history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Nhân sự phòng"
+        verbose_name_plural = "Danh sác Nhân sự phòng"
+        unique_together = ('ns','phong',)
+        ordering = ["-id"]
+    def __str__(self):
+        return self.phong.ten
+
 class LopMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
-    ngaystart = models.DateField(blank= True, null=True)
-    ngayend = models.DateField(blank= True, null=True)
+    ngaystart = models.DateField(blank= True, null=True, verbose_name="Ngày bắt đầu")
+    ngayend = models.DateField(blank= True, null=True, verbose_name="Ngày kết thúc")
     #gender = models.CharField(choices=gender_choice, max_length=10)
     status = models.CharField(choices=pl_choice, max_length=50)
+    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE, default= 1)
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
     lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    hsdt = models.CharField(max_length=500, default= "", blank= True, null=True)
-    hsdt1 = models.BooleanField(default= False)
-    hsdt2 = models.BooleanField(default= False)
-    hsdt3 = models.BooleanField(default= False)     
-    hsdt4 = models.BooleanField(default= False)
+    hsdt = models.TextField(max_length=500, default= "", blank= True, null=True, verbose_name="Hồ sơ đào tạo")
+    hsdt1 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 1")
+    hsdt2 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 2")
+    hsdt3 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 3")   
+    hsdt4 = models.BooleanField(default= False, verbose_name="Hồ sơ đào tạo 4")
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Lớp môn học"
+        verbose_name_plural = "Lớp môn học"
+        ordering = ["-id","-ngaystart"]
+        unique_together = ('lop', 'monhoc',)
     def __str__(self):
         return self.monhoc.ten
 
@@ -299,6 +411,11 @@ class Lichhoc(models.Model):
     monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
     giaovien = models.ForeignKey(Hsgv, on_delete=models.CASCADE, blank= True, null=True)
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Lịch học"
+        verbose_name_plural = "Danh sách Lịch học"      
+        ordering = ["thoigian",]
+
     def __str__(self):
         return self.lop.ten + "-" + self.monhoc.ten
 
@@ -328,6 +445,11 @@ class Hp81(models.Model):
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Học phí 81"
+        verbose_name_plural = "Danh sách Học phí 81"
+        ordering = ["-sv","-hk"]
+        unique_together = ('sv', 'hk',)
     def __str__(self):
         return self.hk.ten
 
@@ -347,6 +469,11 @@ class Hs81(models.Model):
     hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Hồ sơ 81"
+        verbose_name_plural = "Danh sách Hồ sơ 81"
+        ordering = ["-sv","-hk"]
+        unique_together = ('sv', 'hk',)
     def __str__(self):
         return self.hk.ten
 
@@ -356,6 +483,11 @@ class Diemdanh(models.Model):
     sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
     lichhoc = models.ForeignKey(Lichhoc, on_delete=models.CASCADE)
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Điểm danh"
+        verbose_name_plural = "Danh sách Điểm danh"
+        unique_together = ('sv', 'lichhoc',)
 
     def __str__(self):
         return self.sv.hoten
@@ -372,14 +504,21 @@ class LogDiem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     capnhat_at = models.DateTimeField(default=None, blank = True, null=True)
     def __str__(self):
-        return self.created_at
+        return str(self.id)
 
 class Loaidiem(models.Model):
     ma = models.IntegerField(default= 1)
-    trunglap = models.IntegerField(default= 1)
-    heso = models.IntegerField(default= 1)
+    trunglap = models.IntegerField(default= 1, verbose_name="Số lần cho điểm")
+    heso = models.IntegerField(default= 1, verbose_name="Hệ số")
     ten = models.CharField(max_length=100, null=True)
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Điểm thành phần"
+        verbose_name_plural = "Danh mục Điểm thành phần"
+        ordering = ["-id",]
+        unique_together = ('ma',)
+
     def __str__(self):
         return self.ten
 
@@ -387,22 +526,38 @@ class Loaidiem(models.Model):
 
 class Diemthanhphan(models.Model):
     #ghichu = models.CharField(max_length=300)
-    diem = models.DecimalField(max_digits=5, decimal_places=1)
+    diem = models.DecimalField(max_digits=5, decimal_places=1, verbose_name="Điểm")
     status = models.IntegerField(default= 0)
-    tp = models.ForeignKey(Loaidiem, on_delete=models.CASCADE)
-    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
-    log = models.ForeignKey(LogDiem, on_delete=models.CASCADE, null= True)
+    tp = models.ForeignKey(Loaidiem, on_delete=models.CASCADE, verbose_name="Điểm Thành phần")
+    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE, verbose_name="Học viên")
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE, verbose_name="Môn học")    
+    log = models.ForeignKey(LogDiem, on_delete=models.CASCADE, null= True, verbose_name="ID Log")
     history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Điểm thành phần"
+        verbose_name_plural = "Kết quả điểm thành phần"
+        ordering = ["sv","monhoc","tp"]
+
     def __str__(self):
-        return self.sv.hoten + "-" + self.monhoc.ten + "-" + self.tp.ten
+        return str(self.diem)
 
 class LopHk(models.Model):
-    start_hk = models.DateField(default= None,blank= True, null=True)
-    end_hk = models.DateField(default= None,blank= True, null=True)
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
+    start_hk = models.DateField(default= None,blank= True, null=True, verbose_name="Ngày bắt đầu")
+    end_hk = models.DateField(default= None,blank= True, null=True, verbose_name="Ngày kết thúc")
+    lop = models.ForeignKey(Lop, on_delete=models.PROTECT)
+    hk = models.ForeignKey(Hocky, on_delete=models.PROTECT, verbose_name="Học kỳ")
+    class Meta:
+        verbose_name = "Lớp Học kỳ"
+        verbose_name_plural = "Lớp Học kỳ"
+        ordering = ["hk",]
+        unique_together = ('lop','hk',)
+
     history = HistoricalRecords()
+
+    def __str__(self): 
+        return self.lop.ten + "-" + self.hk.ten
+
 
 class Ttgv(models.Model):
     sotien1 = models.IntegerField(default= 0, blank= True, null=True)
@@ -411,6 +566,13 @@ class Ttgv(models.Model):
     lopmh = models.ForeignKey(LopMonhoc, on_delete=models.CASCADE)
     gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
     history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Thanh toán giáo viên"
+        verbose_name_plural = "Danh sách Thanh toán giáo viên"
+        ordering = ["-gv","-lopmh"]
+        unique_together = ('gv', 'lopmh',)
+    def __str__(self):
+        return self.gv.ten
 
 class UploadedFile(models.Model):
     file = models.FileField(upload_to='uploads/')

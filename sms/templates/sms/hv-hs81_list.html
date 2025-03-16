@@ -59,18 +59,24 @@
                                             </span>
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.change_hs81 or perms.sms.view_hs81  %}
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'edit_hs81' ct.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Cập nhật
                                             </a>
+                                            {% endif %}
+                                            {% if perms.sms.view_hs81 %}
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'history_lopmonhoc' ct.id %}">
+                                               href="">
                                                 <span class="fas fa-edit mr-2"></span>Lịch sử thay đổi
                                             </a>
+                                            {% endif %}
+                                            {% if perms.sms.delete_hs81 %}
                                             <a class="dropdown-item text-danger delete_item"
                                                data-href="">
                                                 <span class="fas fa-trash-alt mr-2"></span>Remove
                                             </a>
+                                            {% endif %}    
                                         </div>
                                     </div>
                                 </td>
@@ -80,12 +86,14 @@
                     </table>
                 </div>
             </div>
+            {% if perms.sms.add_hs81 %}
             <div class="card-body">
                 <a href="{% url 'create_hs81' sv.id %}">
                     <button type="button" class="btn btn-primary">Thêm mới</button>
-            </a>
-        </div>
-        </div>
+                </a>
+            </div>
+            {% endif %}
+    </div>
 
     </main>
 

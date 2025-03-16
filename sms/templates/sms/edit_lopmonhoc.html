@@ -30,7 +30,7 @@
             <div class="col-12">
                 <h6>Cập nhật môn học</h6>
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <form action="" method="post">
+                    <form action="" method="post" {% if not perms.sms.add_lopmonhoc %} id ="id_disabled" {% endif %}>
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
@@ -38,7 +38,7 @@
                                 <input hidden type="number" name="lop" class="form-control" value="{{lop_id}}" id="id_sogio">
                             {% elif field.name == 'monhoc' %}
                                 <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" id="id_sogio">
-                            {% elif field.name == 'ngaystart' or field.name == 'ngayend' or field.name == 'status'%}
+                            {% elif field.name == 'ngaystart' or field.name == 'ngayend' or field.name == 'status' or field.name == 'hocky'%}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
                                 </div>
@@ -66,5 +66,9 @@
             </div>
         </div>
     </main>
-
+<script>
+    document.querySelectorAll('#id_disabled input, #id_disabled select, #id_disabled button, #id_disabled textarea').forEach(elem => elem.disabled = true);    
+    document.querySelectorAll('#id_disabled button').forEach(elem => elem.hidden = true);    
+</script>
+    
 {% endblock content %}

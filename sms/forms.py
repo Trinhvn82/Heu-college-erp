@@ -58,7 +58,7 @@ class CreateNs(forms.ModelForm):
     class Meta:
         model = Hsns
         #fields = "__all__"
-        fields = ('ma', 'hoten','email','phong','diachi', 'quequan','sdt', 'gioitinh','cccd')
+        fields = ('ma', 'hoten','email','diachi', 'quequan','sdt', 'gioitinh','cccd')
         
         #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
@@ -66,7 +66,6 @@ class CreateNs(forms.ModelForm):
             'ma': 'Mã',
             'email': 'Email',
             'hoten': 'Họ tên',
-            'phong': 'Phòng',
             'diachi': 'Đại chỉ',
             'quequan': 'Quê quán',
             'sdt': 'SDT',
@@ -82,22 +81,19 @@ class CreateNs(forms.ModelForm):
             'sdt': forms.TextInput(attrs={'class': 'form-control'}),
             'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
             'cccd': forms.TextInput(attrs={'class': 'form-control'}),
-            'phong': forms.Select(attrs={'class': 'form-control'}),
         }
 
 class CreateCtdtMonhoc(forms.ModelForm):
     class Meta:
         model = CtdtMonhoc
         #fields = "__all__"
-        fields = ('ctdt','hocky','monhoc')
+        fields = ('ctdt','monhoc')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'ctdt': 'Chuong trinh DT',
-            'hocky': 'Hoc ky',
             'monhoc': 'Mon hoc',
         }
         widgets = {
-            'hocky': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '1-4', 'max':4, 'min':1}),
             'monhoc': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
             'ctdt': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Giao vien'}),
        }
@@ -134,12 +130,13 @@ class CreateLopMonhoc(forms.ModelForm):
     class Meta:
         model = LopMonhoc
         #fields = "__all__"
-        fields = ('lop','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4')
+        fields = ('lop','hk','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4')
         labels = {
-            'monhoc': 'Mon hoc',
-            'ngaystart': 'Ngay bat dau',
-            'ngayend': 'Ngay ket thuc',
-            'status': 'Trang thai',
+            'hk': 'Học kỳ',
+            'monhoc': 'Môn học',
+            'ngaystart': 'Ngày bắt đầu',
+            'ngayend': 'Ngày kết thúc',
+            'status': 'Trạng thái',
             'hsdt1': 'Tên hồ sơ đào tạo 1',
             'hsdt2': 'Tên hồ sơ đào tạo 2',
             'hsdt3': 'Tên hồ sơ đào tạo 3',
@@ -147,6 +144,7 @@ class CreateLopMonhoc(forms.ModelForm):
         }
         widgets = {
             'lop': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
+            'hk': forms.Select(attrs={'class': 'form-control'}),
             'monhoc': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'ngaystart': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),

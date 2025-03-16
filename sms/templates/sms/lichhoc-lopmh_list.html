@@ -50,7 +50,15 @@
                             {% for ct in lh %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ ct.thoigian }}</td>
+                                {% if perms.sms.view_lichhoc or  perms.sms.change_lichhoc %}
+                                <td>
+                                    <a href="{% url 'edit_lichhoc' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>{{ ct.thoigian | date:"d/m/Y H:i" }}
+                                    </a>
+                                </td>
+                                {% else %}
+                                <td>{{ ct.thoigian | date:"d/m/Y H:i" }}</td>
+                                {% endif %}
                                 <td>{{ ct.diadiem }}</td>
                                 <td>{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
                                 <td>{{ ct.sotiet }}</td>
@@ -72,18 +80,18 @@
                                             </span>
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.view_diemdanh %}
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'diemdanh_list' ct.id %}">
+                                                href="{% url 'diemdanh_list' ct.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Điểm danh
                                             </a>
-                                            <a class="dropdown-item edit_item"
-                                               href="{% url 'edit_lichhoc' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Edit
-                                            </a>
+                                            {% endif %}
+                                            {% if perms.sms.delete_diemdanh %}
                                             <a class="dropdown-item text-danger delete_item"
                                                data-href="">
                                                 <span class="fas fa-trash-alt mr-2"></span>Remove
                                             </a>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
@@ -94,11 +102,13 @@
         
                 </div>
             </div>
+            {% if perms.sms.add_lopmonhoc %}
             <div class="card-body">
                 <a href="{% url 'create_lichhoclm' lopmh_id%}">
                     <button type="button" class="btn btn-primary">Thêm mới</button>
                 </a>
             </div>
+            {% endif %}
          </div>
     </main>
 

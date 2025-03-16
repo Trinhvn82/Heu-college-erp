@@ -46,10 +46,40 @@ test_name = (
 
 class User(AbstractUser):
     @property
-    def is_nhansu(self):
+    def is_internalstaff(self):
         if hasattr(self, 'hsns'):
             return True
         return False
+
+    @property
+    def is_gv(self):
+        if hasattr(self, 'hsgv'):
+            return True
+        return False
+
+    @property
+    def is_hv(self):
+        if hasattr(self, 'hssv'):
+            return True
+        return False
+
+    @property
+    def is_supervisor(user):
+        return user.groups.filter(name='Supervisors').count()
+    
+    @property
+    def is_pkt(user):
+        return user.groups.filter(name__in=['Supervisors', 'KT']).count()
+    @property
+    def is_phr(user):
+        return user.groups.filter(name__in=['Supervisors', 'HR']).count()
+    @property
+    def is_pctsv(user):
+        return user.groups.filter(name__in=['Supervisors', 'CTSV']).count()
+
+    @property
+    def is_pdt(user):
+        return user.groups.filter(name__in=['Supervisors', 'DT']).count()
 
     @property
     def is_teacher(self):
