@@ -21,6 +21,7 @@ urlpatterns = [
 
     path('gv_lop/<int:gv_id>/', views.gv_lop, name='gv_lop'),
     path('gv_monhoc/<int:gv_id>/', views.gv_monhoc, name='gv_monhoc'),
+    path('gv_lmh/<int:gv_id>/', views.gv_lmh, name='gv_lmh'),
 
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),

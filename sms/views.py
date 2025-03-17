@@ -20,7 +20,7 @@ User = get_user_model()
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns, LogDiem
+from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns, LogDiem, GvLmh
 from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
 from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81, CreateLopHk
 from django.contrib import messages
@@ -41,6 +41,8 @@ def index(request):
     elif request.user.is_pctsv:
         return redirect("sv_list")
     elif request.user.is_internalstaff:
+        return redirect("lop_list")
+    elif request.user.is_gv or request.user.is_hv:
         return redirect("lop_list")
      #if request.user:
         #return render(request, 'sms/lop-list.html')
@@ -490,7 +492,7 @@ def create_diemtp(request, lmh_id, dtp_id):
 
 
     #create mark record
-    log = LogDiem()
+    log = LogDiem(ten = request.user.username)  
     log.save()
     for stud in stud_list:
         mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log=log) 
@@ -522,6 +524,7 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
     if request.method == "POST":
         log = LogDiem.objects.get(id = log_id)
         log.capnhat_at = datetime.now()
+        log.ten = request.user.username
         log.save()
         for stud in stud_list:
             id = "C"+str(stud.id)+"-"+str(dtp_id)
@@ -1042,6 +1045,20 @@ def lop_list(request):
 
     if request.user.is_superuser or request.user.is_supervisor:
         lop = Lop.objects.all().select_related("ctdt").order_by('id')
+    elif request.user.is_gv:
+
+        gv = Hsgv.objects.get(user_id = request.user.id)
+
+        nl = GvLmh.objects.filter(gv_id = gv.id, status = 1).select_related("lopmh")
+        print("lop_id: ")
+        print(nl[0].lopmh.lop_id)
+        #gvs = Hsgv.objects.filter(id__in = lh.values_list('giaovien_id', flat=True))
+        lop = Lop.objects.filter(id__in=[ns.lopmh.lop_id for ns in nl]).select_related("ctdt").order_by('id')
+
+        print("lop_id: ")
+        print(lop[0].id)
+
+
     elif request.user.is_internalstaff:
 
         ns = Hsns.objects.get(user_id = request.user.id)
@@ -1280,6 +1297,42 @@ def gv_monhoc(request, gv_id):
     return render(request, "sms/gv_monhoc.html", context)
 
 @login_required
+def gv_lmh(request, gv_id):
+    lmhs = LopMonhoc.objects.all()
+    glmhs = GvLmh.objects.filter(gv_id = gv_id)
+    gv = Hsgv.objects.get(id = gv_id)
+    if request.method == "POST":
+        for mh in glmhs:
+            id = "C"+str(mh.lopmh_id)
+            status = request.POST[id]
+            print(id)
+            print(status)
+            gmh = GvLmh.objects.get(gv_id = gv_id, lopmh_id = mh.lopmh_id)
+            gmh.status=status
+            gmh.save() 
+        #     id = "C"+str(stud.id)
+        #     status = request.POST[id]
+        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
+        #     dd.status=status
+        #     dd.save() 
+        # ttlh.status=1
+        # ttlh.save()
+        messages.success(request, "Cập nhật môn học thành công!")
+        return redirect("gv_list")
+
+    for lmh in lmhs:
+        if not GvLmh.objects.filter(gv_id = gv_id, lopmh_id = lmh.id).first():
+            dd = GvLmh(gv_id = gv_id, lopmh_id = lmh.id)
+            dd.save()
+
+    glmhs = GvLmh.objects.filter(gv_id = gv_id).select_related("lopmh")
+    context = {
+        "gv": gv,
+        "glmhs": glmhs
+    }
+    return render(request, "sms/gv_lopmh.html", context)
+
+@login_required
 def single_ctdtmonhoc_old(request, ctdt_id):
         ctdtmonhoc1 = CtdtMonhoc.objects.filter(ctdt_id = ctdt_id, hocky = 1).select_related("monhoc")
         ctdtmonhoc2 = CtdtMonhoc.objects.filter(ctdt_id = ctdt_id, hocky = 2).select_related("monhoc")
@@ -1306,12 +1359,27 @@ def single_ctdtmonhoc(request, ctdt_id):
         return render(request, "sms/ctdt-monhoc_list.html", context)
 @login_required
 def lop_monhoc(request, lop_id):
-        lm = LopMonhoc.objects.filter(lop_id = lop_id).select_related("lop", "monhoc")
+        if request.user.is_gv:
+            gv = Hsgv.objects.get(user_id = request.user.id)
+            glm = GvLmh.objects.filter(gv_id = gv.id, status = 1)
+            lm = LopMonhoc.objects.filter(lop_id = lop_id, id__in=[ns.lopmh_id for ns in glm]).select_related("lop", "monhoc").order_by('lop_id')
+        else:    
+            lm = LopMonhoc.objects.filter(lop_id = lop_id).select_related("lop", "monhoc")
         ten = Lop.objects.get(id = lop_id).ten
         context = {
             "lm": lm,
             "ten": ten,
             "lop_id": lop_id
+        }
+        return render(request, "sms/lop-monhoc_list.html", context)
+
+@login_required
+def lop_monhoc_gv(request):
+        gv = Hsgv.objects.get(user_id = request.user.id)
+        glm = GvLmh.objects.filter(gv_id = gv.id)
+        lm = LopMonhoc.objects.filter(id__in=[ns.lopmh_id for ns in glm]).select_related("lop", "monhoc").order_by('lop_id')
+        context = {
+            "lm": lm
         }
         return render(request, "sms/lop-monhoc_list.html", context)
 

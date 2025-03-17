@@ -4,7 +4,7 @@ from simple_history.admin import SimpleHistoryAdmin
 from sms.models import Lop
 from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, LopMonhoc, Hp81
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk, Phong, Trungtam, LogDiem, NsLop, NsPhong,HeDT,Khoahoc,Nganh
+from .models import LopHk, Phong, Trungtam, LogDiem, NsLop, NsPhong,HeDT,Khoahoc,Nganh, Ttgv, GvLop, GvLmh
 
 # tickets/admin.py
 
@@ -68,6 +68,11 @@ class MonhocAdmin(admin.ModelAdmin):
     inlines = [CtdtMonhocInline]
     #readonly_fields = ["tickets_left"]
 
+class GvLmhAdmin(admin.ModelAdmin):
+    list_display = ["gv", "lopmh"]
+    search_fields = ["gv__hoten"]
+    #readonly_fields = ["tickets_left"]
+
 class LopHKAdmin(admin.ModelAdmin):
     list_display = ["lop","hk", "start_hk", "end_hk"]
     search_fields = ["lop"]
@@ -125,6 +130,11 @@ class NsLopAdmin(admin.ModelAdmin):
     search_fields = ["ns__ten", "lop__ten"]
     list_select_related = ["lop", "ns"]
 
+class GvLopAdmin(admin.ModelAdmin):
+    list_display = ["gv","lop"]
+    search_fields = ["gv__hoten"]
+    list_select_related = ["lop", "gv"]
+
 class NsPhongAdmin(admin.ModelAdmin):
     list_display = ["ns","phong"]
     search_fields = ["ns__ten", "phong__ten"]
@@ -134,6 +144,7 @@ class NsPhongAdmin(admin.ModelAdmin):
 admin.site.register(Lop, LopAdmin)
 admin.site.register(NsLop, NsLopAdmin)
 admin.site.register(NsPhong, NsPhongAdmin)
+admin.site.register(GvLop, GvLopAdmin)
 admin.site.register(Ctdt, CtdtAdmin)
 admin.site.register(Monhoc, MonhocAdmin)
 admin.site.register(Hssv, SimpleHistoryAdmin)
@@ -159,6 +170,10 @@ admin.site.register(Trungtam, DanhmucAdmin)
 admin.site.register(Khoahoc, DanhmucAdmin)
 admin.site.register(Nganh, DanhmucAdmin)
 
+admin.site.register(Ttgv, GvLmhAdmin)
+admin.site.register(GvLmh, GvLmhAdmin)
+
+GvLmhAdmin
 admin.site.register(LogDiem, SimpleHistoryAdmin)
 
 #admin.site.register(Purchase)

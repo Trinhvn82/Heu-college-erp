@@ -439,8 +439,8 @@ class LopMonhoc(models.Model):
         ordering = ["-id","-ngaystart"]
         unique_together = ('lop', 'monhoc',)
     def __str__(self):
-        return self.monhoc.ten
-
+        return self.lop.ten + "-" + self.monhoc.ten
+    
 class Lichhoc(models.Model):
     #ten = models.CharField(max_length=100)
     trungtam = models.CharField(max_length=100, blank= True, null=True)
@@ -548,6 +548,8 @@ class DiemdanhAll(models.Model):
 class LogDiem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     capnhat_at = models.DateTimeField(default=None, blank = True, null=True)
+    ten = models.CharField(max_length=100, null=True)
+    
     def __str__(self):
         return str(self.id)
 
@@ -614,6 +616,19 @@ class Ttgv(models.Model):
     class Meta:
         verbose_name = "Thanh toán giáo viên"
         verbose_name_plural = "Danh sách Thanh toán giáo viên"
+        ordering = ["-gv","-lopmh"]
+        unique_together = ('gv', 'lopmh',)
+    def __str__(self):
+        return self.gv.hoten
+
+class GvLmh(models.Model):
+    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.CASCADE, verbose_name="Lớp môn học")
+    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE, verbose_name="Giáo viên")
+    status = models.IntegerField(default= 0)
+    history = HistoricalRecords()
+    class Meta:
+        verbose_name = "Giáo viên lớp môn học"
+        verbose_name_plural = "Giáo viên lớp môn học"
         ordering = ["-gv","-lopmh"]
         unique_together = ('gv', 'lopmh',)
     def __str__(self):
