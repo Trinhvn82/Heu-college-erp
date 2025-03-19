@@ -62,29 +62,41 @@ class LopMonhocInline(admin.TabularInline):
     extra = 0
     show_change_link = True
 
-class MonhocAdmin(admin.ModelAdmin):
+class NonDeleteModelAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None): # note the obj=None
+        return False
+
+class NonDeleteAndAddModelAdmin(admin.ModelAdmin):
+    def has_delete_permission(self, request, obj=None): # note the obj=None
+        return False
+    def has_add_permission(self, request, obj=None): # note the obj=None
+        return False
+
+class MonhocAdmin(NonDeleteModelAdmin):
     list_display = ["ma", "ten", "chuongtrinh", "sotinchi"]
     search_fields = ["ma", "ten", "chuongtrinh"]
     inlines = [CtdtMonhocInline]
+    def has_delete_permission(self, request, obj=None): # note the obj=None
+        return False
     #readonly_fields = ["tickets_left"]
 
-class GvLmhAdmin(admin.ModelAdmin):
+class GvLmhAdmin(NonDeleteModelAdmin):
     list_display = ["gv", "lopmh"]
     search_fields = ["gv__hoten"]
     #readonly_fields = ["tickets_left"]
 
-class LopHKAdmin(admin.ModelAdmin):
+class LopHKAdmin(NonDeleteModelAdmin):
     list_display = ["lop","hk", "start_hk", "end_hk"]
     search_fields = ["lop"]
 
-
-class CtdtAdmin(admin.ModelAdmin):
+#class CtdtAdmin(admin.ModelAdmin):
+class CtdtAdmin(NonDeleteModelAdmin):
     list_display = ["ten", "khoa", "khoahoc"]
     search_fields = ["ten", "khoa", "khoahoc"]
     inlines = [CtdtMonhocInline]
     #readonly_fields = ["tickets_left"]
 
-class CtdtMonhocAdmin(admin.ModelAdmin):
+class CtdtMonhocAdmin(NonDeleteModelAdmin):
     list_display = ["id","ctdt", "monhoc", "display_active"]
     search_fields = ["monhoc__ten", "ctdt__ten"]
     list_select_related = ["ctdt", "monhoc"]
@@ -100,42 +112,42 @@ class CtdtMonhocAdmin(admin.ModelAdmin):
     actions = [activate_monhoc, deactivate_monhoc]
 
     
-class LopAdmin(admin.ModelAdmin):
+class LopAdmin(NonDeleteAndAddModelAdmin):
     list_display = ["ma", "ten", "trungtam", "ctdt"]
     search_fields = ["ma", "ten", "trungtam__ten", "ctdt__ten"]
     list_select_related = ["ctdt", "trungtam"]
     inlines = [LopHKInline,LopMonhocInline, SvInline]
     #inlines = [SvInline]
 
-class DanhmucAdmin(admin.ModelAdmin):
+class DanhmucAdmin(NonDeleteModelAdmin):
     list_display = ["ma", "ten"]
     search_fields = ["ma", "ten"]
 
-class LoaiDiemAdmin(admin.ModelAdmin):
+class LoaiDiemAdmin(NonDeleteModelAdmin):
     list_display = ["ma", "ten", "heso","trunglap"]
     search_fields = ["ma", "ten"]
 
-class DiemTPAdmin(admin.ModelAdmin):
+class DiemTPAdmin(NonDeleteModelAdmin):
     list_display = ["sv","monhoc", "tp", "diem", "log"]
     search_fields = ["monhoc__ten"]
     list_filter = ["tp__ten", "log__id"]
 
-class LopMonhocAdmin(admin.ModelAdmin):
+class LopMonhocAdmin(NonDeleteAndAddModelAdmin):
     list_display = ["lop","monhoc", "ngaystart", "ngayend", "status"]
     search_fields = ["monhoc__ten", "lop__ten"]
     list_select_related = ["lop", "monhoc"]
 
-class NsLopAdmin(admin.ModelAdmin):
+class NsLopAdmin(NonDeleteModelAdmin):
     list_display = ["ns","lop"]
     search_fields = ["ns__ten", "lop__ten"]
     list_select_related = ["lop", "ns"]
 
-class GvLopAdmin(admin.ModelAdmin):
+class GvLopAdmin(NonDeleteModelAdmin):
     list_display = ["gv","lop"]
     search_fields = ["gv__hoten"]
     list_select_related = ["lop", "gv"]
 
-class NsPhongAdmin(admin.ModelAdmin):
+class NsPhongAdmin(NonDeleteModelAdmin):
     list_display = ["ns","phong"]
     search_fields = ["ns__ten", "phong__ten"]
     list_select_related = ["phong", "ns"]
@@ -147,14 +159,14 @@ admin.site.register(NsPhong, NsPhongAdmin)
 admin.site.register(GvLop, GvLopAdmin)
 admin.site.register(Ctdt, CtdtAdmin)
 admin.site.register(Monhoc, MonhocAdmin)
-admin.site.register(Hssv, SimpleHistoryAdmin)
-admin.site.register(Hsgv, SimpleHistoryAdmin)
+admin.site.register(Hssv, NonDeleteModelAdmin)
+admin.site.register(Hsgv, NonDeleteModelAdmin)
 admin.site.register(LopMonhoc, LopMonhocAdmin)
 admin.site.register(CtdtMonhoc, CtdtMonhocAdmin)
-admin.site.register(Lichhoc, SimpleHistoryAdmin)
-admin.site.register(Diemdanh, SimpleHistoryAdmin)
-admin.site.register(Hs81, SimpleHistoryAdmin)
-admin.site.register(Hp81, SimpleHistoryAdmin)
+admin.site.register(Lichhoc, NonDeleteModelAdmin)
+admin.site.register(Diemdanh, NonDeleteModelAdmin)
+admin.site.register(Hs81, NonDeleteModelAdmin)
+admin.site.register(Hp81, NonDeleteModelAdmin)
 admin.site.register(Diemthanhphan, DiemTPAdmin)
 admin.site.register(LopHk, LopHKAdmin)
 #admin.site.register(Hocphi, SimpleHistoryAdmin)
@@ -173,11 +185,6 @@ admin.site.register(Nganh, DanhmucAdmin)
 admin.site.register(Ttgv, GvLmhAdmin)
 admin.site.register(GvLmh, GvLmhAdmin)
 
-GvLmhAdmin
-admin.site.register(LogDiem, SimpleHistoryAdmin)
+#admin.site.register(LogDiem, NonDeleteModelAdmin)
 
-#admin.site.register(Purchase)
 
-class MonhocAdmin(admin.ModelAdmin):
-    list_display = ["ma", "ten", "chuongtrinh", "sotinchi"]
-    #readonly_fields = ["tickets_left"]

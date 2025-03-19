@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.http import HttpResponseRedirect
 from django.urls import path
 
 from .models import Dept, Class, Student, Attendance, Course, Teacher, Assign, AssignTime, AttendanceClass
-from .models import StudentCourse, Marks, User, AttendanceRange
+from .models import StudentCourse, Marks, User, AttendanceRange, Group
 
 # Register your models here.
 
@@ -132,8 +132,23 @@ class AttendanceClassAdmin(admin.ModelAdmin):
         self.message_user(request, "Attendance Dates reset successfully!")
         return HttpResponseRedirect("../")
 
+class UserProfileAdmin(UserAdmin):
+    def has_delete_permission(self, request, obj=None): # note the obj=None
+        return False
+    
+#class GroupProfileAdmin(GroupAdmin):
+#    readonly_fields = ["name"]
+#    def has_delete_permission(self, request, obj=None): # note the obj=None
+#        return False
+#    def has_add_permission(self, request, obj=None): # note the obj=None
+#        return False
 
-admin.site.register(User, UserAdmin)
+admin.site.register(User, UserProfileAdmin)
+
+#admin.site.unregister(Group)
+
+#admin.site.register(Group, GroupProfileAdmin)
+
 """ admin.site.register(Dept, DeptAdmin)
 admin.site.register(Class, ClassAdmin)
 admin.site.register(Student, StudentAdmin)

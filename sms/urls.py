@@ -5,7 +5,7 @@ from info.views import add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuse
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('alllop/', views.lop_list, name='lop_list'),
+    #path('alllop/', views.lop_list, name='lop_list'),
     #path('', views.index, name='t_clas'),
     path('teacher/<slug:teacher_id>/<int:choice>/Classes/',
          views.t_clas, name='t_clas'),
@@ -42,7 +42,8 @@ urlpatterns = [
     path('import_edit_diemtp/<int:lmh_id>/<int:ld_id>/<int:log_id>/', views_report.import_edit_diemtp, name='import_edit_diemtp'),
  
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
-    path('alllop/', views.lop_list, name='lop_list'),
+#    path('alllop/', views.lop_list, name='lop_list'),
+    path('alllop/', views.lop_list_guardian, name='lop_list'),
     path('alllichhoc/', views.lichhoc_list, name='lichhoc_list'),
     path('registration/', views.create_lichhoc, name='create_lichhoc'),
     path('CreateLichhoclm/<int:lopmh_id>/', views.create_lichhoclm, name='create_lichhoclm'),
@@ -52,7 +53,8 @@ urlpatterns = [
     path('hocphi/<int:lop_id>/', views.hocphi_lop, name='hocphi_list'),
     path('hp81/<int:sv_id>/', views.hv_hp81_list, name='hv_hp81_list'),
     path('hs_81/<int:sv_id>/', views.hv_hs81_list, name='hv_hs81_list'),
-    path('monhoc/<int:lop_id>/', views.lop_monhoc, name='lop_monhoc'),
+#    path('monhoc/<int:lop_id>/', views.lop_monhoc, name='lop_monhoc'),
+    path('monhoc/<int:lop_id>/', views.lop_monhoc_testwithGuardian, name='lop_monhoc'),
     path('<int:ctdt_id>/', views.single_ctdtmonhoc, name='lop_ctdtmonhoc'),
     path('ctdt_monhoc/<int:ctdt_id>/', views.ctdt_monhoc, name='ctdt_monhoc'),
     path('<int:ctdt_id>/', views.single_ctdtmonhoc, name='single_ctdtmonhoc'),

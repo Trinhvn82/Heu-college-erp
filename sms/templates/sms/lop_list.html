@@ -1,5 +1,6 @@
 ﻿{% extends "layouts/base.html" %}
 {% load static %}
+{% load guardian_tags %}
 
 {% block title %} Transactions {% endblock %}
 
@@ -71,7 +72,9 @@
                 </thead>
                 <tbody>
                     {% for ct in lop %}
-                    <tr>
+<!--                     {% get_obj_perms request.user for ct as "ct_perms" %}
+                    {% if "assign_lop" in ct_perms %}
+ -->                    <tr>
                         <td>{{ forloop.counter }}</td>
                         {% if perms.sms.view_lop or perms.sms.change_lop%}
                         <td>
@@ -116,6 +119,7 @@
                             <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
                         </td>
                     </tr>
+                    <!-- {% endif %} -->
                     {% endfor %}
                 </tbody>
             </table>

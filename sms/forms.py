@@ -57,30 +57,59 @@ class CreateLichhoc(forms.ModelForm):
 class CreateNs(forms.ModelForm):
     class Meta:
         model = Hsns
-        #fields = "__all__"
-        fields = ('ma', 'hoten','email','diachi', 'quequan','sdt', 'gioitinh','cccd')
-        
-        #,'diachi', 'cccd','hotenbo', 'hotenme','sdths', 'sdtph')
-        #fields_required = ('lop','trungtam','thoigian','monhoc')
-        labels = {
-            'ma': 'Mã',
-            'email': 'Email',
-            'hoten': 'Họ tên',
-            'diachi': 'Đại chỉ',
-            'quequan': 'Quê quán',
-            'sdt': 'SDT',
-            'gioitinh': 'Giới tính',
-            'cccd': 'CCCD'
-        }
+        fields = "__all__"
+        exclude = ['user',]
+
         widgets = {
-            'ma': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.TextInput(attrs={'class': 'form-control'}),
-            'hoten': forms.TextInput(attrs={'class': 'form-control'}),
-            'diachi': forms.TextInput(attrs={'class': 'form-control'}),
-            'quequan': forms.TextInput(attrs={'class': 'form-control'}),
-            'sdt': forms.TextInput(attrs={'class': 'form-control'}),
-            'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
-            'cccd': forms.TextInput(attrs={'class': 'form-control'}),
+            'ma': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã nhân sự'}),    
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+            'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên'}), 
+            'gioitinh': forms.Select(attrs={'class': 'form-control'}),
+            'namsinh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'dantoc': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dân tộc'}),
+            'tongiao': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Tôn giáo'}),
+            'quoctich': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Quốc tịch'}),
+            'quequan': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nguyên quán'}),
+            'diachi1': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Địa chỉ tạm trú'}),  
+            'diachi2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Địa chỉ thường trú'}),   
+            'sdt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số điện thoại'}),
+            'cccd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CCCD'}),
+            'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'noicap': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nơi cấp'}),
+            'mst': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã số thuế'}),
+            'tddt': forms.Select(attrs={'class': 'form-control'}),
+            'noidt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nơi đào tạo'}),
+            'kdt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Khoa đào tạo'}),
+            'cndt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Chuyên ngành'}),
+            'namtn': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Năm tốt nghiệp'}),
+            'xldt': forms.Select(attrs={'class': 'form-control'}),
+            'cdcv': forms.Select(attrs={'class': 'form-control'}),
+            'vtcv': forms.Select(attrs={'class': 'form-control'}),
+            'shd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số hợp đồng'}),
+            'ngayky': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'ngayhh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'trangthaihd': forms.Select(attrs={'class': 'form-control'}),
+            'tcld': forms.Select(attrs={'class': 'form-control'}),
+            'loaihd': forms.Select(attrs={'class': 'form-control'}),
+            'ngaylv': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'tgcd': forms.Select(attrs={'class': 'form-control'}),
+            'tgbhxh': forms.Select(attrs={'class': 'form-control'}),
+            'ssbhxh': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số sổ BHXH'}),
+            'tongluong': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Tổng lương'}),
+            'luongcb': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Lương cơ bản'}),
+            'stk': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số tài khoản'}),
+            'nh': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ngân hàng'}),
+            'chinhanh': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Chi nhánh'}),
+            'hs_btn': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_bd': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_cc': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_syll': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_ccta': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_ccth': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_khac': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Giấy tờ khác'}),
+            'hs_status': forms.Select(attrs={'class': 'form-control'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú'}),
+
         }
 
 class CreateCtdtMonhoc(forms.ModelForm):
@@ -145,6 +174,13 @@ class CreateLopMonhoc(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'ngaystart': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'ngayend': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'hsdt1': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hsdt2': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hsdt3': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hsdt4': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hsdt5': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hsdt6': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hsdt7': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'hsdt': forms.Textarea(attrs={'class': 'form-control'}),
        }
         
@@ -337,11 +373,24 @@ class CreateSv(forms.ModelForm):
             'huyen': forms.TextInput(attrs={'class': 'form-control'}),
             'tinh': forms.TextInput(attrs={'class': 'form-control'}),
             'cccd': forms.TextInput(attrs={'class': 'form-control'}),
+            'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            'noicap': forms.TextInput(attrs={'class': 'form-control'}),
+            'stk': forms.TextInput(attrs={'class': 'form-control'}),
+            'nh': forms.TextInput(attrs={'class': 'form-control'}),
             'hotenbo': forms.TextInput(attrs={'class': 'form-control'}),
             'hotenme': forms.TextInput(attrs={'class': 'form-control'}),
             'sdths': forms.TextInput(attrs={'class': 'form-control'}),
             'sdtph': forms.TextInput(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
+            'hs_syll' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_pxt' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_btn' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_gcntttt' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_hbthcs' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_cccd' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_gks' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_shk' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_a34' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'hs_status' : forms.Select(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),
         }
@@ -404,6 +453,12 @@ class CreateGv(forms.ModelForm):
             'shdtg': forms.TextInput(attrs={'class': 'form-control'}),
             'ngayky': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
             'ngayhh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
+            'hs_btn' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_bd' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_cc' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_syll' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_ccta' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'hs_ccth' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'hs_status': forms.Select(attrs={'class': 'form-control'}),
             'ghichu' : forms.Textarea(attrs={'class': 'form-control'}),
         }

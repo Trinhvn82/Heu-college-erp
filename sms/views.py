@@ -15,6 +15,12 @@ import shutil, os
 from django.conf import settings
 from django.http import HttpResponse, Http404
 
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
+from guardian.shortcuts import assign_perm, remove_perm
+
+
+
 
 User = get_user_model()
 
@@ -829,14 +835,18 @@ def import_lopsv(request, lop_id):
             v26 = sheet.cell(r,26).value
             v27 = sheet.cell(r,27).value
             v28 = sheet.cell(r,28).value
+            v29 = sheet.cell(r,29).value
+            v30 = sheet.cell(r,30).value
+            v31 = sheet.cell(r,31).value
+            v32 = sheet.cell(r,32).value
             #print(type(v4))
             if not v1 or not v2:
                 messages.error(request, 'Ma, ten không có thông tin')
                 continue
-            if Hssv.objects.filter(msv=v1).exists():
-                messages.error(request, 'Mã: ' + v1+ ' already exists')
-            elif type(v4) is not datetime:
-                messages.error(request, 'Mã: ' + v1 + ' Namsinh: ' + v4 + ' not in date format')
+            if Hssv.objects.filter(msv=v1.strip()).exists():
+                messages.error(request, 'Email: ' + v1+ ' already exists')
+            elif (v4 and type(v4) is not datetime) or (v14 and type(v14) is not datetime):
+                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
             else:
                 sv = Hssv(
                     msv=v1, 
@@ -852,21 +862,25 @@ def import_lopsv(request, lop_id):
                     huyen=v11, 
                     tinh=v12, 
                     cccd=v13, 
-                    hotenbo=v14, 
-                    hotenme=v15,
-                    sdths=v16, 
-                    sdtph=v17, 
-                    hs_syll= True if v18 == 1 else False,
-                    hs_pxt= True if v19 == 1 else False,
-                    hs_btn= True if v20 == 1 else False,
-                    hs_gcntttt= True if v21 == 1 else False,
-                    hs_hbthcs= True if v22 == 1 else False,
-                    hs_cccd= True if v23 == 1 else False,
-                    hs_gks= True if v24 == 1 else False,
-                    hs_shk= True if v25 == 1 else False,
-                    hs_a34= True if v26 == 1 else False,
-                    hs_status= "Đủ" if v27 == 1 else "Thiếu",
-                    ghichu=v28, 
+                    ngaycap=v14, 
+                    noicap=v15,
+                    stk=v16, 
+                    nh=v17, 
+                    hotenbo=v18, 
+                    hotenme=v19,
+                    sdths=v20, 
+                    sdtph=v21, 
+                    hs_syll= True if v22 == 1 else False,
+                    hs_pxt= True if v23 == 1 else False,
+                    hs_btn= True if v24 == 1 else False,
+                    hs_gcntttt= True if v25 == 1 else False,
+                    hs_hbthcs= True if v26 == 1 else False,
+                    hs_cccd= True if v27 == 1 else False,
+                    hs_gks= True if v28 == 1 else False,
+                    hs_shk= True if v29 == 1 else False,
+                    hs_a34= True if v30 == 1 else False,
+                    hs_status= "Đủ" if v31 == 1 else "Thiếu",
+                    ghichu=v32, 
                     lop_id=lop_id)
                 sv.save()
 
@@ -970,25 +984,127 @@ def import_ns(request):
         #    messages.error(request, "File excel khong dung format hsgv")
         #    return redirect("gv_list")
         sheet = wb["hsns"]
-        for r in range(2, sheet.max_row+1):
-            ma = sheet.cell(r,1).value
-            email = sheet.cell(r,2).value
-            hoten = sheet.cell(r,3).value
-            diachi = sheet.cell(r,4).value
-            quequan = sheet.cell(r,5).value
-            sdt = sheet.cell(r,6).value
-            gioitinh = sheet.cell(r,7).value
-            cccd = sheet.cell(r,8).value
-            if not ma or not email or not hoten:
+        for r in range(3, sheet.max_row+1):
+            v1 = sheet.cell(r,1).value
+            v2 = sheet.cell(r,2).value
+            v3 = sheet.cell(r,3).value
+            v4 = sheet.cell(r,4).value
+            v5 = sheet.cell(r,5).value
+            v6 = sheet.cell(r,6).value
+            v7 = sheet.cell(r,7).value
+            v8 = sheet.cell(r,8).value
+            v9 = sheet.cell(r,9).value
+            v10 = sheet.cell(r,10).value
+            v11 = sheet.cell(r,11).value
+            v12 = sheet.cell(r,12).value
+            v13 = sheet.cell(r,13).value
+            v14 = sheet.cell(r,14).value
+            v15 = sheet.cell(r,15).value
+            v16 = sheet.cell(r,16).value
+            v17 = sheet.cell(r,17).value
+            v18 = sheet.cell(r,18).value
+            v19 = sheet.cell(r,19).value
+            v20 = sheet.cell(r,20).value
+
+            v21 = sheet.cell(r,21).value
+            v22 = sheet.cell(r,22).value
+            v23 = sheet.cell(r,23).value
+            v24 = sheet.cell(r,24).value
+            v25 = sheet.cell(r,25).value
+            v26 = sheet.cell(r,26).value
+            v27 = sheet.cell(r,27).value
+            v28 = sheet.cell(r,28).value
+            v29 = sheet.cell(r,29).value
+            v30 = sheet.cell(r,30).value
+
+            v31 = sheet.cell(r,31).value
+            v32 = sheet.cell(r,32).value
+            v33 = sheet.cell(r,33).value
+            v34 = sheet.cell(r,34).value
+            v35 = sheet.cell(r,35).value
+            v36 = sheet.cell(r,36).value
+            v37 = sheet.cell(r,37).value
+            v38 = sheet.cell(r,38).value
+            v39 = sheet.cell(r,39).value
+            v40 = sheet.cell(r,40).value
+
+            v41 = sheet.cell(r,41).value
+            v42 = sheet.cell(r,42).value
+            v43 = sheet.cell(r,43).value
+            v44 = sheet.cell(r,44).value
+            v45 = sheet.cell(r,45).value
+            v46 = sheet.cell(r,46).value
+            v47 = sheet.cell(r,47).value
+            v48 = sheet.cell(r,48).value
+
+            if not v1 or not v2 or not v3:
                 messages.error(request, 'Ma, email, ten không có thông tin')
                 continue
-            if Hsns.objects.filter(ma=ma).exists():
-                messages.error(request, 'Ma: ' + ma + ' already exists')
+            if Hsns.objects.filter(ma=v1.strip()).exists():
+                messages.error(request, 'Ma: ' + v1 + ' already exists')
+            if Hsns.objects.filter(email=v3.strip()).exists():
+                messages.error(request, 'Email: ' + v3 + ' already exists')
+            elif (v5 and type(v5) is not datetime) or (v14 and type(v14) is not datetime):
+                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
+            elif (v25 and type(v25) is not datetime) or (v26 and type(v26) is not datetime):
+                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
+            elif v31 and type(v31) is not datetime:
+                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
             else:
-                ns = Hsns(ma=ma, email=email, hoten=hoten, diachi=diachi, 
-                        quequan=quequan, sdt=sdt, gioitinh=gioitinh, cccd=cccd)
-                ns.save()
+                ns = Hsns(
+                    ma = v1,
+                    hoten = v2,
+                    email = v3,
+                    gioitinh = v4,
+                    namsinh = v5,
+                    dantoc = v6,
+                    tongiao = v7,
+                    quoctich = v8,
+                    quequan = v9,
+                    diachi1 = v10,
+                    diachi2 = v11,
+                    sdt = v12,
+                    cccd = v13,
+                    ngaycap = v14,
+                    noicap = v15,
+                    mst = v16,
+                    tddt = v17,
+                    noidt = v18,
+                    kdt = v19,
+                    cndt = v20,
+                    namtn = v21,
+                    xldt = v22,
+                    cdcv = v23,
+                    vtcv = v24,
+                    shd = v25,
+                    ngayky = v26,
+                    ngayhh = v27,
+                    trangthaihd = v28,
+                    tcld = v29,
+                    loaihd = v30,
+                    ngaylv = v31,
+                    tgcd = v32,
+                    tgbhxh = v33,
+                    ssbhxh = v34,
 
+                    tongluong = v35,
+                    luongcb = v36,
+                    stk = v37,
+                    nh = v38,
+                    chinhanh = v39,
+
+                    hs_btn = True if v40 == 1 else False,
+                    hs_bd = True if v41 == 1 else False,
+                    hs_cc = True if v42 == 1 else False,
+                    hs_syll = True if v43 == 1 else False,
+                    hs_ccta = True if v44 == 1 else False,
+                    hs_ccth = True if v45 == 1 else False,
+                    hs_khac = v46,
+                    hs_status = "Đủ" if v47 == 1 else "Thiếu",
+                    ghichu = v48
+                        )
+                ns.save()
+ 
         messages.success(request, "Import thanh cong!")
         return redirect("ns_list")
 
@@ -1041,6 +1157,7 @@ def export_lh(request):
     return response
 
 @login_required
+@permission_required('sms.view_lop',raise_exception=True)
 def lop_list(request):
 
     if request.user.is_superuser or request.user.is_supervisor:
@@ -1071,6 +1188,28 @@ def lop_list(request):
 
     print(Lop.history.all())
     #print(request.user.username)
+    paginator = Paginator(lop, 20)
+    page = request.GET.get('page')
+    paged_students = paginator.get_page(page)
+    context = {
+        "lop": paged_students
+    }
+    return render(request, "sms/lop_list.html", context)
+
+@login_required
+@permission_required('sms.view_lop',raise_exception=True)
+def lop_list_guardian(request):
+
+    list_of_ids = []
+    for l in Lop.objects.all():
+        if request.user.has_perm('assign_lop', l):
+            list_of_ids.append(l.id)
+            print("lop_id: ")
+            print(l.id)
+
+    lop = Lop.objects.filter(id__in=list_of_ids).select_related("ctdt").order_by('id')
+
+#    lop = Lop.objects.all().select_related("ctdt").order_by('id')
     paginator = Paginator(lop, 20)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
@@ -1194,23 +1333,22 @@ def ns_lop(request, ns_id):
 
     ns = Hsns.objects.get(id = ns_id)
     ls = Lop.objects.all()
-    nls = NsLop.objects.filter(ns_id = ns_id).order_by('lop_id')
+    #nls = NsLop.objects.filter(ns_id = ns_id).order_by('lop_id')
     if request.method == "POST":
         for l in ls:
             id = "C"+str(l.id)
             status = request.POST[id]
-            print(id)
-            print(status)
             nl = NsLop.objects.get(ns_id = ns_id, lop_id = l.id)
             nl.status=status
-            nl.save() 
-        #     id = "C"+str(stud.id)
-        #     status = request.POST[id]
-        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
-        #     dd.status=status
-        #     dd.save() 
-        # ttlh.status=1
-        # ttlh.save()
+            nl.save()
+            #Add Nhân sự to assign_lop permission
+            if status == "1":
+                if not ns.user.has_perm('assign_lop', l):
+                    assign_perm('assign_lop', ns.user, l)
+            else:
+                if ns.user.has_perm('assign_lop', l):
+                    remove_perm('assign_lop', ns.user, l)
+
         messages.success(request, "Cập nhật lớp thành công!")
         return redirect("ns_list")
 
@@ -1228,8 +1366,10 @@ def ns_lop(request, ns_id):
 
 @login_required
 def gv_lop(request, gv_id):
+
+    gv = Hsgv.objects.get(id = gv_id)
     ls = Lop.objects.all()
-    nls = GvLop.objects.filter(gv_id = gv_id).order_by('lop_id')
+    #nls = GvLop.objects.filter(gv_id = gv_id).order_by('lop_id')
     if request.method == "POST":
         for l in ls:
             id = "C"+str(l.id)
@@ -1239,6 +1379,7 @@ def gv_lop(request, gv_id):
             nl = GvLop.objects.get(gv_id = gv_id, lop_id = l.id)
             nl.status=status
             nl.save() 
+
         #     id = "C"+str(stud.id)
         #     status = request.POST[id]
         #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
@@ -1305,18 +1446,41 @@ def gv_lmh(request, gv_id):
         for mh in glmhs:
             id = "C"+str(mh.lopmh_id)
             status = request.POST[id]
-            print(id)
-            print(status)
             gmh = GvLmh.objects.get(gv_id = gv_id, lopmh_id = mh.lopmh_id)
             gmh.status=status
             gmh.save() 
-        #     id = "C"+str(stud.id)
-        #     status = request.POST[id]
-        #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
-        #     dd.status=status
-        #     dd.save() 
-        # ttlh.status=1
-        # ttlh.save()
+
+            #Add Giao viên to assign_lopmonhoc permission
+            lmh = LopMonhoc.objects.get(id = mh.lopmh_id)
+            if status == "1":
+                if not gv.user.has_perm('assign_lopmonhoc', lmh):
+                    assign_perm('assign_lopmonhoc', gv.user, lmh)
+            else:
+                if gv.user.has_perm('assign_lopmonhoc', lmh):
+                    remove_perm('assign_lopmonhoc', gv.user, lmh)
+
+        lop = Lop.objects.all()
+        for l in lop:
+            lmhs = LopMonhoc.objects.filter(lop_id = l.id)
+
+            # group_name = "Lop_permisison_"+str(l.id)
+            # if Group.objects.filter(name=group_name).exists():
+            #     group = Group.objects.get(name=group_name)
+            #     if GvLmh.objects.filter(gv_id = gv_id, status =1, lopmh__in = lmhs).first():
+            #         if not gv.user.groups.filter(name=group_name).exists():
+            #             gv.user.groups.add(group)
+            #     else:
+            #         if gv.user.groups.filter(name=group_name).exists():
+            #             gv.user.groups.remove(group)
+
+            #Add Gv to assign_lop permission
+            if GvLmh.objects.filter(gv_id = gv_id, status =1, lopmh__in = lmhs).first():
+                if not gv.user.has_perm('assign_lop', l):
+                    assign_perm('assign_lop', gv.user, l)
+            else:
+                if gv.user.has_perm('assign_lop', l):
+                    remove_perm('assign_lop', gv.user, l)
+
         messages.success(request, "Cập nhật môn học thành công!")
         return redirect("gv_list")
 
@@ -1359,10 +1523,37 @@ def single_ctdtmonhoc(request, ctdt_id):
         return render(request, "sms/ctdt-monhoc_list.html", context)
 @login_required
 def lop_monhoc(request, lop_id):
+        if not request.user.has_perm('assign_lop',Lop.objects.get(id=lop_id)):
+            return redirect("lop_list")
         if request.user.is_gv:
             gv = Hsgv.objects.get(user_id = request.user.id)
             glm = GvLmh.objects.filter(gv_id = gv.id, status = 1)
             lm = LopMonhoc.objects.filter(lop_id = lop_id, id__in=[ns.lopmh_id for ns in glm]).select_related("lop", "monhoc").order_by('lop_id')
+        else:    
+            lm = LopMonhoc.objects.filter(lop_id = lop_id).select_related("lop", "monhoc")
+        ten = Lop.objects.get(id = lop_id).ten
+        context = {
+            "lm": lm,
+            "ten": ten,
+            "lop_id": lop_id
+        }
+        return render(request, "sms/lop-monhoc_list.html", context)
+
+from guardian.decorators import permission_required_or_403
+from django.http import HttpResponse
+
+@login_required
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def lop_monhoc_testwithGuardian(request, lop_id):
+        if request.user.is_gv:
+            list_of_ids = []
+            for lm in LopMonhoc.objects.filter(lop_id = lop_id):
+                if request.user.has_perm('assign_lopmonhoc', lm):
+                    list_of_ids.append(lm.id)
+            lm = LopMonhoc.objects.filter(id__in=list_of_ids).select_related("lop", "monhoc").order_by('lop_id')
+            # gv = Hsgv.objects.get(user_id = request.user.id)
+            # glm = GvLmh.objects.filter(gv_id = gv.id, status = 1)
+            # lm = LopMonhoc.objects.filter(lop_id = lop_id, id__in=[ns.lopmh_id for ns in glm]).select_related("lop", "monhoc").order_by('lop_id')
         else:    
             lm = LopMonhoc.objects.filter(lop_id = lop_id).select_related("lop", "monhoc")
         ten = Lop.objects.get(id = lop_id).ten
@@ -1596,6 +1787,9 @@ def create_lop(request):
             return redirect("lop_list")
         if forms.is_valid():
             lop = forms.save()
+            #create Group and assign permission to Lop
+            group = Group.objects.create(name="Lop_permisison_"+str(lop.id))
+            assign_perm('assign_lop', group, lop)
             hks= Hocky.objects.all()
             for hk in hks:
                 lhk = LopHk.objects.create(hk_id = hk.id, lop_id = lop.id)
@@ -1662,8 +1856,11 @@ def create_gv(request):
 def create_ns(request):
     if request.method == "POST":
         forms = CreateNs(request.POST, request.FILES or None)
-        if Hsns.objects.filter(ma = forms['ma'].value()).first():
+        if Hsns.objects.filter(ma = forms['ma'].value().strip()).first():
             messages.error(request, "Mã nhân sự đã tồn tại!")
+            return redirect("ns_list")
+        if Hsns.objects.filter(email = forms['email'].value().strip()).first():
+            messages.error(request, "Email nhân sự đã tồn tại!")
             return redirect("ns_list")
         if forms.is_valid():
             forms.save()

@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'info.User'
 
-SESSION_COOKIE_AGE =  600 # 5 minutes
+SESSION_COOKIE_AGE =  60000 # 5 minutes
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
 
 MEDIA_URL = '/media/'
@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'simple_history',
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'guardian',
 #    'import_export'
 #    'rest_framework'
 
@@ -94,6 +95,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'CollegeERP.wsgi.application'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'guardian.backends.ObjectPermissionBackend',
+)
 
 
 # Database

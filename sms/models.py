@@ -28,6 +28,17 @@ pl_choice = (
     ("Đã hoàn thành", "Đã hoàn thành"),
 )
 
+yn_choice = (
+    ("Có", "Có"),
+    ("Không", "Không"),
+)
+
+gender_choice = (
+    ("Nam", "Nam"),
+    ("Nữ", "Nữ"),
+)
+
+
 class TeacherDeptInfo(models.Model):
     dept_name = models.CharField(max_length=50)
 
@@ -212,6 +223,9 @@ class Lop(models.Model):
     history = HistoricalRecords()
 
     class Meta:
+        permissions = (
+            ('assign_lop', 'can assign lop'),
+        )        
         verbose_name = "Lớp"
         verbose_name_plural = "Danh sác Lớp"
         unique_together = ('ma',)
@@ -223,7 +237,7 @@ class Lop(models.Model):
 
 class Hssv(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    msv = models.CharField(max_length=100, blank=True, default='TC0001')
+    msv = models.CharField(max_length=100, default='TC0001')
     hoten = models.CharField(max_length=100)
     #image = models.FileField(blank=True)
     #image = models.ImageField(upload_to='uploads/',blank=True)
@@ -234,8 +248,8 @@ class Hssv(models.Model):
     #status = models.CharField(choices=st_choice, max_length=50)
     status = models.ForeignKey(SvStatus, on_delete=models.CASCADE, default=1)
     #status = models.IntegerField(choices=st_choice, default= 1)
-    namsinh = models.DateField(null=True)
-    gioitinh = models.CharField(max_length=30, blank=True, null=True)
+    namsinh = models.DateField( blank=True, null=True)
+    gioitinh = models.CharField(choices=gender_choice, blank=True, null=True)
     dantoc = models.CharField(max_length=30, blank=True, null=True)
     noisinh = models.CharField(max_length=200, blank=True, null=True)
     quequan = models.CharField(max_length=200, blank=True, null=True)
@@ -244,6 +258,10 @@ class Hssv(models.Model):
     huyen = models.CharField(max_length=100, blank=True, null=True)
     tinh = models.CharField(max_length=100, blank=True, null=True)
     cccd = models.CharField(max_length=100, blank=True, null=True)
+    ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    noicap = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Nơi cấp")
+    stk = models.CharField(max_length=100, blank=True, null=True, verbose_name = "STK")
+    nh = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Ngân Hàng")
     hotenbo = models.CharField(max_length=200, blank=True, null=True)
     hotenme = models.CharField(max_length=200, blank=True, null=True)
     sdths = models.CharField(max_length=100, blank=True, null=True)
@@ -318,17 +336,117 @@ class Hsgv(models.Model):
         return self.hoten
 
 class Hsns(models.Model):
+    tddt_choice = (
+        ("Nghiệp vụ", "Nghiệp vụ"),
+        ("Trung cấp", "Trung cấp"),
+        ("Cao đẳng", "Cao đẳng"),
+        ("Cử nhân", "Cử nhân"),
+        ("Thạc sĩ", "Thạc sĩ"),
+        ("Tiến sĩ", "Tiến sĩ"),
+        ("Giáo sư", "Giáo sư"),
+    )
+    xldt_choice = (
+        ("Xuất sắc", "Xuất sắc"),
+        ("Giỏi", "Giỏi"),
+        ("Khá", "Khá"),
+        ("Trung bình khá", "Trung bình khá"),
+        ("Trung bình", "Trung bình"),
+    )
+    cdcv_choice = (
+        ("Nhân viên", "Nhân viên"),
+        ("Chuyên viên", "Chuyên viên"),
+        ("Phó phòng", "Phó phòng"),
+        ("Trưởng phòng", "Trưởng phòng"),
+        ("Cố vấn", "Cố vấn"),
+        ("Kế toán trưởng", "Kế toán trưởng"),
+        ("Phó Hiệu trưởng", "Phó Hiệu trưởng"),
+        ("Hiệu trưởng", "Hiệu trưởng"),
+        ("Thành viên HĐQT", "Thành viên HĐQT"),
+        ("Chủ tịch HĐQT", "Chủ tịch HĐQT"),
+    )
+    vtcv_choice = (
+        ("Hành chính", "Hành chính"),
+        ("Nhân sự", "Nhân sự"),
+        ("Tạp vụ", "Tạp vụ"),
+        ("Khác", "Khác"),
+    )
+    tthd_choice = (
+        ("Đang làm việc", "Đang làm việc"),
+        ("Đã nghỉ việc", "Đã nghỉ việc"),
+        ("Nghỉ không lương", "Nghỉ không lương"),
+        ("Nghỉ thai sản", "Nghỉ thai sản"),
+    )
+
+    tcld_choice = (
+        ("Chính thức", "Chính thức"),
+        ("Thử việc", "Thử việc"),
+        ("DV", "DV"),
+    )
+
+    loaihd_choice = (
+        ("Thời vụ", "Thời vụ"),
+        ("Học việc", "Học việc"),
+        ("Thử việc", "Thử việc"),
+        ("Xác định thời hạn", "Xác định thời hạn"),
+        ("Không xác định thời hạn", "Không xác định thời hạn"),
+        ("Dịch vụ", "Dịch vụ"),
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    ma = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
-    hoten = models.CharField(max_length=100)
-    diachi = models.CharField(max_length=100, blank=True, null=True)
-    quequan = models.CharField(max_length=100, blank=True, null=True)
+    ma = models.CharField(max_length=100, verbose_name = "Mã Nhân sự")
+    email = models.CharField(max_length=100, verbose_name = "Email")
+    hoten = models.CharField(max_length=100, verbose_name = "Họ tên")
     #namsinh = models.DateField()
-    sdt = models.CharField(max_length=100, blank=True, null=True)
-    gioitinh = models.CharField(max_length=100, blank=True, null=True)
-    cccd = models.CharField(max_length=100, blank=True, null=True)
-    ghichu = models.TextField(max_length=500, blank=True, null=True)
+    gioitinh = models.CharField(choices=gender_choice, blank=True, null=True, verbose_name = "Giới tính")
+    namsinh = models.DateField(blank=True, null=True, verbose_name = "năm sinh")
+    dantoc = models.CharField(max_length=30, blank=True, null=True, verbose_name = "dân tộc")
+    tongiao = models.CharField(max_length=30, blank=True, null=True, verbose_name = "dân tộc")
+    quoctich = models.CharField(max_length=30, blank=True, null=True, verbose_name = "dân tộc")
+    quequan = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Nguyên quán")
+    diachi1 = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Địa chỉ tạm trú")
+    diachi2 = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Địa chỉ thường trú")      
+    sdt = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Số điện thoại")
+    cccd = models.CharField(max_length=100, blank=True, null=True, verbose_name = "CCCD")
+    ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    noicap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    mst = models.CharField(max_length=100, blank=True, null=True, verbose_name = "MS Thuế cá nhân")
+
+
+    tddt = models.CharField(choices=tddt_choice, blank=True, null=True, verbose_name = "Trình độ đào tạo")
+    noidt = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Nơi đào tạo")
+    kdt = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Khoa đào tạo")
+    cndt = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Chuyên ngành")
+    namtn = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Năm tốt nghiệp")
+    xldt = models.CharField(choices=xldt_choice, blank=True, null=True, verbose_name = "Xếp loại")
+    cdcv = models.CharField(choices=cdcv_choice, blank=True, null=True, verbose_name = "Chức danh công việc")
+    vtcv = models.CharField(choices=vtcv_choice, blank=True, null=True, verbose_name = "Vị trí công việc")
+    shd = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Số hợp đồng")
+    ngayky = models.DateField(max_length=100, blank=True, null=True, verbose_name = "Ngày kí")
+    ngayhh = models.DateField(blank=True, null=True, verbose_name = "Ngày hết hạn")
+    trangthaihd = models.CharField(choices=tthd_choice, blank=True, null=True, verbose_name = "Trạng thái")
+    tcld = models.CharField(choices=tcld_choice, blank=True, null=True, verbose_name = "Tính chất lao động")
+
+    loaihd = models.CharField(choices=loaihd_choice, blank=True, null=True, verbose_name = "Loại hợp đồng")
+    ngaylv = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Ngày vào làm việc")
+    tgcd = models.CharField(choices=yn_choice, blank=True, null=True, verbose_name = "Tham gia công đoàn")
+    tgbhxh = models.CharField(choices=yn_choice, blank=True, null=True, verbose_name = "Tham gia BHXH")
+    ssbhxh = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Số sổ BHXH")
+
+    tongluong = models.IntegerField(blank=True, null=True, verbose_name = "Tổng lương")
+    luongcb = models.IntegerField(blank=True, null=True, verbose_name = "Lương cơ bản (BHXH)")
+    stk = models.CharField(max_length=100, blank=True, null=True, verbose_name = "STK")
+    nh = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Ngân Hàng")
+    chinhanh = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Chi nhánh")
+
+    hs_btn = models.BooleanField(default= False, verbose_name = "Bằng tốt nghiệp")
+    hs_bd = models.BooleanField(default= False, verbose_name = "Bảng điểm")
+    hs_cc = models.BooleanField(default= False, verbose_name = "Chứng chỉ NVSP/dạy nghề")
+    hs_syll = models.BooleanField(default= False, verbose_name = "Sơ yếu lý lịch")
+    hs_ccta = models.BooleanField(default= False, verbose_name = "Chứng chỉ tiếng Anh")
+    hs_ccth = models.BooleanField(default= False, verbose_name = "Chứng chỉ tin học")
+    hs_khac = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Giấy tờ khác")
+    hs_status = models.CharField(choices=st_choice, max_length=50, blank=True, verbose_name = "Tình trạng hồ sơ")
+
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
     #phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True, blank=True)
     history = HistoricalRecords()
  
@@ -434,6 +552,9 @@ class LopMonhoc(models.Model):
     history = HistoricalRecords()
 
     class Meta:
+        permissions = (
+            ('assign_lopmonhoc', 'can assign lopmonhoc'),
+        )        
         verbose_name = "Lớp môn học"
         verbose_name_plural = "Lớp môn học"
         ordering = ["-id","-ngaystart"]
