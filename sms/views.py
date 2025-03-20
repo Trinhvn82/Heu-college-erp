@@ -881,11 +881,11 @@ def import_lopsv(request, lop_id):
                     hs_a34= True if v30 == 1 else False,
                     hs_status= "Đủ" if v31 == 1 else "Thiếu",
                     ghichu=v32, 
-                    lop_id=lop_id)
+                    lop_id= lop_id if lop_id else None)
                 sv.save()
 
         messages.success(request, "Import thanh cong!")
-        return redirect("svlop_list", lop_id)
+        return redirect("svlop_list", lop_id) if lop_id else redirect("sv_list")
 
 @login_required
 def import_gv(request):
