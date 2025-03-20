@@ -1788,8 +1788,8 @@ def create_lop(request):
         if forms.is_valid():
             lop = forms.save()
             #create Group and assign permission to Lop
-            group = Group.objects.create(name="Lop_permisison_"+str(lop.id))
-            assign_perm('assign_lop', group, lop)
+            # group = Group.objects.create(name="Lop_permisison_"+str(lop.id))
+            # assign_perm('assign_lop', group, lop)
             hks= Hocky.objects.all()
             for hk in hks:
                 lhk = LopHk.objects.create(hk_id = hk.id, lop_id = lop.id)
