@@ -9,7 +9,7 @@ class DiemdanhRP(models.Model):
     thoigian = models.DateField()
     sv = models.CharField(max_length=300, default= "", blank= True)
     ghichu =models.CharField(max_length=300, default= "", blank= True)
-    #sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
+    #sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
     #lichhoc_id = models.IntegerField()
 
     def __str__(self):

@@ -63,8 +63,8 @@ class TeacherInfo(models.Model):
     #teacher_img = models.ImageField(default=NULL)
     passing_year = models.CharField(max_length=100)
     joining_date = models.DateField()
-    dept_type = models.ForeignKey(TeacherDeptInfo, on_delete=models.CASCADE)
-    sub_type = models.ForeignKey(TeacherSubInfo, on_delete=models.CASCADE)
+    dept_type = models.ForeignKey(TeacherDeptInfo, on_delete=models.RESTRICT)
+    sub_type = models.ForeignKey(TeacherSubInfo, on_delete=models.RESTRICT)
     salary = models.IntegerField()
 
     def __str__(self):
@@ -217,8 +217,8 @@ class Lop(models.Model):
     ma = models.CharField(max_length=100,verbose_name="Mã Lớp")
     ten = models.CharField(max_length=100,verbose_name="Tên Lớp")
     #trungtam = models.CharField(max_length=100)
-    trungtam = models.ForeignKey(Trungtam, on_delete=models.CASCADE,verbose_name="Trung tâm")
-    ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE,verbose_name="Chương trình đào tạo")
+    trungtam = models.ForeignKey(Trungtam, on_delete=models.RESTRICT,verbose_name="Trung tâm")
+    ctdt = models.ForeignKey(Ctdt, on_delete=models.RESTRICT,verbose_name="Chương trình đào tạo")
     # mhs = models.ManyToManyField(Monhoc, default= None , blank= True)
     history = HistoricalRecords()
 
@@ -236,17 +236,17 @@ class Lop(models.Model):
 
 
 class Hssv(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
     msv = models.CharField(max_length=100, default='TC0001')
     hoten = models.CharField(max_length=100)
     #image = models.FileField(blank=True)
     #image = models.ImageField(upload_to='uploads/',blank=True)
     #image_data = models.BinaryField(null=True)
     #lop = models.CharField(max_length=100)
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE, blank=True, null=True)
+    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT, blank=True, null=True)
     #gender = models.CharField(choices=gender_choice, max_length=10)
     #status = models.CharField(choices=st_choice, max_length=50)
-    status = models.ForeignKey(SvStatus, on_delete=models.CASCADE, default=1)
+    status = models.ForeignKey(SvStatus, on_delete=models.RESTRICT, default=1)
     #status = models.IntegerField(choices=st_choice, default= 1)
     namsinh = models.DateField( blank=True, null=True)
     gioitinh = models.CharField(choices=gender_choice, blank=True, null=True)
@@ -291,7 +291,7 @@ class Hssv(models.Model):
 
 
 class Hsgv(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
     ma = models.CharField(max_length=100)
     hoten = models.CharField(max_length=100)
     namsinh = models.DateField(blank=True, null=True)
@@ -391,7 +391,7 @@ class Hsns(models.Model):
         ("Không xác định thời hạn", "Không xác định thời hạn"),
         ("Dịch vụ", "Dịch vụ"),
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
     ma = models.CharField(max_length=100, verbose_name = "Mã Nhân sự")
     email = models.CharField(max_length=100, verbose_name = "Email")
     hoten = models.CharField(max_length=100, verbose_name = "Họ tên")
@@ -447,7 +447,7 @@ class Hsns(models.Model):
     hs_status = models.CharField(choices=st_choice, max_length=50, blank=True, verbose_name = "Tình trạng hồ sơ")
 
     ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
-    #phong = models.ForeignKey(Phong, on_delete=models.CASCADE, null=True, blank=True)
+    #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
     history = HistoricalRecords()
  
     class Meta:
@@ -463,8 +463,8 @@ class Hsns(models.Model):
 class CtdtMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
     #hocky = models.IntegerField()
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
-    ctdt = models.ForeignKey(Ctdt, on_delete=models.CASCADE)
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT)
+    ctdt = models.ForeignKey(Ctdt, on_delete=models.RESTRICT)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
 
@@ -478,8 +478,8 @@ class CtdtMonhoc(models.Model):
         return self.ctdt.ten
     
 class NsLop(models.Model):
-    ns = models.ForeignKey(Hsns, on_delete=models.CASCADE)
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+    ns = models.ForeignKey(Hsns, on_delete=models.RESTRICT)
+    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
     class Meta:
@@ -492,8 +492,8 @@ class NsLop(models.Model):
         return self.lop.ten
     
 class GvLop(models.Model):
-    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+    gv = models.ForeignKey(Hsgv, on_delete=models.RESTRICT)
+    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
     class Meta:
@@ -506,8 +506,8 @@ class GvLop(models.Model):
         return self.lop.ten
 
 class GvMonhoc(models.Model):
-    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
+    gv = models.ForeignKey(Hsgv, on_delete=models.RESTRICT)
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
     class Meta:
@@ -520,8 +520,8 @@ class GvMonhoc(models.Model):
         return self.lop.ten
 
 class NsPhong(models.Model):
-    ns = models.ForeignKey(Hsns, on_delete=models.CASCADE)
-    phong = models.ForeignKey(Phong, on_delete=models.CASCADE)
+    ns = models.ForeignKey(Hsns, on_delete=models.RESTRICT)
+    phong = models.ForeignKey(Phong, on_delete=models.RESTRICT)
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
     class Meta:
@@ -538,9 +538,9 @@ class LopMonhoc(models.Model):
     ngayend = models.DateField(blank= True, null=True, verbose_name="Ngày kết thúc")
     #gender = models.CharField(choices=gender_choice, max_length=10)
     status = models.CharField(choices=pl_choice, max_length=50)
-    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE, default= 1)
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
+    hk = models.ForeignKey(Hocky, on_delete=models.RESTRICT, default= 1)
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT)
+    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
     hsdt = models.TextField(max_length=500, default= "", blank= True, null=True, verbose_name="Ghi chú Xác nhận giảng dạy")
     hsdt1 = models.BooleanField(default= False, verbose_name="Tiến độ, kế hoạch, CTĐT")
     hsdt2 = models.BooleanField(default= False, verbose_name="Phiếu báo giảng")
@@ -573,9 +573,9 @@ class Lichhoc(models.Model):
     status = models.CharField(choices=pl_choice, max_length=50)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
     #TenTT = models.IntegerField()
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE)
-    giaovien = models.ForeignKey(Hsgv, on_delete=models.CASCADE, blank= True, null=True)
+    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT)
+    giaovien = models.ForeignKey(Hsgv, on_delete=models.RESTRICT, blank= True, null=True)
     history = HistoricalRecords()
     class Meta:
         verbose_name = "Lịch học"
@@ -594,8 +594,8 @@ class Hocphi(models.Model):
     ghichu = models.TextField(default= "", max_length=500,blank= True)
     status = models.IntegerField(default= 0)
     #TenTT = models.IntegerField()
-    lop = models.ForeignKey(Lop, on_delete=models.CASCADE)
-    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
+    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
     history = HistoricalRecords()
     def __str__(self):
         return self.lop.ten + "-" + self.sv.hoten
@@ -603,12 +603,12 @@ class Hocphi(models.Model):
 class Hp81(models.Model):
     #TenTT = models.IntegerField()
     #status = models.IntegerField(choices=st_choice1, default= 1)
-    status = models.ForeignKey(HocphiStatus, on_delete=models.CASCADE)
+    status = models.ForeignKey(HocphiStatus, on_delete=models.RESTRICT)
     thoigian = models.DateField(default= None, blank= True, null=True)
     sotien1 = models.IntegerField(default= 0, blank= True, null=True)
     sotien2 = models.IntegerField(default= 0, blank= True, null=True)
-    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
-    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
+    hk = models.ForeignKey(Hocky, on_delete=models.RESTRICT)
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
     history = HistoricalRecords()
     class Meta:
@@ -632,8 +632,8 @@ class Hs81(models.Model):
     cccdme = models.BooleanField(default= False)
     gks = models.BooleanField(default= False)
     ghichu = models.TextField(max_length=500,blank= True, null=True)
-    hk = models.ForeignKey(Hocky, on_delete=models.CASCADE)
-    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
+    hk = models.ForeignKey(Hocky, on_delete=models.RESTRICT)
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
     history = HistoricalRecords()
     class Meta:
         verbose_name = "Hồ sơ 81"
@@ -646,8 +646,8 @@ class Hs81(models.Model):
 
 class Diemdanh(models.Model):
     status = models.IntegerField(default=1)
-    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE)
-    lichhoc = models.ForeignKey(Lichhoc, on_delete=models.CASCADE)
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
+    lichhoc = models.ForeignKey(Lichhoc, on_delete=models.RESTRICT)
     history = HistoricalRecords()
 
     class Meta:
@@ -696,10 +696,10 @@ class Diemthanhphan(models.Model):
     #ghichu = models.CharField(max_length=300)
     diem = models.DecimalField(max_digits=5, decimal_places=1, verbose_name="Điểm")
     status = models.IntegerField(default= 0)
-    tp = models.ForeignKey(Loaidiem, on_delete=models.CASCADE, verbose_name="Điểm Thành phần")
-    sv = models.ForeignKey(Hssv, on_delete=models.CASCADE, verbose_name="Học viên")
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.CASCADE, verbose_name="Môn học")    
-    log = models.ForeignKey(LogDiem, on_delete=models.CASCADE, null= True, verbose_name="ID Log")
+    tp = models.ForeignKey(Loaidiem, on_delete=models.RESTRICT, verbose_name="Điểm Thành phần")
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT, verbose_name="Học viên")
+    monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT, verbose_name="Môn học")    
+    log = models.ForeignKey(LogDiem, on_delete=models.RESTRICT, null= True, verbose_name="ID Log")
     history = HistoricalRecords()
 
     class Meta:
@@ -731,8 +731,8 @@ class Ttgv(models.Model):
     sotien1 = models.IntegerField(default= 0, blank= True, null=True)
     sotien2 = models.IntegerField(default= 0, blank= True, null=True)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
-    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.CASCADE)
-    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE)
+    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT)
+    gv = models.ForeignKey(Hsgv, on_delete=models.RESTRICT)
     history = HistoricalRecords()
     class Meta:
         verbose_name = "Thanh toán giáo viên"
@@ -743,8 +743,8 @@ class Ttgv(models.Model):
         return self.gv.hoten
 
 class GvLmh(models.Model):
-    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.CASCADE, verbose_name="Lớp môn học")
-    gv = models.ForeignKey(Hsgv, on_delete=models.CASCADE, verbose_name="Giáo viên")
+    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT, verbose_name="Lớp môn học")
+    gv = models.ForeignKey(Hsgv, on_delete=models.RESTRICT, verbose_name="Giáo viên")
     status = models.IntegerField(default= 0)
     history = HistoricalRecords()
     class Meta:
@@ -768,8 +768,8 @@ class Giayto_hs81(models.Model):
     format = models.CharField(choices=tl_choice, max_length=50, blank=True, null = True)
     soluong = models.IntegerField(default= 0)
     status = models.CharField(choices=st_choice, max_length=50, blank=True, null = True)
-    hs81 = models.ForeignKey(Hs81, on_delete=models.CASCADE)
-    softfile = models.ForeignKey(UploadedFile, on_delete=models.CASCADE, blank=True, null = True)
+    hs81 = models.ForeignKey(Hs81, on_delete=models.RESTRICT)
+    softfile = models.ForeignKey(UploadedFile, on_delete=models.RESTRICT, blank=True, null = True)
     history = HistoricalRecords()
     def __str__(self):
         return self.ten

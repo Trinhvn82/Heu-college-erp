@@ -17,7 +17,7 @@ class RawRP(models.Model):
 
 class Purchase(models.Model):
     customer_full_name = models.CharField(max_length=64)
-    item = models.ForeignKey(to=Item, on_delete=models.CASCADE)
+    item = models.ForeignKey(to=Item, on_delete=models.RESTRICT)
     PAYMENT_METHODS = [
         ("CC", "Credit card"),
         ("DC", "Debit card"),

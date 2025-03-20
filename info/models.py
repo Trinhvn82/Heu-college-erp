@@ -98,7 +98,7 @@ class Dept(models.Model):
 
 
 class Course(models.Model):
-    dept = models.ForeignKey(Dept, on_delete=models.CASCADE)
+    dept = models.ForeignKey(Dept, on_delete=models.RESTRICT)
     id = models.CharField(primary_key='True', max_length=50)
     name = models.CharField(max_length=50)
     shortname = models.CharField(max_length=50, default='X')
@@ -110,7 +110,7 @@ class Course(models.Model):
 class Class(models.Model):
     # courses = models.ManyToManyField(Course, default=1)
     id = models.CharField(primary_key='True', max_length=100)
-    dept = models.ForeignKey(Dept, on_delete=models.CASCADE)
+    dept = models.ForeignKey(Dept, on_delete=models.RESTRICT)
     section = models.CharField(max_length=100)
     sem = models.IntegerField()
 
@@ -122,8 +122,8 @@ class Class(models.Model):
         return '%s : %d %s' % (d.name, self.sem, self.section)
 
 class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
-    class_id = models.ForeignKey(Class, on_delete=models.CASCADE, default=1)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
+    class_id = models.ForeignKey(Class, on_delete=models.RESTRICT, default=1)
     USN = models.CharField(primary_key='True', max_length=100)
     name = models.CharField(max_length=200)
     sex = models.CharField(max_length=50, choices=sex_choice, default='Male')
@@ -134,9 +134,9 @@ class Student(models.Model):
 
 
 class Teacher(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
     id = models.CharField(primary_key=True, max_length=100)
-    dept = models.ForeignKey(Dept, on_delete=models.CASCADE, default=1)
+    dept = models.ForeignKey(Dept, on_delete=models.RESTRICT, default=1)
     name = models.CharField(max_length=100)
     sex = models.CharField(max_length=50, choices=sex_choice, default='Male')
     DOB = models.DateField(default='1980-01-01')
@@ -146,9 +146,9 @@ class Teacher(models.Model):
 
 
 class Assign(models.Model):
-    class_id = models.ForeignKey(Class, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    class_id = models.ForeignKey(Class, on_delete=models.RESTRICT)
+    course = models.ForeignKey(Course, on_delete=models.RESTRICT)
+    teacher = models.ForeignKey(Teacher, on_delete=models.RESTRICT)
 
     class Meta:
         unique_together = (('course', 'class_id', 'teacher'),)
@@ -161,13 +161,13 @@ class Assign(models.Model):
 
 
 class AssignTime(models.Model):
-    assign = models.ForeignKey(Assign, on_delete=models.CASCADE)
+    assign = models.ForeignKey(Assign, on_delete=models.RESTRICT)
     period = models.CharField(max_length=50, choices=time_slots, default='11:00 - 11:50')
     day = models.CharField(max_length=15, choices=DAYS_OF_WEEK)
 
 
 class AttendanceClass(models.Model):
-    assign = models.ForeignKey(Assign, on_delete=models.CASCADE)
+    assign = models.ForeignKey(Assign, on_delete=models.RESTRICT)
     date = models.DateField()
     status = models.IntegerField(default=0)
 
@@ -177,9 +177,9 @@ class AttendanceClass(models.Model):
 
 
 class Attendance(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    attendanceclass = models.ForeignKey(AttendanceClass, on_delete=models.CASCADE, default=1)
+    course = models.ForeignKey(Course, on_delete=models.RESTRICT)
+    student = models.ForeignKey(Student, on_delete=models.RESTRICT)
+    attendanceclass = models.ForeignKey(AttendanceClass, on_delete=models.RESTRICT, default=1)
     date = models.DateField(default='2018-10-23')
     status = models.BooleanField(default='True')
 
@@ -190,8 +190,8 @@ class Attendance(models.Model):
 
 
 class AttendanceTotal(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.RESTRICT)
+    student = models.ForeignKey(Student, on_delete=models.RESTRICT)
 
     class Meta:
         unique_together = (('student', 'course'),)
@@ -235,8 +235,8 @@ class AttendanceTotal(models.Model):
 
 
 class StudentCourse(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.RESTRICT)
+    course = models.ForeignKey(Course, on_delete=models.RESTRICT)
 
     class Meta:
         unique_together = (('student', 'course'),)
@@ -261,7 +261,7 @@ class StudentCourse(models.Model):
 
 
 class Marks(models.Model):
-    studentcourse = models.ForeignKey(StudentCourse, on_delete=models.CASCADE)
+    studentcourse = models.ForeignKey(StudentCourse, on_delete=models.RESTRICT)
     name = models.CharField(max_length=50, choices=test_name, default='Internal test 1')
     marks1 = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
 
@@ -276,7 +276,7 @@ class Marks(models.Model):
 
 
 class MarksClass(models.Model):
-    assign = models.ForeignKey(Assign, on_delete=models.CASCADE)
+    assign = models.ForeignKey(Assign, on_delete=models.RESTRICT)
     name = models.CharField(max_length=50, choices=test_name, default='Internal test 1')
     status = models.BooleanField(default='False')
 

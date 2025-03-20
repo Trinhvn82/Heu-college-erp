@@ -136,18 +136,18 @@ class UserProfileAdmin(UserAdmin):
     def has_delete_permission(self, request, obj=None): # note the obj=None
         return False
     
-#class GroupProfileAdmin(GroupAdmin):
-#    readonly_fields = ["name"]
-#    def has_delete_permission(self, request, obj=None): # note the obj=None
-#        return False
-#    def has_add_permission(self, request, obj=None): # note the obj=None
-#        return False
+class GroupProfileAdmin(GroupAdmin):
+   readonly_fields = ["name"]
+   def has_delete_permission(self, request, obj=None): # note the obj=None
+       return False
+   def has_add_permission(self, request, obj=None): # note the obj=None
+       return False
 
 admin.site.register(User, UserProfileAdmin)
 
-#admin.site.unregister(Group)
+admin.site.unregister(Group)
 
-#admin.site.register(Group, GroupProfileAdmin)
+admin.site.register(Group, GroupProfileAdmin)
 
 """ admin.site.register(Dept, DeptAdmin)
 admin.site.register(Class, ClassAdmin)
