@@ -46,13 +46,13 @@ def index(request):
         return redirect("gv_list")
     elif request.user.is_pctsv:
         return redirect("sv_list")
+    elif request.user.is_hv:
+        return redirect("lichhoc_list")
     elif request.user.is_internalstaff:
         return redirect("lop_list")
-    elif request.user.is_gv or request.user.is_hv:
+    else:
         return redirect("lop_list")
-     #if request.user:
-        #return render(request, 'sms/lop-list.html')
-        return redirect("shop-statistics")
+
     #return render(request, 'info/logout.html')
 
 # Teacher Views
@@ -1220,6 +1220,14 @@ def lop_list_guardian(request):
 
 @login_required
 def lichhoc_list(request):
+    # phân quyền xem lịch học
+    list_of_ids = []
+    for l in Lop.objects.all():
+        if request.user.has_perm('assign_lop', l):
+            list_of_ids.append(l.id)
+    lop = Lop.objects.filter(id__in=list_of_ids).select_related("ctdt").order_by('id')
+
+
     lh = Lichhoc.objects.all().select_related("lop", "monhoc").order_by('thoigian')
     if request.method == "POST":
             query_lop = request.POST.get('lop', None)
@@ -2064,7 +2072,7 @@ def history_lopmonhoc(request, lmh_id):
 @login_required
 def edit_lichhoc(request, lh_id):
     lh = Lichhoc.objects.get(id=lh_id)
-    lmh = LopMonhoc.objects.filter(lop_id=lh.lop_id, monhoc_id=lh.monhoc_id).select_related("lop", "monhoc")[0]
+    lmh = LopMonhoc.objects.filter(id=lh.lmh_id).select_related("lop", "monhoc")[0]
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lh_forms = CreateLichhoc(instance=lh)
 
@@ -2073,7 +2081,7 @@ def edit_lichhoc(request, lh_id):
 
         if edit_forms.is_valid():
             edit_forms.save()
-            messages.success(request, "Edit Mon hoc Info Successfully!")
+            messages.success(request, "Edit Lịch học Info Successfully!")
             return redirect("lichhoclopmh_list", lmh.id)
 
     context = {

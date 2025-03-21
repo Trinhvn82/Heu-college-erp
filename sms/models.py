@@ -573,8 +573,8 @@ class Lichhoc(models.Model):
     status = models.CharField(choices=pl_choice, max_length=50)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
     #TenTT = models.IntegerField()
-    lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
-    monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT)
+    #lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
+    lmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT, default=1)
     giaovien = models.ForeignKey(Hsgv, on_delete=models.RESTRICT, blank= True, null=True)
     history = HistoricalRecords()
     class Meta:

@@ -44,10 +44,8 @@
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
-                            {% if field.name == 'lop' %}
-                                <input hidden type="number" name="lop" class="form-control" value="{{lmh.lop_id}}" id="id_sogio">
-                            {% elif field.name == 'monhoc' %}
-                                <input hidden type="number" name="monhoc" class="form-control" value="{{lmh.monhoc_id}}" id="id_sogio">
+                            {% if field.name == 'lmh' %}
+                                <input hidden type="number" name="lmh" class="form-control" value="{{lmh.id}}" id="id_sogio">
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

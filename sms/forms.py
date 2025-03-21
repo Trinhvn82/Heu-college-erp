@@ -27,7 +27,7 @@ class CreateLichhoc(forms.ModelForm):
     class Meta:
         model = Lichhoc
         #fields = "__all__"
-        fields = ('lop','thoigian','diadiem','monhoc',
+        fields = ('lmh','thoigian','diadiem',
                        'giaovien','sotiet','status','ghichu')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
@@ -35,9 +35,9 @@ class CreateLichhoc(forms.ModelForm):
             'diadiem': 'Địa điểm',
             'thoigian': 'Thời gian',
             'sotiet': 'Số tiết',
-            'lop': 'Lop',
+            #'lop': 'Lop',
             'status': 'Trang thai',
-            'monhoc': 'Mon hoc',
+            #'monhoc': 'Mon hoc',
             'giaovien': 'Giáo viên',
             'ghichu': 'Ghi chú',
         }
@@ -48,8 +48,7 @@ class CreateLichhoc(forms.ModelForm):
             'thoigian': forms.DateInput(attrs={'class': 'form-control', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             #'thoigian': forms.DateTimeInput(attrs={'class': 'form-control datetimepicker-input', 'data-target': 'datetimepicker','type': 'date' }),
             'sotiet': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'So tiet', 'max': 5, 'min': 1}),
-            'lop': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Lop'}),
-            'monhoc': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Mon hoc'}),
+            'lmh': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Lop'}),
             'giaovien': forms.Select(attrs={'class': 'form-control', 'placeholder': 'Giao vien'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chu'}),

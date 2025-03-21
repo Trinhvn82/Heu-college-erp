@@ -82,6 +82,10 @@ class User(AbstractUser):
         return user.groups.filter(name__in=['Supervisors', 'DT']).count()
 
     @property
+    def is_gvch(user):
+        return user.groups.filter(name__in=['GVCH']).count()
+
+    @property
     def is_teacher(self):
         if hasattr(self, 'teacher'):
             return True
