@@ -46,7 +46,7 @@ def index(request):
         return redirect("gv_list")
     elif request.user.is_pctsv:
         return redirect("sv_list")
-    elif request.user.is_hv:
+    elif request.user.is_hv or request.user.is_gv:
         return redirect("lichhoc_list")
     elif request.user.is_internalstaff:
         return redirect("lop_list")
@@ -1221,28 +1221,51 @@ def lop_list_guardian(request):
 @login_required
 def lichhoc_list(request):
     # phân quyền xem lịch học
-    list_of_ids = []
-    for l in Lop.objects.all():
-        if request.user.has_perm('assign_lop', l):
-            list_of_ids.append(l.id)
-    lop = Lop.objects.filter(id__in=list_of_ids).select_related("ctdt").order_by('id')
+    lhgv = Lichhoc()
+    if request.user.is_gv:
+        list_of_ids = []
+        for l in LopMonhoc.objects.all():
+            if request.user.has_perm('assign_lopmonhoc', l):
+                list_of_ids.append(l.id)
+                print(l)
+        lmh = LopMonhoc.objects.filter(id__in=list_of_ids)
 
+        gv= Hsgv.objects.get(user = request.user)
+        lhgv = Lichhoc.objects.filter(giaovien=gv)
+    elif request.user.is_hv:
+        sv= Hssv.objects.get(user = request.user)
+        lmh = LopMonhoc.objects.filter(lop_id=sv.lop_id)
+    else:
+        list_of_ids = []
+        for l in Lop.objects.all():
+            if request.user.has_perm('assign_lop', l):
+                list_of_ids.append(l.id)
+        lmh = LopMonhoc.objects.filter(lop_id__in=list_of_ids)
 
-    lh = Lichhoc.objects.all().select_related("lop", "monhoc").order_by('thoigian')
+    lh = Lichhoc.objects.filter(lmh__in=lmh)
+    if lhgv:
+        lh = (lh | lhgv).distinct() if lh else lhgv
+
+    lh = lh.select_related("lmh").order_by('thoigian')
+    
+
     if request.method == "POST":
             query_lop = request.POST.get('lop', None)
             query_mh = request.POST.get('monhoc', None)
             query_tgian1 = request.POST.get('tgian1', None)
             query_tgian2 = request.POST.get('tgian2', None)
             if query_lop:
-                lh = lh.filter(lop__ten__contains=query_lop)     
+                lh = lh.filter(lmh__lop__ten__contains=query_lop)     
             if query_mh:
-                lh = lh.filter(monhoc__ten__contains=query_mh)     
+                lh = lh.filter(lmh__monhoc__ten__contains=query_mh)     
             if query_tgian1:
                 lh = lh.filter(thoigian__gte=query_tgian1)     
             if query_tgian2:
                 lh = lh.filter(thoigian__lte=query_tgian2)     
             messages.success(request, "Tìm kiếm thành công!")
+    else:
+        lh = lh.filter(thoigian__gte=datetime.now()).order_by('thoigian') if lh else lh
+
     paginator = Paginator(lh, 20)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)

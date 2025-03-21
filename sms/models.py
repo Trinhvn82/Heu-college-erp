@@ -155,8 +155,7 @@ class Monhoc(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        #return self.ten
-        return self.chuongtrinh +': ' + self.ma + '-' + self.ten
+        return self.ten
 
 class SvStatus(models.Model):
     ma = models.IntegerField(default= 1)
@@ -232,7 +231,7 @@ class Lop(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return self.ma
+        return self.ten
 
 
 class Hssv(models.Model):

@@ -22,7 +22,7 @@
                           <span class="mb-0 font-small font-weight-bold">
                             {% if request.user.is_superuser %}
                               Xin chào: {{ request.user.username }}
-                            {% elif request.user.is_internalstaff %}
+                            {% elif request.user.is_internalstaff or request.user.is_gv or request.user.is_hv%}
                               Xin chào: {{ request.user.first_name }}
                             {% else %}
                               Xin chào: {{ request.user.username }}

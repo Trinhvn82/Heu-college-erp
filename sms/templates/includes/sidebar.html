@@ -46,7 +46,6 @@
             </a>
         </li>
         {% endif %}
-        {% if not request.user.is_hv%}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'lichhoc_list' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3-week" viewBox="0 0 16 16">
@@ -56,7 +55,6 @@
                   Quản lý lịch học
             </a>
         </li>
-        {% endif %}    
         {% if request.user.is_pctsv or request.user.is_superuser %}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'sv_list' %}" class="nav-link">

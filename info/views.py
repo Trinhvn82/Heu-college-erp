@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib import messages
 from sms.models import Hsns, Hsgv
 
@@ -441,6 +442,9 @@ def add_gvuser(request, id):
         first_name = gv.hoten,
         password=gv.ma + '@123654'
     )
+    if Group.objects.filter(name = 'GVTG'):
+        gr =  Group.objects.get(name = 'GVTG')
+        user.groups.add(gr)
     user.save()
     gv.user = user
     gv.save()
