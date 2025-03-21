@@ -195,7 +195,7 @@ def lichhoc_lopmh(request, lopmh_id):
     lmh = LopMonhoc.objects.filter(id = lopmh_id).select_related("monhoc", "lop")[0]
     lop_id = LopMonhoc.objects.get(id = lopmh_id).lop_id
     monhoc_id = LopMonhoc.objects.get(id = lopmh_id).monhoc_id
-    lichhoc = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id).order_by('thoigian')
+    lichhoc = Lichhoc.objects.filter(lmh_id = lmh.id).order_by('thoigian')
     paginator = Paginator(lichhoc, 100)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
@@ -1268,10 +1268,10 @@ def diemdanh_list(request, lh_id):
 @login_required
 def diemdanh_lop(request, lh_id):
     ttlh = Lichhoc.objects.get(id = lh_id)
-    svlop = Hssv.objects.filter(lop_id = ttlh.lop_id)
-    mh = Monhoc.objects.get(id = ttlh.monhoc_id)
+    lmh = LopMonhoc.objects.get(id =ttlh.lmh_id)
+    svlop = Hssv.objects.filter(lop_id = lmh.lop_id)
+    mh = Monhoc.objects.get(id = lmh.monhoc_id)
     dds = Diemdanh.objects.filter(lichhoc_id = lh_id).order_by('sv_id')
-    lmh = LopMonhoc.objects.get(lop_id = ttlh.lop_id, monhoc_id =ttlh.monhoc_id)
     #sv = Hssv.objects.filter(lop_id = ttlh.lop_id)
     if request.method == "POST":
         for stud in svlop:
