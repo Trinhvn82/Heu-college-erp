@@ -74,7 +74,13 @@
                                 <tbody>
                                     {% for student in students %}
                                     <tr>
-                                        <td>{{ student.msv }}</td>
+                                        <td>
+                                        {% if student.user %}
+                                        <span class="font-weight-bold text-success">{{ student.msv }}</span>
+                                        {%else%}
+                                            <span class="font-weight-bold">{{ student.msv }}</span>
+                                        {%endif%}
+                                        </td>
                                         <td>{{ student.hoten }}</td>
                                         <td>{{ student.cccd }}</td>
                                         <td>{{ student.namsinh | date:"d/m/y" }}</td>
@@ -95,6 +101,17 @@
                                                        href="{% url 'details_sv' student.id %}">
                                                         <span class="fas fa-edit mr-2"></span>Qúa trình học tập
                                                     </a>
+                                                    {% if student.user %}
+                                                    <a class="dropdown-item edit_item"
+                                                        href="{% url 'reset_pwd_hv' student.id%}">
+                                                         <span class="fas fa-edit mr-2"></span>Reset Password
+                                                    </a>
+                                                    {%else%}
+                                                    <a class="dropdown-item edit_item"
+                                                        href="{% url 'add_hv' student.id%}">
+                                                         <span class="fas fa-edit mr-2"></span>Tạo user
+                                                    </a>
+                                                    {%endif%}
                                                     <a class="dropdown-item text-danger delete_item"
                                                        data-href="">
                                                         <span class="fas fa-trash-alt mr-2"></span>Remove

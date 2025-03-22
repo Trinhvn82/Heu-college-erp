@@ -81,38 +81,46 @@
                                             </span>
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.view_hsgv %}
                                             <a class="dropdown-item edit_item"
                                                href="{% url 'edit_gv' teacher.id%}">
                                                 <span class="fas fa-edit mr-2"></span>Cập nhật
                                             </a>
                                             <a class="dropdown-item edit_item"
+                                                href="{% url 'details_gv' teacher.id %}">
+                                                    <span class="fas fa-edit mr-2"></span>Qúa trình giảng dạy
+                                             </a>
+                                            {%endif%}
+                                            {% if perms.sms.view_gvlop %}
+                                            <a class="dropdown-item edit_item"
                                                 href="{% url 'gv_lop' teacher.id%}">
                                                  <span class="fas fa-edit mr-2"></span>Gán Lớp
                                             </a>
+                                            {%endif%}
+                                            {% if perms.sms.view_gvmonhoc %}
                                             <a class="dropdown-item edit_item"
                                                 href="{% url 'gv_monhoc' teacher.id%}">
                                                 <span class="fas fa-edit mr-2"></span>Gán Môn học
                                             </a>
+                                            {%endif%}
+                                            {% if perms.sms.view_gvlmh %}
                                             <a class="dropdown-item edit_item"
                                                 href="{% url 'gv_lmh' teacher.id%}">
                                                 <span class="fas fa-edit mr-2"></span>Gán Lớp Môn học
                                             </a>
+                                            {%endif%}
+                                            {% if teacher.user %}
                                             <a class="dropdown-item edit_item"
-                                            href="{% url 'details_gv' teacher.id %}">
-                                             <span class="fas fa-edit mr-2"></span>Qúa trình giảng dạy
-                                         </a>
-                                         {% if teacher.user %}
-                                         <a class="dropdown-item edit_item"
                                              href="{% url 'reset_pwd_gv' teacher.id%}">
                                               <span class="fas fa-edit mr-2"></span>Reset Password
-                                         </a>
-                                         {%else%}
-                                         <a class="dropdown-item edit_item"
-                                             href="{% url 'add_gv' teacher.id%}">
-                                              <span class="fas fa-edit mr-2"></span>Tạo user
-                                         </a>
-                                         {%endif%}
-                                      <a class="dropdown-item text-danger delete_item"
+                                             </a>
+                                             {%else%}
+                                             <a class="dropdown-item edit_item"
+                                                 href="{% url 'add_gv' teacher.id%}">
+                                                  <span class="fas fa-edit mr-2"></span>Tạo user
+                                             </a>
+                                             {%endif%}
+                                          <a class="dropdown-item text-danger delete_item"
                                                data-href="">
                                                 <span class="fas fa-trash-alt mr-2"></span>Remove
                                             </a>

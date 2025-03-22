@@ -15,6 +15,22 @@ class DiemdanhRP(models.Model):
     def __str__(self):
         return self.sv
 
+class Dashboard(models.Model):
+    ma =models.CharField(max_length=300, default= "", blank= True)
+    #sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
+    #lichhoc_id = models.IntegerField()
+
+    def __str__(self):
+        return self.ma
+
+class Report(models.Model):
+    ma =models.CharField(max_length=300, default= "", blank= True)
+    #sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
+    #lichhoc_id = models.IntegerField()
+
+    def __str__(self):
+        return self.ma
+
 class ChamcongRP(models.Model):
     ten = models.CharField(max_length=300, default= "", blank= True)
     monhoc = models.CharField(max_length=300, default= "", blank= True)

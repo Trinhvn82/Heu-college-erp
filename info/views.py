@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib import messages
-from sms.models import Hsns, Hsgv
+from sms.models import Hsns, Hsgv, Hssv
 
 
 User = get_user_model()
@@ -442,14 +442,44 @@ def add_gvuser(request, id):
         first_name = gv.hoten,
         password=gv.ma + '@123654'
     )
-    if Group.objects.filter(name = 'GVTG'):
+    if Group.objects.filter(name = 'GVTG').exists():
         gr =  Group.objects.get(name = 'GVTG')
-        user.groups.add(gr)
+    else:
+        gr = Group.objects.create(name='GVTG')
+
+    user.groups.add(gr)
     user.save()
     gv.user = user
     gv.save()
     messages.success(request, "Tạo tài khoản cho " + gv.hoten + " thành công")
     return redirect("gv_list")
+
+@login_required()
+def add_hvuser(request, id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    sv = Hssv.objects.get(id = id)
+    # Check if username already exists
+    if User.objects.filter(username="hv_"+sv.msv).exists():
+        messages.error(request, 'Username already exists')
+        return redirect('sv_list')    
+    
+    user = User.objects.create_user(
+        username="hv_"+sv.msv,
+        first_name = sv.hoten,
+        password=sv.msv + '@123654'
+    )
+    if Group.objects.filter(name = 'HV').exists():
+        gr =  Group.objects.get(name = 'HV')
+    else:
+        gr = Group.objects.create(name='HV')
+
+    user.groups.add(gr)
+    user.save()
+    sv.user = user
+    sv.save()
+    messages.success(request, "Tạo tài khoản cho " + sv.hoten + " thành công")
+    return redirect("sv_list")
 
 @login_required()
 def reset_pwd(request, ns_id):
@@ -476,6 +506,19 @@ def reset_pwd_gv(request, gv_id):
         messages.success(request, "Reset password thành công!")
         return redirect('gv_list')    
     return redirect("gv_list")
+
+@login_required()
+def reset_pwd_hv(request, hv_id):
+    if not request.user.is_superuser:
+        return redirect("/")
+    sv = Hssv.objects.get(id = hv_id)
+    # Check if username already exists
+    if sv.user:
+        sv.user.set_password(sv.msv + '@123654')
+        sv.user.save()    
+        messages.success(request, "Reset password thành công!")
+        return redirect('sv_list')    
+    return redirect("sv_list")
 
 @login_required()
 def add_nsuser(request, id):

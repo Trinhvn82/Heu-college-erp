@@ -36,7 +36,7 @@ def must_be_supervisor(user):
 
 
 @login_required
-@user_passes_test(must_be_supervisor)
+@permission_required('dashboard.view_report',raise_exception=True)
 def report_hs81(request):
     lh = None
     query_tt = None
@@ -68,6 +68,7 @@ def report_hs81(request):
     return render(request, "sms/report_hs81.html", context)
 
 @login_required
+@permission_required('dashboard.view_report',raise_exception=True)
 def export_hs81(request):
     import pandas as pd
 
@@ -104,6 +105,7 @@ def export_hs81(request):
     return response
 
 @login_required
+@permission_required('dashboard.view_report',raise_exception=True)
 def report_ttgv(request):
     lh = None
     query_tt = None
@@ -136,6 +138,7 @@ def report_ttgv(request):
     return render(request, "sms/report_ttgv.html", context)
 
 @login_required
+@permission_required('dashboard.view_report',raise_exception=True)
 def report_kqht(request):
     lh = None
     query_tt = None
@@ -169,6 +172,7 @@ def report_kqht(request):
     return render(request, "sms/report_kqht.html", context)
 
 @login_required
+@permission_required('sms.add_hs81',raise_exception=True)
 def import_hs81(request, lop_id):
     if request.method == "POST":
         excel_file = request.FILES['excel_file']
@@ -235,6 +239,7 @@ def import_hs81(request, lop_id):
         messages.success(request, "Import thông tin hồ sơ 81 thành công!")
         return redirect("svlop_list", lop_id)
 @login_required
+@permission_required('sms.add_hp81',raise_exception=True)
 def import_hp81(request, lop_id):
     if request.method == "POST":
         excel_file = request.FILES['excel_file']

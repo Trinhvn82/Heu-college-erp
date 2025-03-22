@@ -20,6 +20,8 @@ from django.contrib.auth.models import Permission
 from guardian.shortcuts import assign_perm, remove_perm
 
 
+from guardian.decorators import permission_required_or_403
+from django.http import HttpResponse
 
 
 User = get_user_model()
@@ -103,8 +105,12 @@ def teacher_list(request):
     return render(request, "sms/teacher_list.html", context)
 
 @login_required
+@permission_required('sms.view_hsgv',raise_exception=True)
 def gv_list(request):
-    teachers = Hsgv.objects.all().order_by('hoten')
+    if request.user.is_gv:
+        teachers = Hsgv.objects.filter(user = request.user).order_by('hoten')
+    else:
+        teachers = Hsgv.objects.all().order_by('hoten')
     if request.method == "POST":
             query_name = request.POST.get('ten', None)
             if query_name:
@@ -139,8 +145,12 @@ def ns_list(request):
     return render(request, "sms/ns_list.html", context)
 
 @login_required
+@permission_required('sms.view_hssv',raise_exception=True)
 def sv_list(request):
-    students = Hssv.objects.all().order_by('msv')
+    if request.user.is_hv:
+        students = Hssv.objects.filter(user = request.user).order_by('msv')
+    else:
+        students = Hssv.objects.all().order_by('msv')
     if request.method == "POST":
             query_name = request.POST.get('ten', None)
             if query_name:
@@ -157,6 +167,7 @@ def sv_list(request):
     return render(request, "sms/sv_list.html", context)
 
 @login_required
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def sv_lop(request, lop_id):
     #students = Hssv.objects.all()
     tenlop = Lop.objects.get(id = lop_id).ten
@@ -371,19 +382,19 @@ def gv_lmh_lst(request, lmh_id):
 def details_gv(request, gv_id):
 
     #lmh = LopMonhoc.objects.get(id = lmh_id)
-    lh = Lichhoc.objects.filter(giaovien_id = gv_id).select_related("lop", "monhoc")
-    #lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
+    lh = Lichhoc.objects.filter(giaovien_id = gv_id).select_related("lmh")
+    lmh = LopMonhoc.objects.filter(id__in = lh.values_list('lmh_id', flat=True))
 
-    lops = Lop.objects.filter(id__in = lh.values_list('lop_id', flat=True))
+    lops = Lop.objects.filter(id__in = lmh.values_list('lop_id', flat=True))
     #lmh = LopMonhoc.objects.filter(id__in = lh.values_list('monhoc_id', flat=True))
     gv = Hsgv.objects.get(id = gv_id)
 
     #gvs = Hsgv.objects.filter(id__in = lh.values_list('giaovien_id', flat=True))
     
     for l in lops:
-        mhs = LopMonhoc.objects.filter(monhoc_id__in = lh.values_list('monhoc_id', flat=True), lop_id = l.id).select_related("monhoc")
+        mhs = LopMonhoc.objects.filter(monhoc_id__in = lmh.values_list('monhoc_id', flat=True), lop_id = l.id).select_related("monhoc")
         for mh in mhs:
-            mh.lhs = Lichhoc.objects.filter(giaovien_id = gv_id, lop_id = l.id, monhoc_id = mh.monhoc_id)
+            mh.lhs = Lichhoc.objects.filter(giaovien_id = gv_id, lmh_id = mh.id)
             mh.sotiet = mh.lhs.aggregate(Sum('sotiet'))['sotiet__sum']
         l.mhs = mhs
 
@@ -1221,7 +1232,6 @@ def lop_list_guardian(request):
 @login_required
 def lichhoc_list(request):
     # phân quyền xem lịch học
-    lhgv = Lichhoc()
     if request.user.is_gv:
         list_of_ids = []
         for l in LopMonhoc.objects.all():
@@ -1232,19 +1242,22 @@ def lichhoc_list(request):
 
         gv= Hsgv.objects.get(user = request.user)
         lhgv = Lichhoc.objects.filter(giaovien=gv)
+
+        lh = Lichhoc.objects.filter(lmh__in=lmh)
+        lh = (lh | lhgv).distinct()
+
     elif request.user.is_hv:
         sv= Hssv.objects.get(user = request.user)
         lmh = LopMonhoc.objects.filter(lop_id=sv.lop_id)
+        lh = Lichhoc.objects.filter(lmh__in=lmh)
     else:
         list_of_ids = []
         for l in Lop.objects.all():
             if request.user.has_perm('assign_lop', l):
                 list_of_ids.append(l.id)
         lmh = LopMonhoc.objects.filter(lop_id__in=list_of_ids)
+        lh = Lichhoc.objects.filter(lmh__in=lmh)
 
-    lh = Lichhoc.objects.filter(lmh__in=lmh)
-    if lhgv:
-        lh = (lh | lhgv).distinct() if lh else lhgv
 
     lh = lh.select_related("lmh").order_by('thoigian')
     
@@ -1396,6 +1409,7 @@ def ns_lop(request, ns_id):
     return render(request, "sms/ns_lop.html", context)
 
 @login_required
+@permission_required('sms.add_gvlop',raise_exception=True)
 def gv_lop(request, gv_id):
 
     gv = Hsgv.objects.get(id = gv_id)
@@ -1434,6 +1448,7 @@ def gv_lop(request, gv_id):
     return render(request, "sms/gv_lop.html", context)
 
 @login_required
+@permission_required('sms.add_gvmonhoc',raise_exception=True)
 def gv_monhoc(request, gv_id):
     mhs = Monhoc.objects.all()
     nls = GvMonhoc.objects.filter(gv_id = gv_id).order_by('monhoc_id')
@@ -1469,6 +1484,7 @@ def gv_monhoc(request, gv_id):
     return render(request, "sms/gv_monhoc.html", context)
 
 @login_required
+@permission_required('sms.add_gvlmh',raise_exception=True)
 def gv_lmh(request, gv_id):
     lmhs = LopMonhoc.objects.all()
     glmhs = GvLmh.objects.filter(gv_id = gv_id)
@@ -1570,9 +1586,6 @@ def lop_monhoc(request, lop_id):
         }
         return render(request, "sms/lop-monhoc_list.html", context)
 
-from guardian.decorators import permission_required_or_403
-from django.http import HttpResponse
-
 @login_required
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def lop_monhoc_testwithGuardian(request, lop_id):
@@ -1606,7 +1619,8 @@ def lop_monhoc_gv(request):
         return render(request, "sms/lop-monhoc_list.html", context)
 
 @login_required
-def hv_hp81_list(request, sv_id):
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def hv_hp81_list(request, sv_id, lop_id):
         hp81s = Hp81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
         sv = Hssv.objects.get(id = sv_id)
         lop_id = sv.lop_id
@@ -1617,7 +1631,8 @@ def hv_hp81_list(request, sv_id):
         return render(request, "sms/hv-hp81_list.html", context)
 
 @login_required
-def hv_hs81_list(request, sv_id):
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def hv_hs81_list(request, sv_id, lop_id):
         hs81s = Hs81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
         sv = Hssv.objects.get(id = sv_id)
         lop_id = sv.lop_id
@@ -1680,7 +1695,7 @@ def create_hp81(request, sv_id):
             if forms.is_valid():
                 forms.save()
                 messages.success(request, "Bản ghi duoc tao thanh cong!")
-                return redirect("hv_hp81_list", sv_id)
+                return redirect("hv_hp81_list", sv_id, sv.lop_id)
     else:
         forms = CreateHp81()
     context = {
@@ -1703,7 +1718,7 @@ def create_hs81(request, sv_id):
             if forms.is_valid():
                 forms.save()
                 messages.success(request, "Bản ghi duoc tao thanh cong!")
-                return redirect("hv_hs81_list", sv_id)
+                return redirect("hv_hs81_list", sv_id, sv.lop_id)
     else:
         forms = CreateHs81()
     context = {
@@ -2154,12 +2169,11 @@ def details_sv(request, sv_id):
     sv = Hssv.objects.get(id=sv_id)
     lmh = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc")
     dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
-    #ld = Loaidiem.objects.all()
+    ld = Loaidiem.objects.all()
     hks = Hocky.objects.all()
     hps = Hp81.objects.filter(sv_id = sv_id)
 
     for mh in lmh:
-        ld = Loaidiem.objects.all()
         for l in ld:
             #hp.duno = hp.sotien2-hp.sotien1
             if Diemthanhphan.objects.filter(sv_id = sv_id,monhoc_id = mh.monhoc_id,tp_id = l.id).first():
@@ -2203,7 +2217,7 @@ def edit_hp81(request, hp81_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Info Successfully!")
-            return redirect("hv_hp81_list", sv_id)
+            return redirect("hv_hp81_list", sv_id, sv.lop_id)
 
     context = {
         "forms": lh_forms,
@@ -2227,7 +2241,7 @@ def edit_hs81(request, hs81_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Info Successfully!")
-            return redirect("hv_hs81_list", sv_id)
+            return redirect("hv_hs81_list", sv_id, sv.lop_id)
 
     context = {
         "forms": lh_forms,
@@ -2393,6 +2407,7 @@ def download_file1(request):
     raise Http404
 
 @login_required
+@permission_required('sms.add_uploadfile',raise_exception=True)
 def upload_file(request):
     if request.method == 'POST':
         form = CreateUploadFile(request.POST, request.FILES)
@@ -2410,6 +2425,7 @@ def upload_file(request):
     return render(request, "sms/file_list.html", context)
 
 @login_required
+@permission_required('sms.view_uploadfile',raise_exception=True)
 def download_file(request, file_id):
     uploaded_file = UploadedFile.objects.get(pk=file_id)
     response = HttpResponse(uploaded_file.file, content_type='application/force-download')

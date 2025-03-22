@@ -1,7 +1,7 @@
 from django.urls import path, include
 from . import views, views_report
 from django.contrib import admin
-from info.views import add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv
+from info.views import add_hvuser, add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv,reset_pwd_hv
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -51,8 +51,8 @@ urlpatterns = [
     path('lichhoc/<int:lop_id>/', views.lichhoc_lop, name='lichhoclop_list'),
     path('lichhoclmh/<int:lopmh_id>/', views.lichhoc_lopmh, name='lichhoclopmh_list'),
     path('hocphi/<int:lop_id>/', views.hocphi_lop, name='hocphi_list'),
-    path('hp81/<int:sv_id>/', views.hv_hp81_list, name='hv_hp81_list'),
-    path('hs_81/<int:sv_id>/', views.hv_hs81_list, name='hv_hs81_list'),
+    path('hp81/<int:sv_id>/<int:lop_id>/', views.hv_hp81_list, name='hv_hp81_list'),
+    path('hs_81/<int:sv_id>/<int:lop_id>/', views.hv_hs81_list, name='hv_hs81_list'),
 #    path('monhoc/<int:lop_id>/', views.lop_monhoc, name='lop_monhoc'),
     path('monhoc/<int:lop_id>/', views.lop_monhoc_testwithGuardian, name='lop_monhoc'),
     path('<int:ctdt_id>/', views.single_ctdtmonhoc, name='lop_ctdtmonhoc'),
@@ -114,6 +114,9 @@ urlpatterns = [
 
     path('add-gv/<int:id>/', add_gvuser, name='add_gv'),
     path('resetpwd-gv/<int:gv_id>/', reset_pwd_gv, name='reset_pwd_gv'),
+
+    path('add-hv/<int:id>/', add_hvuser, name='add_hv'),
+    path('resetpwd-hv/<int:hv_id>/', reset_pwd_hv, name='reset_pwd_hv'),
 
     path('changepwd/', user_changepwd, name='changepwd'),
 ]

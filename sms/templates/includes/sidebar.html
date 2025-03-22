@@ -14,7 +14,7 @@
         </div>
         </div>
         <ul class="nav flex-column">
-        {% if request.user.is_supervisor or request.user.is_superuser %}
+        {% if perms.dashboard.view_dashboard%}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'shop-statistics' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
@@ -24,6 +24,8 @@
                 Dashboard
             </a>
         </li>
+        {% endif %}
+        {% if perms.sms.view_ctdt%}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'ctdt_list' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calculator" viewBox="0 0 16 16">
@@ -46,6 +48,7 @@
             </a>
         </li>
         {% endif %}
+        {% if perms.sms.view_lichhoc%}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'lichhoc_list' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3-week" viewBox="0 0 16 16">
@@ -55,7 +58,8 @@
                   Quản lý lịch học
             </a>
         </li>
-        {% if request.user.is_pctsv or request.user.is_superuser %}
+        {% endif %}
+        {% if perms.sms.view_hssv %}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'sv_list' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
@@ -67,7 +71,7 @@
             </a>
         </li>
         {% endif %}        
-        {% if request.user.is_phr or request.user.is_superuser %}
+        {% if perms.sms.view_hsgv %}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'gv_list' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-dots" viewBox="0 0 16 16">
@@ -79,7 +83,7 @@
             </a>
         </li>
         {% endif %}
-        {% if request.user.is_supervisor or request.user.is_superuser %}
+        {% if perms.sms.view_hsns%}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'ns_list' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
@@ -89,6 +93,8 @@
                   Thông tin nhân sự
             </a>
         </li>
+        {% endif %}
+        {% if perms.sms.add_uploadedFile%}
         <li class="nav-item  {% if 'index' in segment %} active {% endif %}">
             <a href="{% url 'upload_file' %}" class="nav-link">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-arrow-up" viewBox="0 0 16 16">
@@ -99,6 +105,8 @@
                   Quản lý file mẫu
             </a>
         </li>
+        {% endif %}
+        {% if perms.dashboard.view_report%}
         <li class="nav-item">
             <span class="nav-link  collapsed  d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#submenu-testing">
             <span>

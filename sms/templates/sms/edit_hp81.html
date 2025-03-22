@@ -28,7 +28,7 @@
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.lop_id%}">Học viên</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv.id %}">Học phí 81</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'hv_hp81_list' sv.id sv.lop_id%}">Học phí 81</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Cập nhật</li>
                 </ol>
     </div>
