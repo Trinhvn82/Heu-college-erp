@@ -222,14 +222,14 @@ class CreateCtdt(forms.ModelForm):
         fields = ('ten','khoa', 'khoahoc')
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
-            'ten': 'Ten CTDT',
+            'ten': 'Tên CTDT',
             'khoa': 'Khoa',
-            'khoahoc': 'Khoa hoc'
+            'khoahoc': 'Khóa học'
         }
         widgets = {
             'ten': forms.TextInput(attrs={'class': 'form-control'}),
             'khoa': forms.TextInput(attrs={'class': 'form-control'}),
-            'khoahoc': forms.TextInput(attrs={'class': 'form-control'}),
+            'khoahoc': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
 class CreateLop(forms.ModelForm):
