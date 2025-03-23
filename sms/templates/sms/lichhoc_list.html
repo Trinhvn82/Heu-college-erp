@@ -127,19 +127,19 @@
 
         <div class="row">
             <div class="col-md-12">
-                {% if teachers.has_other_pages %}
+                {% if lh.has_other_pages %}
                     <ul class="pagination">
-                        {% if teachers.has_previous %}
+                        {% if lh.has_previous %}
                             <li class="page-item">
-                                <a href="?page={{teachers.previous_page_number}}" class="page-link">Prev</a>
+                                <a href="?page={{lh.previous_page_number}}" class="page-link">Prev</a>
                             </li>
                         {% else %}
                             <li class="page-item disabled">
                                 <a class="page-link">Prev</a>
                             </li>
                         {% endif %}
-                        {% for i in teachers.paginator.page_range %}
-                            {% if teachers.number == i %}
+                        {% for i in lh.paginator.page_range %}
+                            {% if lh.number == i %}
                                 <li class="page-item active">
                                     <a class="page-link">{{ i }}</a>
                                 </li>
@@ -149,9 +149,9 @@
                                 </li>
                             {% endif %}
                         {% endfor %}
-                        {% if teachers.has_next %}
+                        {% if lh.has_next %}
                             <li class="page-item">
-                                <a href="?page={{teachers.next_page_number}}" class="page-link">Next</a>
+                                <a href="?page={{lh.next_page_number}}" class="page-link">Next</a>
                             </li>
                         {% else %}
                             <li class="page-item disabled">
