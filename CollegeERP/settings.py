@@ -24,7 +24,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '3#n821t^z@-e98qd96+h_=+hgo1uv1*0d2@dfko#_ft@11pmu-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
+
+INTERNAL_IPS = (
+    '127.0.0.1',
+    '192.168.1.23',
+)
 
 ALLOWED_HOSTS = ['*']
 

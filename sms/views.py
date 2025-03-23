@@ -4,6 +4,8 @@ from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Tr
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.http import require_http_methods
+
 
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
@@ -360,11 +362,11 @@ def gv_lmh_lst(request, lmh_id):
     #lmh = LopMonhoc.objects.get(id = lmh_id)
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
 
-    lh = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id).select_related("lop", "monhoc")
+    lh = Lichhoc.objects.filter(lmh_id = lmh_id).select_related("lop", "monhoc")
     gvs = Hsgv.objects.filter(id__in = lh.values_list('giaovien_id', flat=True))
     
     for gv in gvs:
-        gv.lhs = Lichhoc.objects.filter(lop_id = lmh.lop_id, monhoc_id = lmh.monhoc_id, giaovien_id = gv.id)
+        gv.lhs = Lichhoc.objects.filter(lmh_id = lmh_id, giaovien_id = gv.id)
         gv.sotiet = gv.lhs.aggregate(Sum('sotiet'))['sotiet__sum']
         if Ttgv.objects.filter(gv_id = gv.id, lopmh_id = lmh_id).exists():
             gv.sotien = Ttgv.objects.get(gv_id = gv.id, lopmh_id = lmh_id).sotien2
@@ -684,7 +686,10 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     mh = Monhoc(ma=ma, ten=ten, chuongtrinh=chuongtrinh, sotinchi=sotinchi, sogio_lt=sogio_lt,sogio_th=sogio_th,sogio_kt=sogio_kt)
-                    mh.save()
+                    try:
+                        mh.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
 
         if 'hk-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin hoc ky")
@@ -703,7 +708,10 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hk = Hocky(ma=ma, ten=ten)
-                    hk.save()
+                    try:
+                        hk.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
 
         if 'ld-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin loai diem")
@@ -724,7 +732,11 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     ld = Loaidiem(ma=ma, ten=ten,trunglap=trunglap, heso=heso)
-                    ld.save()
+                    try:
+                        ld.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+                    #ld.save()
 
         if 'hp-st' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin tinh trang hoc phi")
@@ -743,7 +755,11 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hp = HocphiStatus(ma=ma, ten=ten)
-                    hp.save()
+                    try:
+                        hp.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+                    #hp.save()
 
         if 'sv-st' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin tinh trang sinh vien")
@@ -762,7 +778,11 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hp = SvStatus(ma=ma, ten=ten)
-                    hp.save()
+                    try:
+                        hp.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+                    #hp.save()
 
         if 'tt-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin danh sách trung tâm")
@@ -781,7 +801,11 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hp = Trungtam(ma=ma, ten=ten)
-                    hp.save()
+                    try:
+                        hp.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+#                    hp.save()
 
         if 'phong-lst' not in wb.sheetnames:
             messages.error(request, "File excel khong co thong tin danh sách phòng")
@@ -800,7 +824,11 @@ def import_monhoc_dm(request):
                     messages.error(request, 'Ma: ' + str(ma) + ' already exists')
                 else:
                     hp = Phong(ma=ma, ten=ten)
-                    hp.save()
+                    try:
+                        hp.save()
+                    except Exception as e:
+                        messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+#                    hp.save()
         messages.success(request, "Import done!")
         return redirect("ctdt_list")
 @login_required
@@ -852,12 +880,12 @@ def import_lopsv(request, lop_id):
             v32 = sheet.cell(r,32).value
             #print(type(v4))
             if not v1 or not v2:
-                messages.error(request, 'Ma, ten không có thông tin')
+                messages.error(request, 'Dòng: '+str(r)+'có Ma, ten không có thông tin')
                 continue
             if Hssv.objects.filter(msv=v1.strip()).exists():
-                messages.error(request, 'Email: ' + v1+ ' already exists')
+                messages.error(request, 'Dòng: '+str(r)+' có Mã ' + v1+ ' already exists')
             elif (v4 and type(v4) is not datetime) or (v14 and type(v14) is not datetime):
-                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
+                messages.error(request, 'Dòng: '+str(r)+' có dữ liệu ngày không đúng format')
             else:
                 sv = Hssv(
                     msv=v1, 
@@ -893,7 +921,10 @@ def import_lopsv(request, lop_id):
                     hs_status= "Đủ" if v31 == 1 else "Thiếu",
                     ghichu=v32, 
                     lop_id= lop_id if lop_id else None)
-                sv.save()
+                try:
+                    sv.save()
+                except Exception as e:
+                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
 
         messages.success(request, "Import thanh cong!")
         return redirect("svlop_list", lop_id) if lop_id else redirect("sv_list")
@@ -979,7 +1010,10 @@ def import_gv(request):
                     hs_status = "Đủ" if v28 == 1 else "Thiếu",
                     ghichu = v29
                 )
-                gv.save()
+                try:
+                    gv.save()
+                except Exception as e:
+                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
 
         messages.success(request, "Import thanh cong!")
         return redirect("gv_list")
@@ -1049,18 +1083,18 @@ def import_ns(request):
             v48 = sheet.cell(r,48).value
 
             if not v1 or not v2 or not v3:
-                messages.error(request, 'Ma, email, ten không có thông tin')
+                messages.error(request, 'Dòng: '+str(r)+' có Ma, email, ten không có thông tin')
                 continue
             if Hsns.objects.filter(ma=v1.strip()).exists():
-                messages.error(request, 'Ma: ' + v1 + ' already exists')
+                messages.error(request, 'Dòng: '+str(r) + 'có Mã: ' + v1 + ' already exists')
             if Hsns.objects.filter(email=v3.strip()).exists():
-                messages.error(request, 'Email: ' + v3 + ' already exists')
+                messages.error(request, 'Dòng: '+str(r)+ ' có Email: ' + v3 + ' already exists')
             elif (v5 and type(v5) is not datetime) or (v14 and type(v14) is not datetime):
-                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
+                messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
             elif (v25 and type(v25) is not datetime) or (v26 and type(v26) is not datetime):
-                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
+                messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
             elif v31 and type(v31) is not datetime:
-                messages.error(request, 'Mã: ' + v1 + ' có dữ liệu ngày không đúng format')
+                messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
             else:
                 ns = Hsns(
                     ma = v1,
@@ -1114,7 +1148,10 @@ def import_ns(request):
                     hs_status = "Đủ" if v47 == 1 else "Thiếu",
                     ghichu = v48
                         )
-                ns.save()
+                try:
+                    ns.save()
+                except Exception as e:
+                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
  
         messages.success(request, "Import thanh cong!")
         return redirect("ns_list")
@@ -1230,6 +1267,28 @@ def lop_list_guardian(request):
     return render(request, "sms/lop_list.html", context)
 
 @login_required
+@permission_required('sms.view_lop',raise_exception=True)
+def xlop_list_guardian(request):
+
+    list_of_ids = []
+    for l in Lop.objects.all():
+        if request.user.has_perm('assign_lop', l):
+            list_of_ids.append(l.id)
+            print("lop_id: ")
+            print(l.id)
+
+    lop = Lop.objects.filter(id__in=list_of_ids).select_related("ctdt").order_by('id')
+
+#    lop = Lop.objects.all().select_related("ctdt").order_by('id')
+    paginator = Paginator(lop, 20)
+    page = request.GET.get('page')
+    paged_students = paginator.get_page(page)
+    context = {
+        "lop": paged_students
+    }
+    return render(request, "sms/xlop_list.html", context)
+
+@login_required
 def lichhoc_list(request):
     # phân quyền xem lịch học
     if request.user.is_gv:
@@ -1276,10 +1335,23 @@ def lichhoc_list(request):
             if query_tgian2:
                 lh = lh.filter(thoigian__lte=query_tgian2)     
             messages.success(request, "Tìm kiếm thành công!")
-    else:
-        lh = lh.filter(thoigian__gte=datetime.now()).order_by('thoigian') if lh else lh
+#    else:
+#        lh = lh.filter(thoigian__gte=datetime.now()).order_by('thoigian') if lh else lh
 
-    paginator = Paginator(lh, 20)
+    #ngay =  datetime.date(1900, 5, 24)
+#    ngay = datetime.convert('Dec 1 1900')
+    ngay = datetime.strptime('Dec 1 1900', '%b %d %Y')
+    for l in lh:
+        tgian = l.thoigian
+
+        if tgian.date() == ngay.date():
+            l.ngay=None
+        else:
+            ngay = l.thoigian
+            l.ngay=l.thoigian
+            
+
+    paginator = Paginator(lh, 30)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
     context = {
@@ -1632,6 +1704,21 @@ def hv_hp81_list(request, sv_id, lop_id):
 
 @login_required
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def hv_hp81_new_list(request, lop_id):
+    svs = Hssv.objects.filter(lop_id = lop_id)
+    lop = Lop.objects.get(id = lop_id)
+
+    for sv in svs:
+        sv.hp81 = Hp81.objects.filter(sv_id = sv.id).select_related("sv", "hk")
+
+    context = {
+        "lop": lop,
+        "svs": svs
+    }
+    return render(request, "sms/hv-hp81-new_list.html", context)
+
+@login_required
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def hv_hs81_list(request, sv_id, lop_id):
         hs81s = Hs81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
         sv = Hssv.objects.get(id = sv_id)
@@ -1641,6 +1728,24 @@ def hv_hs81_list(request, sv_id, lop_id):
             "sv": sv
         }
         return render(request, "sms/hv-hs81_list.html", context)
+
+@login_required
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def hv_hs81_new_list(request, lop_id):
+    #hs81s = Hs81.objects..select_related("sv", "hk")
+    svs = Hssv.objects.filter(lop_id = lop_id)
+    lop = Lop.objects.get(id = lop_id)
+
+    for sv in svs:
+        print(sv.hoten)
+        print(Hs81.objects.filter(sv_id = sv.id).select_related("sv", "hk").count())
+        sv.hs81 = Hs81.objects.filter(sv_id = sv.id).select_related("sv", "hk")
+    
+    context = {
+        "svs": svs,
+        "lop": lop
+    }
+    return render(request, "sms/hv-hs81-new_list.html", context)
 
 @login_required
 def single_hs81lop(request, lop_id):
@@ -1695,7 +1800,7 @@ def create_hp81(request, sv_id):
             if forms.is_valid():
                 forms.save()
                 messages.success(request, "Bản ghi duoc tao thanh cong!")
-                return redirect("hv_hp81_list", sv_id, sv.lop_id)
+                return redirect("hv_hp81_new_list", sv.lop_id)
     else:
         forms = CreateHp81()
     context = {
@@ -1718,7 +1823,7 @@ def create_hs81(request, sv_id):
             if forms.is_valid():
                 forms.save()
                 messages.success(request, "Bản ghi duoc tao thanh cong!")
-                return redirect("hv_hs81_list", sv_id, sv.lop_id)
+                return redirect("hv_hs81_new_list", sv.lop_id)
     else:
         forms = CreateHs81()
     context = {
@@ -1850,6 +1955,32 @@ def create_lop(request):
     }
     return render(request, "sms/create_lop.html", context)
 
+@login_required
+#@require_http_methods(['POST'])
+def create_xlop(request):
+    if request.method == "POST":
+        forms = CreateLop(request.POST, request.FILES or None)
+        if Lop.objects.filter(ma = forms['ma'].value()).first():
+            messages.error(request, "Mã lớp đã tồn tại!")
+            return redirect("lop_list")
+        if forms.is_valid():
+            lop = forms.save()
+            #create Group and assign permission to Lop
+            # group = Group.objects.create(name="Lop_permisison_"+str(lop.id))
+            # assign_perm('assign_lop', group, lop)
+            hks= Hocky.objects.all()
+            for hk in hks:
+                lhk = LopHk.objects.create(hk_id = hk.id, lop_id = lop.id)
+                lhk.save()        
+            messages.success(request, "Tạo mới lớp thành công!")
+        return redirect("xlop_list")
+    else:
+        forms = CreateLop()
+
+    context = {
+        "forms": forms
+    }
+    return render(request, "includes/create_xlop.html", context)
 
 @login_required
 def create_sv(request):
@@ -2217,7 +2348,7 @@ def edit_hp81(request, hp81_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Info Successfully!")
-            return redirect("hv_hp81_list", sv_id, sv.lop_id)
+            return redirect("hv_hp81_new_list", sv.lop_id)
 
     context = {
         "forms": lh_forms,
@@ -2241,7 +2372,7 @@ def edit_hs81(request, hs81_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Info Successfully!")
-            return redirect("hv_hs81_list", sv_id, sv.lop_id)
+            return redirect("hv_hs81_new_list", sv.lop_id)
 
     context = {
         "forms": lh_forms,

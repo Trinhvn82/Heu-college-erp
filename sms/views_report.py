@@ -179,7 +179,7 @@ def import_hs81(request, lop_id):
         wb = openpyxl.load_workbook(excel_file)
         if 'hs81' not in wb.sheetnames:
             messages.error(request, "File excel khong dung format")
-            return redirect("svlop_list", lop_id)
+            return redirect("hv_hs81_new_list", lop_id)
 
         sheet = wb["hs81"]
         #for r in range(3, sheet.max_row+1):
@@ -237,7 +237,7 @@ def import_hs81(request, lop_id):
                 hs81.save()
 
         messages.success(request, "Import thông tin hồ sơ 81 thành công!")
-        return redirect("svlop_list", lop_id)
+        return redirect("hv_hs81_new_list", lop_id)
 @login_required
 @permission_required('sms.add_hp81',raise_exception=True)
 def import_hp81(request, lop_id):
@@ -246,7 +246,7 @@ def import_hp81(request, lop_id):
         wb = openpyxl.load_workbook(excel_file)
         if 'hp81' not in wb.sheetnames:
             messages.error(request, "File excel khong dung format")
-            return redirect("svlop_list", lop_id)
+            return redirect("hv_hp81_new_list", lop_id)
 
         sheet = wb["hp81"]
         #for r in range(3, sheet.max_row+1):
@@ -286,11 +286,15 @@ def import_hp81(request, lop_id):
                 hp81.thoigian = v5
                 hp81.sotien1 = v6
                 hp81.sotien2 = v7
-                hp81.save()
+                try:
+                    hp81.save()
+                except Exception as e:
+                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+                #hp81.save()
                 print(sv.hoten)
 
         messages.success(request, "Import thông tin học phí 81 thành công!")
-        return redirect("svlop_list", lop_id)
+        return redirect("hv_hp81_new_list", lop_id)
     
 @login_required
 def import_diemtp(request, lmh_id, ld_id):
@@ -329,7 +333,11 @@ def import_diemtp(request, lmh_id, ld_id):
             sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id)[0]
             mark = Diemthanhphan(diem =v3, sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, log=log) 
             #mark.log = log
-            mark.save()
+            try:
+                mark.save()
+            except Exception as e:
+                messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+            #mark.save()
 
         messages.success(request, "Import thông tin điểm thành công!")
         return redirect("diemtp-lmh-lst", lmh_id)
@@ -380,7 +388,11 @@ def import_edit_diemtp(request, lmh_id, ld_id, log_id):
             if Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log).exists():
                 mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log)[0]
                 mark.diem = v3
-                mark.save()
+                try:
+                    mark.save()
+                except Exception as e:
+                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+#                mark.save()
 
         messages.success(request, "Import thông tin điểm thành công!")
         return redirect("diemtp-lmh-lst", lmh_id)

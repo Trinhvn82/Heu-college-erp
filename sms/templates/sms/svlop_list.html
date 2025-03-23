@@ -23,7 +23,7 @@
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Học viên - Hồ sơ - Học phí</li>
+                    <li class="breadcrumb-item active" aria-current="page">Học viên</li>
                 </ol>
         </div>
         </div>
@@ -52,7 +52,7 @@
 
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
-                <h2 class="h5 mb-4">Danh sách học viên của lớp {{tenlop}}</h2>
+                <h2 class="h5 mb-4">Lớp: {{tenlop}}</h2>
                 <div class="table-responsive">
                             <table class="table table-centered mb-0 rounded">
                                 <thead class="thead-light">
@@ -69,18 +69,11 @@
                                     {% for student in students %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
-                                        {% if perms.sms.view_hssv or perms.sms.change_hssv %}
-                                        <td>
-                                            <a href="{% url 'edit_sv' student.id %}">
-                                                <span class="fas fa-edit mr-2"></span>{{ student.msv }}
-                                            </a>
-                                        </td>
-                                        {% else %}
                                         <td>{{ student.msv }}</td>
-                                        {% endif %}
                                         <td>{{ student.hoten }}</td>
                                         <td>{{ student.cccd }}</td>
                                         <td>
+                                            {% if perms.sms.view_hssv %}
                                             <div class="btn-group">
                                                 <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
                                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -90,26 +83,13 @@
                                                     <span class="sr-only">Toggle Dropdown</span>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    {% if perms.sms.view_hs81 %}
                                                     <a class="dropdown-item edit_item"
-                                                       href="{% url 'hv_hs81_list' student.id student.lop_id%}">
-                                                        <span class="fas fa-edit mr-2"></span>Hồ sơ 81
+                                                       href="{% url 'edit_sv' student.id %}">
+                                                        <span class="fas fa-edit mr-2"></span>Cập nhật
                                                     </a>
-                                                    {% endif %}
-                                                    {% if perms.sms.view_hp81 %}
-                                                    <a class="dropdown-item edit_item"
-                                                       href="{% url 'hv_hp81_list' student.id student.lop_id%}">
-                                                        <span class="fas fa-edit mr-2"></span>Học phí 81
-                                                    </a>
-                                                    {% endif %}
-                                                    {% if perms.sms.delete_hssv %}
-                                                    <a class="dropdown-item text-danger delete_item"
-                                                       data-href="">
-                                                        <span class="fas fa-trash-alt mr-2"></span>Remove
-                                                    </a>
-                                                    {% endif %}
                                                 </div>
                                             </div>
+                                            {% endif %}
 
                                         </td>
                                     </tr>
@@ -155,53 +135,6 @@
         </div>
         {% endif %}
 
-        {% if perms.sms.add_hs81 %}
-        <div class="row item-row">
-            <div class="col-12">
-                <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <h2 class="h5 mb-4">Import thông tin hồ sơ 81</h2>
-                    <form action="{% url 'import_hs81' lop_id%}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Tên file:</label>
-                                    <input type="file" name="excel_file" class="form-control" required maxlength="100">
-                                </div>
-                            </div>
-                        
-                            <div class="mt-3">
-                                <button type="submit" class="btn btn-primary">Import</button>
-                            </div>
-                            </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if perms.sms.add_hp81 %}
-        <div class="row item-row">
-            <div class="col-12">
-                <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <h2 class="h5 mb-4">Import thông tin học phí 81</h2>
-                    <form action="{% url 'import_hp81' lop_id%}" method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Tên file:</label>
-                                    <input type="file" name="excel_file" class="form-control" required maxlength="100">
-                                </div>
-                            </div>
-                        
-                            <div class="mt-3">
-                                <button type="submit" class="btn btn-primary">Import</button>
-                            </div>
-                            </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {% endif %}
 
         <div class="row">
             <div class="col-md-12">

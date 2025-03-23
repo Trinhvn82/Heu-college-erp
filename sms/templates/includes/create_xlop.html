@@ -1,0 +1,20 @@
+<dialog id="lop_modal" class="model">
+    <div class ="modal-box">
+
+        <form hx-post="{% url 'create_xlop'%}" method="post">
+            {% csrf_token %}
+            <div class="row">
+                {% for field in forms %}
+                    <div class="col-md-6 mb-3">
+                        <div>{{ field.label_tag }}{{ field }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+            </div>
+        </form>
+
+    </div>
+</dialog>

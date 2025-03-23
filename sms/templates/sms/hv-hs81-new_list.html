@@ -1,0 +1,133 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81</li>
+                </ol>
+    </div>
+        </div>
+
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h6>Lớp: {{lop}}</h6>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Mã</th>
+                                <th>Tên</th>
+                                <th>Học kỳ</th>
+                                <th>Trạng thái</th>
+                                <th>Tác vụ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sv in svs %}
+                            <tr>
+                                <td>{{ sv.msv }}</td>
+                                <td>{{ sv.hoten }}</td>
+                                <td></td>
+                                <td></td>
+                                <td>
+                                    {% if perms.sms.add_hs81%}
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                        </button>
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            <a class="dropdown-item edit_item"
+                                               href="{% url 'create_hs81' sv.id %}">
+                                                <span class="fas fa-edit mr-2"></span>Thêm mới
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% for hs in sv.hs81 %}
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td>{{ hs.hk }}</td>
+                                <td>{{ hs.status }}</td>
+                                <td>
+                                    {% if perms.sms.change_hs81 or perms.sms.view_hs81  %}
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                        </button>
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            <a class="dropdown-item edit_item"
+                                               href="{% url 'edit_hs81' hs.id %}">
+                                                <span class="fas fa-edit mr-2"></span>Cập nhật
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    </div>
+    {% if perms.sms.add_hs81 %}
+    <div class="row item-row">
+        <div class="col-12">
+            <div class="card card-body bg-white border-light shadow-sm mb-4">
+                <h2 class="h5 mb-4">Import thông tin hồ sơ 81</h2>
+                <form action="{% url 'import_hs81' lop.id%}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div><label for="id_ma">Tên file:</label>
+                                <input type="file" name="excel_file" class="form-control" required maxlength="100">
+                            </div>
+                        </div>
+                    
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Import</button>
+                        </div>
+                        </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

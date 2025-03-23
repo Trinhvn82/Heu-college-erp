@@ -64,10 +64,10 @@
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
+                                <th>Ngày</th>
                                 <th>Thời gian</th>
                                 <th>Lớp</th>
                                 <th>Môn học</th>
-                                <th>Tình trạng</th>
                                 <th>Số tiết</th>
                                 <th>Tác vụ</th>
                             </tr>
@@ -75,10 +75,10 @@
                         <tbody>
                             {% for ct in lh %}
                             <tr>
-                                <td>{{ ct.thoigian | date:"d/m/Y H:i" }}</td>
+                                <th>{{ ct.ngay | date:"d/m/Y" }}</th>
+                                <td>{{ ct.thoigian | date:"H:i" }}</td>
                                 <td>{{ ct.lmh.lop }}</td>
                                 <td>{{ ct.lmh.monhoc}}</td>
-                                <td>{{ ct.status }}</td>
                                 <td>{{ ct.sotiet }}</td>
                                 <td>
                                     <!-- <a href="{% url 'diemdanh_list' ct.id %}">
@@ -100,7 +100,7 @@
                                             {% if perms.sms.view_lichhoc or  perms.sms.change_lichhoc %}
                                             <a class="dropdown-item edit_item"
                                                 href="{% url 'edit_lichhoc' ct.id %}">
-                                                <span class="fas fa-edit mr-2"></span>Cập nhật
+                                                <span class="fas fa-edit mr-2"></span>Xem chi tiết
                                             </a>
                                             {% endif %}
                                             {% if perms.sms.view_diemdanh %}

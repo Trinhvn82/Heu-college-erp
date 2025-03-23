@@ -44,6 +44,7 @@ urlpatterns = [
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
 #    path('alllop/', views.lop_list, name='lop_list'),
     path('alllop/', views.lop_list_guardian, name='lop_list'),
+    path('allxlop/', views.xlop_list_guardian, name='xlop_list'),
     path('alllichhoc/', views.lichhoc_list, name='lichhoc_list'),
     path('registration/', views.create_lichhoc, name='create_lichhoc'),
     path('CreateLichhoclm/<int:lopmh_id>/', views.create_lichhoclm, name='create_lichhoclm'),
@@ -51,8 +52,13 @@ urlpatterns = [
     path('lichhoc/<int:lop_id>/', views.lichhoc_lop, name='lichhoclop_list'),
     path('lichhoclmh/<int:lopmh_id>/', views.lichhoc_lopmh, name='lichhoclopmh_list'),
     path('hocphi/<int:lop_id>/', views.hocphi_lop, name='hocphi_list'),
+
     path('hp81/<int:sv_id>/<int:lop_id>/', views.hv_hp81_list, name='hv_hp81_list'),
+    path('hp81-new/<int:lop_id>/', views.hv_hp81_new_list, name='hv_hp81_new_list'),
+
     path('hs_81/<int:sv_id>/<int:lop_id>/', views.hv_hs81_list, name='hv_hs81_list'),
+    path('hs_81-new/<int:lop_id>/', views.hv_hs81_new_list, name='hv_hs81_new_list'),
+
 #    path('monhoc/<int:lop_id>/', views.lop_monhoc, name='lop_monhoc'),
     path('monhoc/<int:lop_id>/', views.lop_monhoc_testwithGuardian, name='lop_monhoc'),
     path('<int:ctdt_id>/', views.single_ctdtmonhoc, name='lop_ctdtmonhoc'),
@@ -74,6 +80,7 @@ urlpatterns = [
 
     path('CreateDiem/<int:lh_id>/', views.create_diem, name='create_diem'),
     path('CreateLop/', views.create_lop, name='create_lop'),
+    path('CreatexLop/', views.create_xlop, name='create_xlop'),
     path('EditLop/<int:lop_id>/', views.edit_lop, name='edit_lop'),
     path('EditLop-new/<int:lop_id>/', views.edit_lop_new, name='edit_lop_new'),
     path('CreateSinhvien/', views.create_sv, name='create_sv'),
