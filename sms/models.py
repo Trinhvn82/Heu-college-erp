@@ -582,7 +582,7 @@ class Lichhoc(models.Model):
         ordering = ["thoigian",]
 
     def __str__(self):
-        return self.lop.ten + "-" + self.monhoc.ten
+        return self.lmh.monhoc.ten
 
 
 class Hocphi(models.Model):
