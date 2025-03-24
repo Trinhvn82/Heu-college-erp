@@ -2,7 +2,7 @@ from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
 from sms.models import Lop
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, LopMonhoc, Hp81
+from .models import Lop, Ctdt, Hssv, Hsgv, Hsns, SvStatus, LopMonhoc, Hp81
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
 from .models import LopHk, Phong, Trungtam, LogDiem, NsLop, NsPhong,HeDT,Khoahoc,Nganh, Ttgv, GvLop, GvLmh
 
@@ -117,6 +117,18 @@ class LopAdmin(NonDeleteAndAddModelAdmin):
     inlines = [LopHKInline,LopMonhocInline, SvInline]
     #inlines = [SvInline]
 
+class HssvAdmin(NonDeleteAndAddModelAdmin):
+    list_display = ["msv", "hoten"]
+    search_fields = ["hoten"]
+
+class HsgvAdmin(NonDeleteAndAddModelAdmin):
+    list_display = ["ma", "hoten"]
+    search_fields = ["hoten"]
+
+class HsnsAdmin(NonDeleteAndAddModelAdmin):
+    list_display = ["ma", "hoten"]
+    search_fields = ["hoten"]
+
 class DanhmucAdmin(NonDeleteModelAdmin):
     list_display = ["ma", "ten"]
     search_fields = ["ma", "ten"]
@@ -156,8 +168,9 @@ admin.site.register(NsLop, NsLopAdmin)
 admin.site.register(NsPhong, NsPhongAdmin)
 admin.site.register(GvLop, GvLopAdmin)
 admin.site.register(Ctdt, CtdtAdmin)
-admin.site.register(Hssv, NonDeleteModelAdmin)
-admin.site.register(Hsgv, NonDeleteModelAdmin)
+admin.site.register(Hssv, HssvAdmin)
+admin.site.register(Hsgv, HsgvAdmin)
+admin.site.register(Hsns, HsnsAdmin)
 admin.site.register(LopMonhoc, LopMonhocAdmin)
 admin.site.register(CtdtMonhoc, CtdtMonhocAdmin)
 admin.site.register(Lichhoc, NonDeleteModelAdmin)
