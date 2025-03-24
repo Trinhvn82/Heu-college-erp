@@ -64,20 +64,18 @@ class LopMonhocInline(admin.TabularInline):
 
 class NonDeleteModelAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None): # note the obj=None
-        return False
+        return True
 
 class NonDeleteAndAddModelAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None): # note the obj=None
-        return False
+        return True
     def has_add_permission(self, request, obj=None): # note the obj=None
-        return False
+        return True
 
 class MonhocAdmin(NonDeleteModelAdmin):
     list_display = ["ma", "ten", "chuongtrinh", "sotinchi"]
     search_fields = ["ma", "ten", "chuongtrinh"]
     inlines = [CtdtMonhocInline]
-    def has_delete_permission(self, request, obj=None): # note the obj=None
-        return False
     #readonly_fields = ["tickets_left"]
 
 class GvLmhAdmin(NonDeleteModelAdmin):
@@ -153,25 +151,25 @@ class NsPhongAdmin(NonDeleteModelAdmin):
     list_select_related = ["phong", "ns"]
 
 
-# admin.site.register(Lop, LopAdmin)
-# admin.site.register(NsLop, NsLopAdmin)
-# admin.site.register(NsPhong, NsPhongAdmin)
-# admin.site.register(GvLop, GvLopAdmin)
-# admin.site.register(Ctdt, CtdtAdmin)
-# admin.site.register(Hssv, NonDeleteModelAdmin)
-# admin.site.register(Hsgv, NonDeleteModelAdmin)
-# admin.site.register(LopMonhoc, LopMonhocAdmin)
-# admin.site.register(CtdtMonhoc, CtdtMonhocAdmin)
-# admin.site.register(Lichhoc, NonDeleteModelAdmin)
-# admin.site.register(Diemdanh, NonDeleteModelAdmin)
-# admin.site.register(Hs81, NonDeleteModelAdmin)
-# admin.site.register(Hp81, NonDeleteModelAdmin)
-# admin.site.register(Diemthanhphan, DiemTPAdmin)
-#admin.site.register(LopHk, LopHKAdmin)
-#admin.site.register(Hocphi, SimpleHistoryAdmin)
-# admin.site.register(Ttgv, GvLmhAdmin)
-# admin.site.register(GvLmh, GvLmhAdmin)
-#admin.site.register(LogDiem, NonDeleteModelAdmin)
+admin.site.register(Lop, LopAdmin)
+admin.site.register(NsLop, NsLopAdmin)
+admin.site.register(NsPhong, NsPhongAdmin)
+admin.site.register(GvLop, GvLopAdmin)
+admin.site.register(Ctdt, CtdtAdmin)
+admin.site.register(Hssv, NonDeleteModelAdmin)
+admin.site.register(Hsgv, NonDeleteModelAdmin)
+admin.site.register(LopMonhoc, LopMonhocAdmin)
+admin.site.register(CtdtMonhoc, CtdtMonhocAdmin)
+admin.site.register(Lichhoc, NonDeleteModelAdmin)
+admin.site.register(Diemdanh, NonDeleteModelAdmin)
+admin.site.register(Hs81, NonDeleteModelAdmin)
+admin.site.register(Hp81, NonDeleteModelAdmin)
+admin.site.register(Diemthanhphan, DiemTPAdmin)
+admin.site.register(LopHk, LopHKAdmin)
+admin.site.register(Hocphi, SimpleHistoryAdmin)
+admin.site.register(Ttgv, GvLmhAdmin)
+admin.site.register(GvLmh, GvLmhAdmin)
+admin.site.register(LogDiem, NonDeleteModelAdmin)
 
 # Danh mục sections
 admin.site.register(Loaidiem, LoaiDiemAdmin)
