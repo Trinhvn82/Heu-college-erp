@@ -884,8 +884,8 @@ def import_lopsv(request, lop_id):
                 continue
             if Hssv.objects.filter(msv=v1.strip()).exists():
                 messages.error(request, 'Dòng: '+str(r)+' có Mã ' + v1+ ' already exists')
-            elif (v4 and type(v4) is not datetime) or (v14 and type(v14) is not datetime):
-                messages.error(request, 'Dòng: '+str(r)+' có dữ liệu ngày không đúng format')
+            # elif (v4 and type(v4) is not datetime) or (v14 and type(v14) is not datetime):
+            #     messages.error(request, 'Dòng: '+str(r)+' có dữ liệu ngày không đúng format')
             else:
                 sv = Hssv(
                     msv=v1, 
@@ -976,8 +976,8 @@ def import_gv(request):
                 continue
             if Hsgv.objects.filter(ma=v1).exists():
                 messages.error(request, 'Ma: ' + v1 + ' already exists')
-            elif (v3 and type(v3) is not datetime) or (v5 and type(v5) is not datetime) or (v20 and type(v20) is not datetime) or (v21 and type(v21) is not datetime):
-                messages.error(request, 'Dòng ' + str(r+1) + ' có trường date không đúng định dạng')
+            # elif (v3 and type(v3) is not datetime) or (v5 and type(v5) is not datetime) or (v20 and type(v20) is not datetime) or (v21 and type(v21) is not datetime):
+            #     messages.error(request, 'Dòng ' + str(r+1) + ' có trường date không đúng định dạng')
             else:
                 gv = Hsgv(
                     ma = v1,
@@ -1089,12 +1089,12 @@ def import_ns(request):
                 messages.error(request, 'Dòng: '+str(r) + 'có Mã: ' + v1 + ' already exists')
             if Hsns.objects.filter(email=v3.strip()).exists():
                 messages.error(request, 'Dòng: '+str(r)+ ' có Email: ' + v3 + ' already exists')
-            elif (v5 and type(v5) is not datetime) or (v14 and type(v14) is not datetime):
-                messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
-            elif (v25 and type(v25) is not datetime) or (v26 and type(v26) is not datetime):
-                messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
-            elif v31 and type(v31) is not datetime:
-                messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
+            # elif (v5 and type(v5) is not datetime) or (v14 and type(v14) is not datetime):
+            #     messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
+            # elif (v25 and type(v25) is not datetime) or (v26 and type(v26) is not datetime):
+            #     messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
+            # elif v31 and type(v31) is not datetime:
+            #     messages.error(request, 'Dòng: '+str(r) + ' có dữ liệu ngày không đúng format')
             else:
                 ns = Hsns(
                     ma = v1,

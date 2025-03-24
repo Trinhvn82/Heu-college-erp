@@ -268,9 +268,9 @@ def import_hp81(request, lop_id):
             if not Hssv.objects.filter(msv=v1, lop_id = lop_id).exists():
                 messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
                 continue
-            elif v5 and type(v5) is not datetime:
-                messages.error(request, 'Mã: ' + v1 + ' Ngày thu: ' + v5 + ' sai định dạng ngày (m/d/yy)')
-                continue
+            # elif v5 and type(v5) is not datetime:
+            #     messages.error(request, 'Mã: ' + v1 + ' Ngày thu: ' + v5 + ' sai định dạng ngày (m/d/yy)')
+            #     continue
             else:
                 sv=Hssv.objects.get(msv=v1, lop_id = lop_id)
                 if not v4:
