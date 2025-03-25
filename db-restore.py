@@ -23,7 +23,7 @@ timestamp = datetime.datetime.now().strftime(FILE_SUFFIX_DATE_FORMAT)
 backup_filename = BACKUP_DIR_NAME+"/"+FILE_PREFIX+timestamp+".dump"
 #psql -U postgres -d sms -f " D:\Coding\Python ANW\dump.sql" --run this from command line for file backup-ed from Python Anywhere
 #pg_restore -U username -d dbname -1 filename.dump
-os.system("pg_restore --host=localhost --port=5432 --username=postgres -d sms sms-backup2024-12-26-0610.dump")
+os.system("pg_restore --host=localhost --port=5432 --username=postgres -d temp20 sms-backup2024-12-26-0610.dump")
 #os.system("psql -U postgres -d sms -f " D:\Coding\Python ANW\dump.sql"")
 #psql -d newdb -f db.sql
 #pg_restore -U username -d dbname /path/to/dumpfile

@@ -24,19 +24,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '3#n821t^z@-e98qd96+h_=+hgo1uv1*0d2@dfko#_ft@11pmu-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
 
-DEBUG = True
-
-INTERNAL_IPS = (
-    '127.0.0.1',
-    '192.168.1.23',
-)
-
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','103.141.140.214', 'heu-college.online']
 
 AUTH_USER_MODEL = 'info.User'
 
-SESSION_COOKIE_AGE =  60000 # 5 minutes
+SESSION_COOKIE_AGE =  3000 # 5 minutes
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
 
 MEDIA_URL = '/media/'
@@ -121,9 +115,9 @@ AUTHENTICATION_BACKENDS = (
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': "temp4",
+       'NAME': "temp2",
        'USER': 'postgres',
-       'PASSWORD': '123654',
+       'PASSWORD': 'Hs123456!',
        'HOST': 'localhost',
        'PORT': '5432',
    }

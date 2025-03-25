@@ -21,7 +21,7 @@ DBNAME = USERNAME+"$sms"
 timestamp = datetime.datetime.now().strftime(FILE_SUFFIX_DATE_FORMAT)
 backup_filename = BACKUP_DIR_NAME+"/"+FILE_PREFIX+timestamp+".dump"
 #os.system("pg_dump -U super -h TrinhVN72-4242.postgres.pythonanywhere-services.com -p 14242 sms > dump.sql")
-os.system("D:\Program Files\PostgreSQL\17\bin\pg_dump --host=localhost --port=5432 --username=postgres --format=c --file=sms-backup`date +%F-%H%M`.dump sms")
+os.system("pg_dump --host=localhost --port=5432 --username=postgres --format=c --file=heu-sms-backup`date +%F-%H%M`.dump temp2")
 
 #pg_dump --host=TrinhVN72-4242.postgres.pythonanywhere-services.com --port=14242 --username=super --format=c --file=pgbackup`date +%F-%H%M`.dump sms
 # restoring backup
