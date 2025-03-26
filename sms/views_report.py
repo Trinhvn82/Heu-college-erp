@@ -314,26 +314,31 @@ def import_diemtp(request, lmh_id, ld_id):
         #maxid=500
         #for r in range(3, 44):
         log = LogDiem()
+        log.ten = request.user.username
         log.save()
+        for sv in stud_list:
+            dtp = Diemthanhphan(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, diem = 0, log=log) 
+            dtp.save()
+
         for r in range(2, sheet.max_row+1):
             #maxid = maxid+1
-            v1 = sheet.cell(r,1).value
-            v2 = sheet.cell(r,2).value
-            v3 = sheet.cell(r,3).value
-            #print(type(v4))
-            if not v1 or not v2 or not v3:
-                messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
-                continue
-            if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id).exists():
-                messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
-                continue
-            if not (v3 >=0 and v3<=10):
-                messages.error(request, 'Mã: ' + v1+ ' không có điểm')
-                continue
-            sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id)[0]
-            mark = Diemthanhphan(diem =v3, sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, log=log) 
-            #mark.log = log
             try:
+                v1 = sheet.cell(r,1).value
+                v2 = sheet.cell(r,2).value
+                v3 = sheet.cell(r,3).value
+                if not v1 or not v2 or not v3:
+                    messages.error(request, 'Dòng: '+str(r)+' thiếu thông tin bắt buộc')
+                    continue
+                if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id).exists():
+                    messages.error(request, 'Dòng: '+str(r)+' không có trong danh sách lóp')
+                    continue
+                if not (v3 >=0 and v3<=10):
+                    messages.error(request, 'Dòng: '+str(r)+' có điểm sai định dạng')
+                    continue
+                sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id)[0]
+
+                mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, log=log)[0]
+                mark.diem = v3
                 mark.save()
             except Exception as e:
                 messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
@@ -366,32 +371,38 @@ def import_edit_diemtp(request, lmh_id, ld_id, log_id):
         #maxid=500
         #for r in range(3, 44):
         log = LogDiem.objects.get(id = log_id)
+        log.ten = request.user.username
         log.capnhat_at = datetime.now()
         log.save()
         #log.save()
         for r in range(2, sheet.max_row+1):
             #maxid = maxid+1
-            v1 = sheet.cell(r,1).value
-            v2 = sheet.cell(r,2).value
-            v3 = sheet.cell(r,3).value
-            #print(type(v4))
-            if not v1 or not v2 or not v3:
-                messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
-                continue
-            if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id).exists():
-                messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
-                continue
-            if not (v3 >=0 and v3<=10):
-                messages.error(request, 'Mã: ' + v1+ ' không có điểm')
-                continue
-            sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id)[0]
-            if Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log).exists():
-                mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log)[0]
+            try:
+                v1 = sheet.cell(r,1).value
+                v2 = sheet.cell(r,2).value
+                v3 = sheet.cell(r,3).value
+                #print(type(v4))
+                if not v1 or not v2 or not v3:
+                    messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
+                    continue
+                if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id).exists():
+                    messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
+                    continue
+                if not (v3 >=0 and v3<=10):
+                    messages.error(request, 'Mã: ' + v1+ ' không có điểm')
+                    continue
+                sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id)[0]
+                if Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, status=1, log=log).exists():
+                    mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log)[0]
+                #create new
+                else:
+                    mark = Diemthanhphan(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, diem = 0, log=log) 
+
                 mark.diem = v3
-                try:
-                    mark.save()
-                except Exception as e:
-                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+                mark.save()
+                
+            except Exception as e:
+                messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
 #                mark.save()
 
         messages.success(request, "Import thông tin điểm thành công!")

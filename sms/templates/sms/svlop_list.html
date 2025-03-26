@@ -73,7 +73,7 @@
                                         <td>{{ student.hoten }}</td>
                                         <td>{{ student.cccd }}</td>
                                         <td>
-                                            {% if perms.sms.view_hssv %}
+                                            {% if perms.sms.view_hssv or perms.sms.change_hssv%}
                                             <div class="btn-group">
                                                 <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
                                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -99,19 +99,23 @@
                                 </div>
             </div>
         </div>
-        {% if perms.sms.add_hssv %}
+        {% if perms.sms.add_hssv or perms.sms.view_hssv%}
         <div class="row item-row">
             <div class="col-md-6 mb-3">
                 <div>
+                    {% if perms.sms.add_hssv%}
                     <a href="{% url 'create_sv' %}">
                         <button type="button" class="btn btn-primary">Thêm mới</button>
                     </a>
+                    {% endif %}
                     <a href="{% url 'export_lopsv' lop_id%}">
                         <button type="button" class="btn btn-primary align-items-center">Export</button>
                     </a>
                 </div>
             </div>
         </div>
+        {% endif %}
+        {% if perms.sms.add_hssv%}
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">

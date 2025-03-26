@@ -39,28 +39,36 @@
                                 <th>STT</th>
                                 <th>Môn học</th>
                                 <th>Điểm thành phần</th>
+                                <th>ID</th>
                                 <th>Kết quả</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for mh in lmh %}
+                            {% for mh in mhl %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ mh.monhoc.ten }}</td>
+                                <td>{{ mh.ma }}</td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                             </tr>
-                                {% for l in mh.ttdiem %}
+                                {% for ld in mh.ttdiem %}
                                 <tr>
                                     <td></td>
                                     <td></td>
-                                    <td>{{ l.ten }}</td>
-                                    {% if l.diem != None %}
-                                    <td>{{ l.diem }}</td>
-                                    {% else %}
-                                    <td><span class="font-weight-bold text-danger">Chưa có điểm</span></td>
-                                    {% endif %}
+                                    <td>{{ ld.ma }}</td>
+                                    <td></td>
+                                    <td></td>
                                 </tr>
+                                    {% for dtp in ld.dtplst %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ dtp.mark }}</td>
+                                    </tr>
+                                    {% endfor %}
                                 {% endfor %}
                             {% endfor %}
                         </tbody>

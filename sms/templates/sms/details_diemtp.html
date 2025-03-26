@@ -1,0 +1,78 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'diemtp-lmh-lst' lmh.id%}">Điểm thành phần</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Xem chi tiết</li>
+                </ol>
+        </div>
+        </div>
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h6>Lớp: {{lmh.lop}}</h6>
+                <h6>Môn học: {{lmh.monhoc}}</h6>
+                        <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã</th>
+                                <th>Tên</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sv in svl %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ sv.ma }}</td>
+                                <td>{{ sv.hoten }}</td>
+                                {% for ld in sv.ttdiem%} 
+                                    {% for dtp in ld.dtplst%} 
+                                        <td>{{ ld.ma }}-{{forloop.counter }}</td>
+                                        <td>{{ dtp.mark }}</td>
+                                    {% endfor %}
+                                {% endfor %}
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

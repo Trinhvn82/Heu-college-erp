@@ -342,9 +342,9 @@ def diemtp_lmh_lst(request, lmh_id):
     lol=[]
     diems = Diemthanhphan.objects.all()
     stud_list = Hssv.objects.filter(lop_id = lop_id)
-    lds= Loaidiem.objects.all().order_by('ma')
+    lds= Loaidiem.objects.all().order_by('id')
     for ld in lds:
-        log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('-id')
+        log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('id')
         ld.log= log
     context = {
         "tenlop": tenlop,
@@ -499,13 +499,16 @@ def create_diemtp(request, lmh_id, dtp_id):
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
         for stud in stud_list:
-            id = "C"+str(stud.id)+"-"+str(dtp_id)
-            diem = request.POST[id]
-            log_id = request.POST["log"]
-            mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
-            mark.diem = diem
-            mark.status = 1
-            mark.save()
+            try:
+                id = "C"+str(stud.id)+"-"+str(dtp_id)
+                diem = request.POST[id]
+                log_id = request.POST["log"]
+                mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
+                mark.diem = diem
+                mark.save()
+            except Exception as e:
+                messages.error(request, 'Nhập điểm cho mã: ' + stud.msv  + ' có lỗi:' + str(e))
+
         messages.success(request, "Cap nhat diem thanh cong!")
         return redirect("diemtp-lmh-lst", lmh_id)
 
@@ -514,7 +517,7 @@ def create_diemtp(request, lmh_id, dtp_id):
     log = LogDiem(ten = request.user.username)  
     log.save()
     for stud in stud_list:
-        mark = Diemthanhphan(diem =0, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log=log) 
+        mark = Diemthanhphan(diem =0, status = 1, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log=log) 
         #mark.log = log
         mark.save()
     diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
@@ -540,8 +543,8 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
     stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
+    log = LogDiem.objects.get(id = log_id)
     if request.method == "POST":
-        log = LogDiem.objects.get(id = log_id)
         log.capnhat_at = datetime.now()
         log.ten = request.user.username
         log.save()
@@ -556,10 +559,6 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
         messages.success(request, "Cap nhat diem thanh cong!")
         return redirect("diemtp-lmh-lst", lmh_id)
 
-
-    #create mark record
-    log = LogDiem(id = log_id)
-    #log.save()
     diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc.id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
 
     context = {
@@ -569,6 +568,23 @@ def edit_diemtp(request, lmh_id, dtp_id, log_id):
         "lmh":lmh
     }
     return render(request, "sms/diem-lmh.html", context)
+
+@login_required
+def delete_diemtp(request, lmh_id, dtp_id, log_id):
+
+    lmh = LopMonhoc.objects.get(id = lmh_id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+    try:
+        Diemthanhphan.objects.filter(sv__in=stud_list
+                                    , monhoc_id =lmh.monhoc.id
+                                    , tp_id=dtp_id
+                                    , log_id=log_id).delete()
+        
+        messages.success(request, "Xóa điểm thành công!")
+        return redirect("diemtp-lmh-lst", lmh_id)
+    except Exception as e:
+        messages.error(request, 'Lỗi khi xóa điểm: ' + str(e))
+        return redirect("diemtp-lmh-lst", lmh_id)
 
 @login_required
 def lop81_hk(request, lop_id, hk_ma):
@@ -2303,13 +2319,33 @@ def details_sv(request, sv_id):
     ld = Loaidiem.objects.all()
     hks = Hocky.objects.all()
     hps = Hp81.objects.filter(sv_id = sv_id)
+    mhl=[]
+    ldl=[]
+    dtpl=[]
+
+
 
     for mh in lmh:
+        ldl=[]
         for l in ld:
-            #hp.duno = hp.sotien2-hp.sotien1
-            if Diemthanhphan.objects.filter(sv_id = sv_id,monhoc_id = mh.monhoc_id,tp_id = l.id).first():
-                l.diem = Diemthanhphan.objects.filter(sv_id = sv_id,monhoc_id = mh.monhoc_id,tp_id = l.id)[0].diem
-        mh.ttdiem = ld
+            dtpl=[]
+            for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
+                dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+
+            ldl.append({"ma":l.ten,"dtplst": dtpl})
+
+        mhl.append({ "ma":mh.monhoc.ten,"ttdiem": ldl})
+#        mh.ttdiem = ld
+ 
+    print('after')
+    for mh in mhl:
+        for ld in mh['ttdiem']:
+            for dtp in ld['dtplst']:
+                print(mh['ma'])
+                print(ld['ma'])
+                print(dtp['id'])
+                print(dtp['mark'])
+
 
     for hp in hps:
         hp.duno = hp.sotien2-hp.sotien1
@@ -2323,7 +2359,7 @@ def details_sv(request, sv_id):
     
 
     context = {
-        "lmh": lmh,
+        "mhl": mhl,
         "ld": ld,
         "dtp": dtp,
         "hks": hks,
@@ -2332,6 +2368,43 @@ def details_sv(request, sv_id):
         "ten": sv.hoten
     }
     return render(request, "sms/sv_details.html", context)
+
+@login_required
+def details_diemtp(request, lop_id, lmh_id):
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop","monhoc")[0]
+    svs = Hssv.objects.filter(lop_id=lmh.lop_id)
+    dtp = Diemthanhphan.objects.filter(sv__in = svs)
+    lds = Loaidiem.objects.all()
+    svl=[]
+
+    for sv in svs:
+        ldl=[]
+        for ld in lds:
+            dtpl=[]
+            dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = lmh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
+#            logs = dtps.log
+            for dtp in dtps:
+                dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+
+            ldl.append({"ma":ld.ma,"dtplst": dtpl})
+
+        svl.append({ "ma":sv.msv,"hoten":sv.hoten,"ttdiem": ldl})
+#        mh.ttdiem = ld
+ 
+    # print('after')
+    # for mh in mhl:
+    #     for ld in mh['ttdiem']:
+    #         for dtp in ld['dtplst']:
+    #             print(mh['ma'])
+    #             print(ld['ma'])
+    #             print(dtp['id'])
+    #             print(dtp['mark'])
+
+    context = {
+        "svl": svl,
+        "lmh": lmh
+    }
+    return render(request, "sms/details_diemtp.html", context)
 
 @login_required
 def edit_hp81(request, hp81_id):

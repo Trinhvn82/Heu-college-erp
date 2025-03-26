@@ -674,7 +674,7 @@ class LogDiem(models.Model):
         return str(self.id)
 
 class Loaidiem(models.Model):
-    ma = models.IntegerField(default= 1)
+    ma = models.CharField(default= "KTTX")
     trunglap = models.IntegerField(default= 1, verbose_name="Số lần cho điểm")
     heso = models.IntegerField(default= 1, verbose_name="Hệ số")
     ten = models.CharField(max_length=100, null=True)

@@ -103,10 +103,13 @@ urlpatterns = [
     path('diemlmh/<int:lmh_id>/', views.diem_lmh, name='diem-lmh'),
     path('diemlmh-lst/<int:lmh_id>/', views.diem_lmh_lst, name='diem-lmh-lst'),
     path('diemtplmh-lst/<int:lmh_id>/', views.diemtp_lmh_lst, name='diemtp-lmh-lst'),
+    path('detailsDtp/<int:lop_id>/<int:lmh_id>/', views.details_diemtp, name='details_diemtp'),
+
     path('gvlmh-lst/<int:lmh_id>/', views.gv_lmh_lst, name='gv-lmh-lst'),
     path('diemlmh-dtp/<int:lmh_id>/<int:dtp_id>/', views.diem_lmh_dtp, name='diem-lmh-dtp'),
     path('CreateDiemTP/<int:lmh_id>/<int:dtp_id>/', views.create_diemtp, name='create_diemtp'),
     path('EditDiemTP/<int:lmh_id>/<int:dtp_id>/<int:log_id>/', views.edit_diemtp, name='edit_diemtp'),
+    path('DeleteDiemTP/<int:lmh_id>/<int:dtp_id>/<int:log_id>/', views.delete_diemtp, name='delete_diemtp'),
     path('lop81-hk/<int:lop_id>/<int:hk_ma>/', views.lop81_hk, name='lop81-hk'),
     path('lophp-hk/<int:lop_id>/<int:hk_ma>/', views.lophp_hk, name='lophp-hk'),
     path('delete/<int:teacher_id>', views.delete_teacher, name='delete_teacher'),
