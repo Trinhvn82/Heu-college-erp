@@ -346,13 +346,60 @@ def diemtp_lmh_lst(request, lmh_id):
     for ld in lds:
         log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('id')
         ld.log= log
+
+    #Details section
+
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop","monhoc")[0]
+    svs = Hssv.objects.filter(lop_id=lmh.lop_id)
+    dtp = Diemthanhphan.objects.filter(sv__in = svs)
+    lds1 = Loaidiem.objects.all()
+    svl=[]
+
+    for sv in svs:
+        ldl=[]
+        tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
+        print(sv.hoten)
+        for ld in lds1:
+            dtpl=[]
+            dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = lmh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
+#            logs = dtps.log
+            for dtp in dtps:
+                dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+                print(ld.ma)
+                print(ld.heso)
+                print(dtp.diem)
+                if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
+                    tbm1_diem = tbm1_diem + dtp.diem * ld.heso
+                    tbm1_heso = tbm1_heso + ld.heso
+                    print(tbm1_diem)
+                    print(tbm1_heso)
+                elif ld.ma == 'KTKT' and dtp.diem > 0:
+                    tbm2_diem = dtp.diem * ld.heso
+                    tbm2_heso = ld.heso
+                    print(tbm2_diem)
+                    print(tbm2_heso)
+            ldl.append({"ma":ld.ma, "dtplst": dtpl})
+            
+        tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
+
+        svl.append({ "ma":sv.msv,"hoten":sv.hoten,"tbm": tbm,"ttdiem": ldl})
+
+    # context = {
+    #     "svl": svl,
+    #     "sv0": svl[0],
+    #     "lmh": lmh
+    # }
+
     context = {
         "tenlop": tenlop,
         "lop_id": lop_id,
         "lds": lds,
         "lmh_id":lmh_id,
         "lol":lol,
-        "tenmh": tenmh
+        "tenmh": tenmh,
+        "svl": svl,
+        "sv0": svl[0],
+        "lmh": lmh
     }
     return render(request, "sms/diemtp-lmh-lst.html", context)
 
@@ -2332,20 +2379,9 @@ def details_sv(request, sv_id):
             for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
                 dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
 
-            ldl.append({"ma":l.ten,"dtplst": dtpl})
+            ldl.append({"ma":l.ma,"dtplst": dtpl})
 
-        mhl.append({ "ma":mh.monhoc.ten,"ttdiem": ldl})
-#        mh.ttdiem = ld
- 
-    print('after')
-    for mh in mhl:
-        for ld in mh['ttdiem']:
-            for dtp in ld['dtplst']:
-                print(mh['ma'])
-                print(ld['ma'])
-                print(dtp['id'])
-                print(dtp['mark'])
-
+        mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
 
     for hp in hps:
         hp.duno = hp.sotien2-hp.sotien1
@@ -2360,6 +2396,7 @@ def details_sv(request, sv_id):
 
     context = {
         "mhl": mhl,
+        "mhl0": mhl[0],
         "ld": ld,
         "dtp": dtp,
         "hks": hks,
@@ -2402,6 +2439,7 @@ def details_diemtp(request, lop_id, lmh_id):
 
     context = {
         "svl": svl,
+        "sv0": svl[0],
         "lmh": lmh
     }
     return render(request, "sms/details_diemtp.html", context)

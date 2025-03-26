@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
-            <h6>Lớp: {{tenlop}}</h6>
+            <h6>Lớp: {{lmh.lop}}</h6>
             <h8>Môn hoc: {{tenmh}}</h8>
         <!-- <table class="table table-responsive-sm table-bordered table-striped table-sm"> -->
                 <table class="table table-responsive-sm table-bordered table-sm">
@@ -134,20 +134,49 @@
 
             {{ transactions.pagination }}
 
+        </div>
 
+        <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
-                <a href="{% url 'details_diemtp' lop_id lmh_id%}">
-                    <button type="button" class="btn btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
-                            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
-                            <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
-                          </svg>                      
-                        Xem chi tiết
-                    </button>
-                </a>
-
+                <h6>Chi tiết</h6>
+                        <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã</th>
+                                <th>Tên</th>
+                                <th>Điểm TBM</th>
+                                {% for ld in sv0.ttdiem%} 
+                                    {% for dtp in ld.dtplst%} 
+                                        <th>{{ ld.ma }}-{{forloop.counter }}</th>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sv in svl %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ sv.ma }}</td>
+                                <td>{{ sv.hoten }}</td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ sv.tbm }}</span>
+                                </td>
+                                {% for ld in sv.ttdiem%} 
+                                    {% for dtp in ld.dtplst%} 
+                                        <td>{{ dtp.mark }}</td>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
+
     </main>
 
 {% endblock content %}

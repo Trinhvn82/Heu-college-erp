@@ -244,7 +244,7 @@ def lopsv_chart(request):
         },
     })
 @login_required
-@permission_required('dasboard.view_dasboard',raise_exception=True)
+@permission_required('dashboard.view_dashboard',raise_exception=True)
 def statistics_view(request):
     lops = Lop.objects.all()
     hks = Hocky.objects.all()

@@ -32,47 +32,30 @@
             <div class="card-body">
                 <h6>Mã: {{msv}}</h6>
                 <h6>Tên: {{ten}}</h6>
-                        <div class="table-responsive">
+                <div class="table-responsive">
+                    {% for mh in mhl %}
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
-                                <th>STT</th>
                                 <th>Môn học</th>
-                                <th>Điểm thành phần</th>
-                                <th>ID</th>
-                                <th>Kết quả</th>
+                                {% for ld in mh.ttdiem %}
+                                {% for dtp in ld.dtplst %}
+                                    <th>{{ ld.ma }}-{{ forloop.counter }}</th>
+                                {% endfor %}
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
-                            {% for mh in mhl %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ mh.ma }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
                             </tr>
+                                <td>{{ mh.ma }}</td>
                                 {% for ld in mh.ttdiem %}
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td>{{ ld.ma }}</td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
                                     {% for dtp in ld.dtplst %}
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>{{ forloop.counter }}</td>
                                         <td>{{ dtp.mark }}</td>
-                                    </tr>
                                     {% endfor %}
                                 {% endfor %}
-                            {% endfor %}
                         </tbody>
                     </table>
+                    {% endfor %}
                 </div>
             </div>
         </div>

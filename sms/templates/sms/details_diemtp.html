@@ -41,12 +41,11 @@
                                 <th>STT</th>
                                 <th>Mã</th>
                                 <th>Tên</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
+                                {% for ld in sv0.ttdiem%} 
+                                    {% for dtp in ld.dtplst%} 
+                                        <th>{{ ld.ma }}-{{forloop.counter }}</th>
+                                    {% endfor %}
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
@@ -57,12 +56,9 @@
                                 <td>{{ sv.hoten }}</td>
                                 {% for ld in sv.ttdiem%} 
                                     {% for dtp in ld.dtplst%} 
-                                        <td>{{ ld.ma }}-{{forloop.counter }}</td>
                                         <td>{{ dtp.mark }}</td>
                                     {% endfor %}
                                 {% endfor %}
-                                <td></td>
-                                <td></td>
                             </tr>
                             {% endfor %}
                         </tbody>
