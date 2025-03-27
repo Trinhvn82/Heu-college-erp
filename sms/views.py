@@ -2361,9 +2361,9 @@ def edit_sv(request, sv_id):
 @login_required
 def details_sv(request, sv_id):
     sv = Hssv.objects.get(id=sv_id)
-    lmh = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc")
-    dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
-    ld = Loaidiem.objects.all()
+    #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
+    #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
+    lds = Loaidiem.objects.all()
     hks = Hocky.objects.all()
     hps = Hp81.objects.filter(sv_id = sv_id)
     mhl=[]
@@ -2372,31 +2372,94 @@ def details_sv(request, sv_id):
 
 
 
-    for mh in lmh:
-        ldl=[]
-        for l in ld:
-            dtpl=[]
-            for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
-                dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+    # for mh in lmhs:
+    #     ldl=[]
+    #     for l in ld:
+    #         dtpl=[]
+    #         for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
+    #             dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
 
-            ldl.append({"ma":l.ma,"dtplst": dtpl})
+    #         ldl.append({"ma":l.ma,"dtplst": dtpl})
 
-        mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
+    #     mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
+
+
+    for hk in hks:
+        lml=[]
+        tbmhk, tchk = 0,0
+        lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id, hk_id = hk.id).select_related("monhoc").order_by('ngaystart')
+        print(hk.ten)
+        for mh in lmhs:
+            print(mh.monhoc.ten)
+            ldl=[]
+            tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
+            kttx1,kttx2,kttx3,ktdk1,ktdk2,ktdk3,ktkt1,ktkt2 = 0,0,0,0,0,0,0,0
+            for ld in lds:
+                dtpl=[]
+                dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = mh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
+
+                i=1
+                for dtp in dtps:
+                    if i==1 and ld.ma == 'KTTX':
+                        kttx1 = dtp.diem
+                    elif i==2 and ld.ma == 'KTTX':
+                        kttx2 = dtp.diem
+                    elif i==3 and ld.ma == 'KTTX':
+                        kttx3 = dtp.diem
+                    elif i==1 and ld.ma == 'KTĐK':
+                        ktdk1 = dtp.diem
+                    elif i==2 and ld.ma == 'KTĐK':
+                        kttdk2 = dtp.diem
+                    elif i==3 and ld.ma == 'KTĐK':
+                        ktdk3 = dtp.diem
+                    elif i==1 and ld.ma == 'KTKT':
+                        ktkt1 = dtp.diem
+                    elif i==2 and ld.ma == 'KTKT':
+                        ktkt2 = dtp.diem
+                    i=i+1
+                    dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+                    if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
+                        tbm1_diem = tbm1_diem + dtp.diem * ld.heso
+                        tbm1_heso = tbm1_heso + ld.heso
+                    elif ld.ma == 'KTKT' and dtp.diem > 0:
+                        tbm2_diem = dtp.diem * ld.heso
+                        tbm2_heso = ld.heso
+                ldl.append({"ma":ld.ma, "dtplst": dtpl})
+                
+            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
+            tbmhk= tbmhk+tbm*mh.monhoc.sotinchi
+            tchk=tchk+mh.monhoc.sotinchi
+            lml.append({ "ten":mh.monhoc.ten,
+                        "tc": mh.monhoc.sotinchi,
+                        "tbm": tbm,
+                        "kttx1": kttx1, 
+                        "kttx2": kttx2, 
+                        "kttx3": kttx3,
+                        "ktdk1": ktdk1,
+                        "ktdk2": ktdk2, 
+                        "ktdk3": ktdk3,
+                        "ktkt1": ktkt1,
+                        "ktkt2": ktkt2
+                        })
+        hk.lml = lml
+        hk.tchk = tchk
+        hk.tbmhk = round(tbmhk/tchk,1)
+
 
     for hp in hps:
         hp.duno = hp.sotien2-hp.sotien1
 
-    for hk in hks:
-        if Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id).first():
-            hk.hp = Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id)[0]
-            hk.hp.duno = hk.hp.sotien2-hk.hp.sotien1
-        else:
-            hk.hp = None
+    # for hk in hks:
+    #     if Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id).first():
+    #         hk.hp = Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id)[0]
+    #         hk.hp.duno = hk.hp.sotien2-hk.hp.sotien1
+    #     else:
+    #         hk.hp = None
     
 
     context = {
-        "mhl": mhl,
-        "mhl0": mhl[0],
+#        "lml": lml,
+#        "mhl0": mhl[0],
         "ld": ld,
         "dtp": dtp,
         "hks": hks,

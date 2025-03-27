@@ -33,27 +33,53 @@
                 <h6>Mã: {{msv}}</h6>
                 <h6>Tên: {{ten}}</h6>
                 <div class="table-responsive">
-                    {% for mh in mhl %}
+                    {% for hk in hks %}
+                    <h6>{{hk.ten}}</h6>
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
+                                <th>STT</th>
                                 <th>Môn học</th>
-                                {% for ld in mh.ttdiem %}
-                                {% for dtp in ld.dtplst %}
-                                    <th>{{ ld.ma }}-{{ forloop.counter }}</th>
-                                {% endfor %}
-                                {% endfor %}
+                                <th>Tín chỉ</th>
+                                <th>TBM</th>
+                                <th>KTKT1</th>
+                                <th>KTKT2</th>
+                                <th>KTTX1</th>
+                                <th>KTTX2</th>
+                                <th>KTTX3</th>
+                                <th>KTĐK1</th>
+                                <th>KTĐK2</th>
+                                <th>KTĐK3</th>
                             </tr>
                         </thead>
                         <tbody>
+                        {% for mh in hk.lml %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ mh.ten }}</td>
+                                <td>{{ mh.tc }}</td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbm }}</span>
+                                </td>
+                                <td>{{ mh.ktkt1 }}</td>
+                                <td>{{ mh.ktkt2 }}</td>
+                                <td>{{ mh.kttx1 }}</td>
+                                <td>{{ mh.kttx2 }}</td>
+                                <td>{{ mh.kttx3 }}</td>
+                                <td>{{ mh.ktdk1 }}</td>
+                                <td>{{ mh.ktdk2 }}</td>
+                                <td>{{ mh.ktdk3 }}</td>
                             </tr>
-                                <td>{{ mh.ma }}</td>
-                                {% for ld in mh.ttdiem %}
-                                    {% for dtp in ld.dtplst %}
-                                        <td>{{ dtp.mark }}</td>
-                                    {% endfor %}
-                                {% endfor %}
-                        </tbody>
+                        {% endfor %}
+                        <tr>
+                            <td></td>
+                            <td>Học kỳ:</td>
+                            <td>{{ hk.tchk }}</td>
+                            <td>
+                                <span class="font-weight-bold text-success">{{ hk.tbmhk }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
                     </table>
                     {% endfor %}
                 </div>
