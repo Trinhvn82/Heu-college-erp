@@ -173,8 +173,9 @@ def sv_list(request):
 def sv_lop(request, lop_id):
     #students = Hssv.objects.all()
     tenlop = Lop.objects.get(id = lop_id).ten
-    students = Hssv.objects.filter(lop_id = lop_id).order_by('msv')
-    paginator = Paginator(students, 100)
+    #students = Hssv.objects.filter(lop_id = lop_id).order_by('ten')
+    ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: ans.ten, reverse=False)
+    paginator = Paginator(ans, 50)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
     print("LOP ID la ")
@@ -375,9 +376,10 @@ def diemtp_lmh_lst(request, lmh_id):
                     print(tbm1_heso)
                 elif ld.ma == 'KTKT' and dtp.diem > 0:
                     tbm2_diem = dtp.diem * ld.heso
-                    tbm2_heso = ld.heso
                     print(tbm2_diem)
                     print(tbm2_heso)
+            if ld.ma == 'KTKT':
+                tbm2_heso = ld.heso
             ldl.append({"ma":ld.ma, "dtplst": dtpl})
             
         tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
@@ -1238,9 +1240,14 @@ def export_gv(request):
 @login_required
 def export_lopsv(request, lop_id):
     # Query the Person model to get all records
-    svs = Hssv.objects.all().filter(lop_id=lop_id).values().order_by("msv")
+    #svs = Hssv.objects.all().filter(lop_id=lop_id).values().order_by("ten")
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
+    exp=[]
+    for sv in svs:
+        exp.append({"Mã học tên": sv.msv,"Họ tên": sv.hoten})
+
     # Convert the QuerySet to a DataFrame
-    df = pd.DataFrame(list(svs))
+    df = pd.DataFrame(list(exp))
 
     # Define the Excel file response
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -2423,7 +2430,11 @@ def details_sv(request, sv_id):
                         tbm1_heso = tbm1_heso + ld.heso
                     elif ld.ma == 'KTKT' and dtp.diem > 0:
                         tbm2_diem = dtp.diem * ld.heso
-                        tbm2_heso = ld.heso
+                        # tbm2_heso = ld.heso
+                        # print(tbm2_diem)
+                        # print(tbm2_heso)
+                if ld.ma == 'KTKT':
+                    tbm2_heso = ld.heso
                 ldl.append({"ma":ld.ma, "dtplst": dtpl})
                 
             tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0

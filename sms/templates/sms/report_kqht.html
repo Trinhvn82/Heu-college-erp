@@ -8,7 +8,16 @@
 
 {% block content %}
 
-    <main class="content">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script>
+    $(document).ready(function() {
+        $('#id_monhoc').select2();
+    });    
+</script>
+
+<main class="content">
 
         {% include 'includes/navigation.html' %}
         {% include 'sms/alerts.html' %}
@@ -35,10 +44,16 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Trung tâm:</label><input type="text" name="trungtam" class="form-control" required maxlength="100"></div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Lớp:</label><input type="text" name="lop" class="form-control" required maxlength="100"></div>
+                                <div>
+                                    <label for="id_sogio">Lớp:</label>
+                                    <select name="lop" class="form-control" required id="id_monhoc">
+                                        <option value="" selected>----</option>
+                                        {% for ct in lh %}
+                                        <option value="{{ct.id}}">{{ct.ma}}-{{ct.ten}}</option>
+                                        {% endfor%}
+                                    </select>
+                    
+                                </div>
                             </div>
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary">Xem báo cáo</button>
@@ -50,55 +65,51 @@
         </div>
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
+                <h6>Lớp: {{lop.ten}}</h6>
                 <div class="table-responsive">
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
                                 <th>#</th>
-                                <th>Lớp/Môn học</th>
+                                <th>Mã</th>
                                 <th>Học viên</th>
-                                <th>Loại điểm</th>
-                                <th>Điểm</th>
+                                <th>TBM HK1</th>
+                                <th>TBM HK2</th>
+                                <th>TBM HK3</th>
+                                <th>TBM HK4</th>
+                                <th>Tác vụ</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for l in lh %}
+                            {% for sv in svs %}
                             <tr>
-                                <td></td>
-                                <td>{{ l.ten }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                                {% for mh in l.lmhs %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ mh.monhoc.ten }}</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                    {% for diem in mh.diems %}
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td>{{ diem.sv.hoten }}</td>
-                                        <td>{{ diem.tp.ten}}</td>
-                                        <td>{{ diem.diem}}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td></td>
-                                        <td><span class="font-weight-bold text-danger">Không có dữ liệu</span></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    {% endfor %}
-                                {% empty %}
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ sv.msv }}</td>
+                                <td>{{ sv.hoten }}</td>
+                                {% for hk in sv.hkl %}
+                                <td>{{ hk.tbmhk }}</td>
                                 {% endfor %}
-                            {% empty %}
-                            <p>Please enter report filter</p>
+                                <td>
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                        </button>
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.view_hssv %}
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'details_sv' sv.id %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
+                                                    <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/>
+                                                  </svg>
+                                                <span></span>Xem chi tiết
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>

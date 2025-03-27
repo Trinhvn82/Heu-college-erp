@@ -4,6 +4,7 @@ from xml.etree.ElementTree import tostring
 from django.db import models
 from simple_history.models import HistoricalRecords
 from info.models import User
+from django.db.models.functions import StrIndex, Reverse, Right, Concat, Substr
 
 # Create your models here.
 tl_choice = (
@@ -278,7 +279,18 @@ class Hssv(models.Model):
 
     ghichu = models.TextField(max_length=500, blank=True, null=True)
 
+    # ten = models.GeneratedField(
+    #         expression = Concat(Right(hoten, StrIndex(Reverse(hoten), " ")-1), " ",Substr(hoten, 1, StrIndex(hoten, " ")-1)),
+    #         output_field = models.TextField(),
+    #         db_persist = True
+    #     )
+    
     history = HistoricalRecords()
+    @property
+    def ten(self):
+        return self.hoten.split()[-1] + " " + self.hoten.split()[0]
+    
+
     class Meta:
         verbose_name = "Học viên"
         verbose_name_plural = "Danh sách học viên"

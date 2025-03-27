@@ -140,34 +140,110 @@ def report_ttgv(request):
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
 def report_kqht(request):
-    lh = None
-    query_tt = None
-    query_lop = None
+    lh = Lop.objects.all()
+    #query_tt = None
+    svs = None
+    lop= None
     if request.method == "POST":
-        query_lop = request.POST.get('lop', None)
-        query_tt = request.POST.get('trungtam', None)
-        lh = Lop.objects.all().order_by("ten").select_related("trungtam")
-        if query_tt:
-            lh = lh.filter(trungtam__ten__contains=query_tt.strip())
-        if query_lop:
-            lh = lh.filter(ten__contains=query_lop.strip())     
+        lop_id = request.POST.get('lop', None)
+        svs = Hssv.objects.filter(lop_id=lop_id)
+        lop = Lop.objects.get(id=lop_id)
+        #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
+        #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
+        lds = Loaidiem.objects.all()
+        hks = Hocky.objects.all()
+        mhl=[]
+        ldl=[]
+        dtpl=[]
 
-        #svs = Hssv.objects.filter(malop__in=lh).select_related("malop").order_by("malop", "msv")
-        for l in lh:
-            lmhs = LopMonhoc.objects.filter(lop_id=l.id).select_related("monhoc").order_by("ngaystart")
-            for lmh in lmhs:
-                svs = Hssv.objects.filter(lop_id=l.id)
-                lmh.diems = Diemthanhphan.objects.filter(monhoc_id=lmh.monhoc.id, status =1, sv_id__in= svs.values_list('id', flat=True)).select_related("sv","tp").order_by("sv_id", "tp_id")
-            l.lmhs = lmhs
 
+
+        # for mh in lmhs:
+        #     ldl=[]
+        #     for l in ld:
+        #         dtpl=[]
+        #         for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
+        #             dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+
+        #         ldl.append({"ma":l.ma,"dtplst": dtpl})
+
+        #     mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
+
+        for sv in svs:
+            hkl=[]
+            for hk in hks:
+                lml=[]
+                tbmhk, tchk = 0,0
+                lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id, hk_id = hk.id).select_related("monhoc").order_by('ngaystart')
+                print(hk.ten)
+                for mh in lmhs:
+                    print(mh.monhoc.ten)
+                    ldl=[]
+                    tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
+                    kttx1,kttx2,kttx3,ktdk1,ktdk2,ktdk3,ktkt1,ktkt2 = 0,0,0,0,0,0,0,0
+                    for ld in lds:
+                        dtpl=[]
+                        dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = mh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
+
+                        i=1
+                        for dtp in dtps:
+                            if i==1 and ld.ma == 'KTTX':
+                                kttx1 = dtp.diem
+                            elif i==2 and ld.ma == 'KTTX':
+                                kttx2 = dtp.diem
+                            elif i==3 and ld.ma == 'KTTX':
+                                kttx3 = dtp.diem
+                            elif i==1 and ld.ma == 'KTĐK':
+                                ktdk1 = dtp.diem
+                            elif i==2 and ld.ma == 'KTĐK':
+                                kttdk2 = dtp.diem
+                            elif i==3 and ld.ma == 'KTĐK':
+                                ktdk3 = dtp.diem
+                            elif i==1 and ld.ma == 'KTKT':
+                                ktkt1 = dtp.diem
+                            elif i==2 and ld.ma == 'KTKT':
+                                ktkt2 = dtp.diem
+                            i=i+1
+                            dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+                            if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
+                                tbm1_diem = tbm1_diem + dtp.diem * ld.heso
+                                tbm1_heso = tbm1_heso + ld.heso
+                            elif ld.ma == 'KTKT' and dtp.diem > 0:
+                                tbm2_diem = dtp.diem * ld.heso
+                                # tbm2_heso = ld.heso
+                                # print(tbm2_diem)
+                                # print(tbm2_heso)
+                        if ld.ma == 'KTKT':
+                            tbm2_heso = ld.heso
+                        ldl.append({"ma":ld.ma, "dtplst": dtpl})
+                        
+                    tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
+                    tbmhk= tbmhk+tbm*mh.monhoc.sotinchi
+                    tchk=tchk+mh.monhoc.sotinchi
+                    lml.append({ "ten":mh.monhoc.ten,
+                                "tc": mh.monhoc.sotinchi,
+                                "tbm": tbm,
+                                "kttx1": kttx1, 
+                                "kttx2": kttx2, 
+                                "kttx3": kttx3,
+                                "ktdk1": ktdk1,
+                                "ktdk2": ktdk2, 
+                                "ktdk3": ktdk3,
+                                "ktkt1": ktkt1,
+                                "ktkt2": ktkt2
+                                })
+#                hk.lml = lml
+                hkl.append({"tchk":tchk,"tbmhk":round(tbmhk/tchk,1)})
+                # hk.tchk = tchk
+                # hk.tbmhk = round(tbmhk/tchk,1)
+            sv.hkl = hkl
         messages.success(request, "Tìm kiếm thành công!")
-        paginator = Paginator(lh, 1)
-        page = request.GET.get('page')
-        lh = paginator.get_page(page)
     context = {
         "lh": lh,
-        "query_tt": query_tt,
-        "query_lop": query_lop
+        "lop": lop,
+        "svs": svs
+        # "query_tt": query_tt,
+        # "query_lop": query_lop
     }
     return render(request, "sms/report_kqht.html", context)
 
