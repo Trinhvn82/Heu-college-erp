@@ -181,7 +181,7 @@ def hs_chart(request, lop, hk):
 @login_required
 def hp_chart(request, lop, hk):
     query = """
-                select max(sv.id) as id, coalesce(hp.ten,'Chưa nhập dữ liệu') as labels, count(*) as data
+                select max(sv.id) as id, coalesce(hp.ten,'Chưa nhập dữ liệu') as labels, count(hp.*) as data
 					from sms_hssv sv
                 left outer join 
                     (select sv_id, hk_id, st.ten from public.sms_hp81
