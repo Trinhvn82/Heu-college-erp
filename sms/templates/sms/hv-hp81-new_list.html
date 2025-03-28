@@ -39,8 +39,9 @@
                             <tr>
                                 <th>Mã</th>
                                 <th>Tên</th>
-                                <th>Học kỳ</th>
-                                <th>Trạng thái</th>
+                                <th>Ngày thu</th>
+                                <th>$ Dự kiến</th>
+                                <th>$ Thực nhận</th>
                                 <th>Tác vụ</th>
                             </tr>
                         </thead>
@@ -49,6 +50,7 @@
                             <tr>
                                 <td>{{ sv.msv }}</td>
                                 <td>{{ sv.hoten }}</td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td>
@@ -71,10 +73,11 @@
                             </tr>
                             {% for hp in sv.hp81 %}
                             <tr>
-                                <td></td>
-                                <td></td>
                                 <td>{{ hp.hk }}</td>
                                 <td>{{ hp.status }}</td>
+                                <td>{{ hp.thoigian | date:"d/m/Y"  }}</td>
+                                <td>{{ hp.sotien1 }}</td>
+                                <td>{{ hp.sotien2 }}</td>
                                 <td>
                                     {% if perms.sms.change_hp81 or perms.sms.view_hp81  %}
                                     <div>
