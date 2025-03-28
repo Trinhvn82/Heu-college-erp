@@ -23,7 +23,7 @@
             <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Báo cáo hồ sơ 81, học phí</li>
+                    <li class="breadcrumb-item active" aria-current="page">Báo cáo hồ sơ, học phí 81</li>
                 </ol>
             </div>
         </div>
@@ -36,10 +36,16 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Trung tâm:</label><input type="text" name="trungtam" class="form-control" required maxlength="100"></div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div><label for="id_ma">Lớp:</label><input type="text" name="lop" class="form-control" required maxlength="100"></div>
+                                <div>
+                                    <label for="id_sogio">Lớp:</label>
+                                    <select name="lop" class="form-control" required id="id_monhoc">
+                                        <option value="" selected>----</option>
+                                        {% for ct in lh %}
+                                        <option value="{{ct.id}}">{{ct.ma}}-{{ct.ten}}</option>
+                                        {% endfor%}
+                                    </select>
+                    
+                                </div>
                             </div>
                             <div class="mt-3">
                                 <button type="submit" class="btn btn-primary">Xem báo cáo</button>
@@ -59,23 +65,13 @@
                                 <th>Mã</th>
                                 <th>Tên</th>
                                 <th>Học kỳ</th>
-                                <th>Hồ sơ 81</th>
+                                <th>Hồ sơ</th>
                                 <th>Học phí</th>
                                 <th>Số tiền</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for l in lh %}
-                            <tr>
-                                <td></td>
-                                <td>Lớp:</td>
-                                <td>{{ l.ten }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                                {% for sv in l.svs %}
+                            {% for sv in svs %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ sv.msv }}</td>
@@ -85,28 +81,17 @@
                                     <td></td>
                                     <td></td>
                                 </tr>
-                                    {% for hp in sv.hp81 %}
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td>{{ hp.hk }}</td>
-                                        <td>{{ hp.hs81_st}}</td>
-                                        <td>{{ hp.status }}</td>
-                                        <td>{{ hp.sotien2 }}</td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td><span class="font-weight-bold text-danger">Không có dữ liệu</span></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                    {% endfor %}
-                                {% empty %}
+                                {% for hk in sv.hkl %}
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>{{ hk.ten }}</td>
+                                    <td>{{ hk.hs.status }}</td>
+                                    <td>{{ hk.hp.status }}</td>
+                                    <td>{{ hk.hp.sotien2}}</td>
+                                    <td></td>
+                                </tr>
                                 {% endfor %}
                             {% empty %}
                             <p>Please enter report filter</p>

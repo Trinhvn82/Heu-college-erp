@@ -38,32 +38,34 @@ def must_be_supervisor(user):
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
 def report_hs81(request):
-    lh = None
-    query_tt = None
-    query_lop = None
+    svs = None
+    lh = Lop.objects.all()
     if request.method == "POST":
-        query_lop = request.POST.get('lop', None)
-        query_tt = request.POST.get('trungtam', None)
-        lh = Lop.objects.all().order_by("ten").select_related("trungtam")
-        if query_tt:
-            lh = lh.filter(trungtam__ten__contains=query_tt.strip())
-        if query_lop:
-            lh = lh.filter(ten__contains=query_lop.strip())     
+        lop_id = request.POST.get('lop', None)
+        svs = Hssv.objects.filter(lop_id=lop_id)
+        hks = Hocky.objects.all()
 
-        #svs = Hssv.objects.filter(malop__in=lh).select_related("malop").order_by("malop", "msv")
-        for l in lh:
-            svs = Hssv.objects.filter(lop_id=l.id).order_by("msv")
-            for sv in svs:
-                sv.hp81 = Hp81.objects.filter(sv=sv).order_by("hk")
-            l.svs = svs
+        for sv in svs:
+            hkl=[]
+            for hk in hks:
+                if Hs81.objects.filter(sv = sv, hk = hk).exists():
+                    hs = Hs81.objects.get(sv = sv, hk = hk)
+                else:
+                    hs=None
+
+                if Hp81.objects.filter(sv = sv, hk = hk).exists():
+                    hp = Hp81.objects.get(sv = sv, hk = hk)
+                else:
+                    hp=None
+
+                hkl.append({"ten":hk.ten,"hs":hs,"hp":hp})
+                
+            sv.hkl = hkl
+
         messages.success(request, "Tìm kiếm thành công!")
-        paginator = Paginator(lh, 1)
-        page = request.GET.get('page')
-        lh = paginator.get_page(page)
     context = {
-        "lh": lh,
-        "query_tt": query_tt,
-        "query_lop": query_lop
+        "svs": svs,
+        "lh": lh
     }
     return render(request, "sms/report_hs81.html", context)
 

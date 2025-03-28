@@ -2366,8 +2366,11 @@ def edit_sv(request, sv_id):
     return render(request, "sms/edit_sv.html", context)
 
 @login_required
-def details_sv(request, sv_id):
+def details_sv(request, sv_id, opt = None):
     sv = Hssv.objects.get(id=sv_id)
+
+    # for ar in args:
+    #     print ar
     #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
     #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
     lds = Loaidiem.objects.all()
@@ -2401,6 +2404,7 @@ def details_sv(request, sv_id):
             ldl=[]
             tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
             kttx1,kttx2,kttx3,ktdk1,ktdk2,ktdk3,ktkt1,ktkt2 = 0,0,0,0,0,0,0,0
+            n_kttx1,n_kttx2,n_kttx3,n_ktdk1,n_ktdk2,n_ktdk3,n_ktkt1,n_ktkt2 = 0,0,0,0,0,0,0,0
             for ld in lds:
                 dtpl=[]
                 dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = mh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
@@ -2409,20 +2413,28 @@ def details_sv(request, sv_id):
                 for dtp in dtps:
                     if i==1 and ld.ma == 'KTTX':
                         kttx1 = dtp.diem
+                        n_kttx1 = 1
                     elif i==2 and ld.ma == 'KTTX':
                         kttx2 = dtp.diem
+                        n_kttx2 = 1
                     elif i==3 and ld.ma == 'KTTX':
                         kttx3 = dtp.diem
+                        n_kttx3 = 1
                     elif i==1 and ld.ma == 'KTĐK':
                         ktdk1 = dtp.diem
+                        n_ktdk1 = 1
                     elif i==2 and ld.ma == 'KTĐK':
                         kttdk2 = dtp.diem
+                        n_ktdk2 = 1
                     elif i==3 and ld.ma == 'KTĐK':
                         ktdk3 = dtp.diem
+                        n_ktdk3 = 1
                     elif i==1 and ld.ma == 'KTKT':
                         ktkt1 = dtp.diem
+                        n_ktkt1 = 1
                     elif i==2 and ld.ma == 'KTKT':
                         ktkt2 = dtp.diem
+                        n_ktkt2 = 1
                     i=i+1
                     dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
                     if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
@@ -2444,13 +2456,21 @@ def details_sv(request, sv_id):
                         "tc": mh.monhoc.sotinchi,
                         "tbm": tbm,
                         "kttx1": kttx1, 
+                        "n_kttx1": n_kttx1, 
                         "kttx2": kttx2, 
+                        "n_kttx2": n_kttx2, 
                         "kttx3": kttx3,
+                        "n_kttx3": n_kttx3, 
                         "ktdk1": ktdk1,
+                        "n_ktdk1": n_ktdk1, 
                         "ktdk2": ktdk2, 
+                        "n_ktdk2": n_ktdk2, 
                         "ktdk3": ktdk3,
+                        "n_ktdk3": n_ktdk3, 
                         "ktkt1": ktkt1,
-                        "ktkt2": ktkt2
+                        "n_ktkt1": n_ktkt1, 
+                        "ktkt2": ktkt2,
+                        "n_ktkt2": n_ktkt2
                         })
         hk.lml = lml
         hk.tchk = tchk
@@ -2472,7 +2492,7 @@ def details_sv(request, sv_id):
 #        "lml": lml,
 #        "mhl0": mhl[0],
         "ld": ld,
-        "dtp": dtp,
+        "opt": opt,
         "hks": hks,
         "hps": hps,
         "msv": sv.msv,
