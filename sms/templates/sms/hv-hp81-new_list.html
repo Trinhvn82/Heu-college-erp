@@ -37,6 +37,7 @@
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
+                                <th>STT</th>
                                 <th>Mã</th>
                                 <th>Tên</th>
                                 <th>Ngày thu</th>
@@ -48,6 +49,7 @@
                         <tbody>
                             {% for sv in svs %}
                             <tr>
+                                <td>{{ forloop.counter }}</td>
                                 <td>{{ sv.msv }}</td>
                                 <td>{{ sv.hoten }}</td>
                                 <td></td>
