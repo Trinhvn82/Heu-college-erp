@@ -763,8 +763,18 @@ class GvLmh(models.Model):
         verbose_name_plural = "Giáo viên lớp môn học"
         ordering = ["-gv","-lopmh"]
         unique_together = ('gv', 'lopmh',)
+
+
+    def kick(self):
+        self.status = 0
+        self.save()
+
+    def hug(self):
+        self.status = 1
+        self.save()
+
     def __str__(self):
-        return self.gv.ten
+        return self.lopmh.lop.ten + "|" + self.lopmh.monhoc.ma + "|" + self.lopmh.monhoc.ten
 
 class UploadedFile(models.Model):
     file = models.FileField(upload_to='uploads/')

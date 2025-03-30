@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dashboard',
     'sms',
+    'htmx_patterns',
     'shop',
     'simple_history',
     'django.contrib.sites',
@@ -121,7 +122,7 @@ AUTHENTICATION_BACKENDS = (
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': "temp6",
+       'NAME': "temp2",
        'USER': 'postgres',
        'PASSWORD': 'Hs123654',
        'HOST': 'localhost',

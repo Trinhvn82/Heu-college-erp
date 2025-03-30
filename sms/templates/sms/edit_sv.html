@@ -44,8 +44,6 @@
                             {% for field in forms %}
                             {% if field.name == 'msv' %}
                                 <input hidden type="text" name="msv" class="form-control" value="{{msv}}" id="id_sogio">
-                            {% elif field.name == 'monhoc' %}
-                                <input hidden type="number" name="monhoc" class="form-control" value="{{monhoc_id}}" id="id_sogio">
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>

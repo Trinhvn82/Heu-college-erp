@@ -65,6 +65,10 @@
     <script>
         document.querySelectorAll('#id_disabled input, #id_disabled select, #id_disabled button, #id_disabled textarea').forEach(elem => elem.disabled = true);    
         document.querySelectorAll('#id_disabled button').forEach(elem => elem.hidden = true);    
+        $(document).on("click", "#id_malop", function(){
+              location.reload();      
+});
+
     </script>
     
 {% endblock content %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block body %}
+  <h1>Django htmx patterns home page</h1>
+
+  <p>This is an example app to accompany the documentation at <a href="https://github.com/spookylukey/django-htmx-patterns">https://github.com/spookylukey/django-htmx-patterns</a>
+  </p>
+
+  <ul>
+    <li><a href="{% url 'headers_demo' %}">headers_demo</a></li>
+    <li><a href="{% url 'simple_post_form' %}">htmx post using form</a></li>
+    <li><a href="{% url 'post_without_form' %}">htmx post without form</a></li>
+    <li><a href="{% url 'toggle_with_separate_partials' %}">toggle interface using separate partials</a></li>
+    <li><a href="{% url 'paging_with_separate_partials' %}">paging using separate partials</a></li>
+    <li><a href="{% url 'paging_with_separate_partials_improved' %}">paging using separate partials, improved</a></li>
+    <li><a href="{% url 'paging_with_inline_partials' %}">paging using inline partials</a></li>
+    <li><a href="{% url 'paging_with_inline_partials_improved' %}">paging using inline partials, decorator</a></li>
+    <li><a href="{% url 'paging_with_inline_partials_improved_lob' %}">paging using inline partials, decorator with better LOB</a></li>
+    {% if monster %}
+      <li><a href="{% url 'multiple_actions' monster.id %}">multiple actions on a page</a></li>
+    {% endif %}
+    <li><a href="{% url 'view_restart' %}">view restart</a></li>
+    <li><a href="{% url 'modals_main' %}">modals</a></li>
+    <li><a href="{% url 'form_validation' %}">form validation</a></li>
+  </ul>
+{% endblock %}

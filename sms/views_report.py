@@ -37,35 +37,61 @@ def must_be_supervisor(user):
 
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
-def report_hs81(request):
+def report_hs81(request, opt = None):
     svs = None
-    lh = Lop.objects.all()
+    lops = Lop.objects.all()
+    hks = Hocky.objects.all()
+    lop  = None
+    hk  = None
     if request.method == "POST":
         lop_id = request.POST.get('lop', None)
-        svs = Hssv.objects.filter(lop_id=lop_id)
-        hks = Hocky.objects.all()
+        hk_id = request.POST.get('hk', None)
+#        svs = Hssv.objects.filter(lop_id=lop_id)
+        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
+        hk = Hocky.objects.get(id = hk_id)
+        lop = Lop.objects.get(id = lop_id)
 
         for sv in svs:
-            hkl=[]
-            for hk in hks:
-                if Hs81.objects.filter(sv = sv, hk = hk).exists():
-                    hs = Hs81.objects.get(sv = sv, hk = hk)
-                else:
-                    hs=None
-
-                if Hp81.objects.filter(sv = sv, hk = hk).exists():
-                    hp = Hp81.objects.get(sv = sv, hk = hk)
-                else:
-                    hp=None
-
-                hkl.append({"ten":hk.ten,"hs":hs,"hp":hp})
-                
-            sv.hkl = hkl
+            sv.hs = Hs81.objects.filter(sv = sv, hk = hk)[0] if Hs81.objects.filter(sv = sv, hk = hk).exists() else None
+            sv.hp = Hp81.objects.filter(sv = sv, hk = hk).select_related('status')[0] if Hp81.objects.filter(sv = sv, hk = hk).exists() else None
 
         messages.success(request, "Tìm kiếm thành công!")
+
+        #export to excel
+        if opt == 2:
+            #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+            exp=[]
+            exp.append({"Lớp": lop.ten, 
+                        "Học kỳ": hk.ten
+                })
+            for sv in svs:
+                exp.append({"Mã": sv.msv,
+                            "Họ tên": sv.hoten, 
+                            "Hồ sơ":sv.hs.status if sv.hs else "", 
+                            "Học phí":sv.hp.status.ten if sv.hp else "", 
+                            "$ Dự kiến":sv.hp.sotien1 if sv.hp else "",
+                            "$ Thực nhận":sv.hp.sotien2 if sv.hp else "",
+                            })
+
+            # Convert the QuerySet to a DataFrame
+            df = pd.DataFrame(list(exp))
+
+            # Define the Excel file response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=report81.xlsx'
+
+            # Use Pandas to write the DataFrame to an Excel file
+            df.to_excel(response, index=False, engine='openpyxl')
+
+            return response
+
+
     context = {
         "svs": svs,
-        "lh": lh
+        "lops": lops,
+        "lop": lop,
+        "hks": hks,
+        "hk": hk
     }
     return render(request, "sms/report_hs81.html", context)
 
@@ -141,14 +167,15 @@ def report_ttgv(request):
 
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
-def report_kqht(request):
+def report_kqht(request, opt = None):
     lh = Lop.objects.all()
     #query_tt = None
     svs = None
     lop= None
     if request.method == "POST":
         lop_id = request.POST.get('lop', None)
-        svs = Hssv.objects.filter(lop_id=lop_id)
+        #svs = Hssv.objects.filter(lop_id=lop_id)
+        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
         lop = Lop.objects.get(id=lop_id)
         #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
         #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
@@ -235,11 +262,60 @@ def report_kqht(request):
                                 "ktkt2": ktkt2
                                 })
 #                hk.lml = lml
-                hkl.append({"tchk":tchk,"tbmhk":round(tbmhk/tchk,1)})
+                hkl.append({"ma": hk.ma, "tchk":tchk,"tbmhk":round(tbmhk/tchk,1)})
                 # hk.tchk = tchk
                 # hk.tbmhk = round(tbmhk/tchk,1)
             sv.hkl = hkl
-        messages.success(request, "Tìm kiếm thành công!")
+        messages.success(request, "Tạo báo cáo theo tiêu chí thành công!")
+
+        #export to excel
+        if opt ==1:
+            #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+            exp=[]
+            exp.append({"Lớp": lop.ten
+                        })
+            for sv in svs:
+                for hk in sv.hkl:
+                    print('printing hk')
+                    if hk['ma'] == 1:
+                        tchk1 = hk['tchk']
+                        tbmhk1 = hk['tbmhk']
+                    elif hk['ma'] == 2:
+                        tchk2 = hk['tchk']
+                        tbmhk2 = hk['tbmhk']
+                    elif hk['ma'] == 3:
+                        tchk3 = hk['tchk']
+                        tbmhk3 = hk['tbmhk']
+                    elif hk['ma'] == 4:
+                        tchk4 = hk['tchk']
+                        tbmhk4 = hk['tbmhk']
+
+                    
+                exp.append({"Mã học tên": sv.msv,
+                            "Họ tên": sv.hoten, 
+                            "HK1 TC":tchk1, 
+                            "HK1 TBM":tbmhk1 , 
+                            "HK2 TC":tchk2, 
+                            "HK2 TBM":tbmhk2 , 
+                            "HK3 TC":tchk3, 
+                            "HK3 TBM":tbmhk3 , 
+                            "HK4 TC":tchk4, 
+                            "HK4 TBM":tbmhk4
+                            })
+
+            # Convert the QuerySet to a DataFrame
+            df = pd.DataFrame(list(exp))
+
+            # Define the Excel file response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=kqht-lop.xlsx'
+
+            # Use Pandas to write the DataFrame to an Excel file
+            df.to_excel(response, index=False, engine='openpyxl')
+
+            return response
+
+            
     context = {
         "lh": lh,
         "lop": lop,

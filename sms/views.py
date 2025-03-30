@@ -2357,6 +2357,12 @@ def edit_sv(request, sv_id):
             if sv.lop:
                 return redirect("svlop_list", sv.lop.id)
             return redirect("sv_list")
+        else:
+            for error in edit_forms.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+                # for data in error:
+                #     print(data)
 
     context = {
         "forms": lh_forms,
@@ -2476,6 +2482,40 @@ def details_sv(request, sv_id, opt = None):
         hk.tchk = tchk
         hk.tbmhk = round(tbmhk/tchk,1)
 
+    #export to excel
+    if opt == 3:
+        #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+        exp=[]
+        exp.append({"Học viên": sv.hoten
+                    })
+        for hk in hks:
+            exp.append({"Học kỳ|Môn học": hk.ten, "Tín chỉ": hk.tchk, "TBM": hk.tbmhk
+                    })
+            for mh in hk.lml:
+                exp.append({"Học kỳ|Môn học": mh['ten'], 
+                            "Tín chỉ": mh['tc'], 
+                            "TBM": mh['tbm'], 
+                            "ktkt1": mh['ktkt1'],
+                            "ktkt2": mh['ktkt2'],
+                            "ktdk1": mh['ktdk1'],
+                            "ktdk2": mh['ktdk2'],
+                            "ktdk3": mh['ktdk3'],
+                            "kttx1": mh['kttx1'],
+                            "kttx2": mh['kttx2'],
+                            "kttx3": mh['kttx3']
+                        })
+
+        # Convert the QuerySet to a DataFrame
+        df = pd.DataFrame(list(exp))
+
+        # Define the Excel file response
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=kqht-hv.xlsx'
+
+        # Use Pandas to write the DataFrame to an Excel file
+        df.to_excel(response, index=False, engine='openpyxl')
+
+        return response
 
     for hp in hps:
         hp.duno = hp.sotien2-hp.sotien1
@@ -2495,8 +2535,7 @@ def details_sv(request, sv_id, opt = None):
         "opt": opt,
         "hks": hks,
         "hps": hps,
-        "msv": sv.msv,
-        "ten": sv.hoten
+        "sv": sv
     }
     return render(request, "sms/sv_details.html", context)
 

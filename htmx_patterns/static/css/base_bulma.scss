@@ -1,0 +1,55 @@
+@import "../vendor/bulma.scss";
+
+body {
+    padding: 1rem;
+}
+
+// Main page:
+main {
+    max-width: 60rem;
+    margin: auto;
+}
+
+// Avoid overriding lots of widget templates to add Bulma classes, by instead
+// applying Bulma classes contextually using @extend. We could also use
+// Bulma-provided Sass mixins for this, but this technique works even if we only
+// have the generated CSS (renamed to SCSS).
+
+.field-label label {
+    @extend .label;
+}
+.field-body {
+    input[type=text], input[type=email], input[type=password], input[type=date]  {
+        @extend .input;
+    }
+    input[type=date] {
+        @extend .input;
+    }
+    input[type=checkbox] {
+        @extend .checkbox;
+    }
+    button {
+        @extend .button;
+    }
+}
+
+.field ul.errorlist {
+    @extend .has-text-danger;
+}
+
+ul.errorlist.nonfield {
+    @extend .notification;
+    @extend .is-danger;
+    @extend .is-light;
+    list-style: inside disc;
+    margin: 1em 0em;
+}
+
+
+ul.messagelist > li {
+    @extend .notification;
+    &.info {
+        @extend .is-info;
+    }
+    margin-bottom: 1rem;
+}

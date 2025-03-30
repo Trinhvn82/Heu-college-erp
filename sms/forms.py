@@ -363,7 +363,7 @@ class CreateSv(forms.ModelForm):
             'hoten': forms.TextInput(attrs={'class': 'form-control'}),
             'lop' : forms.Select(attrs={'class': 'form-control'}),
             'namsinh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date','placeholder': 'mm/dd/yyyy'}),
-            'gioitinh': forms.TextInput(attrs={'class': 'form-control'}),
+            'gioitinh': forms.Select(attrs={'class': 'form-control'}),
             'dantoc': forms.TextInput(attrs={'class': 'form-control'}),
             'noisinh': forms.TextInput(attrs={'class': 'form-control'}),
             'quequan': forms.TextInput(attrs={'class': 'form-control'}),
