@@ -134,34 +134,52 @@ def export_hs81(request):
 
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
-def report_ttgv(request):
-    lh = None
-    query_tt = None
-    query_lop = None
+def report_ttgv(request, opt=None):
+    lh = Lop.objects.all()
+    #query_tt = None
+    lop= None
+    lmhs = None
     if request.method == "POST":
-        query_lop = request.POST.get('lop', None)
-        query_tt = request.POST.get('trungtam', None)
-        lh = Lop.objects.all().order_by("ten").select_related("trungtam")
-        if query_tt:
-            lh = lh.filter(trungtam__ten__contains=query_tt.strip())
-        if query_lop:
-            lh = lh.filter(ten__contains=query_lop.strip())     
+        lop_id = request.POST.get('lop', None)
+        #svs = Hssv.objects.filter(lop_id=lop_id)
+        lop = Lop.objects.get(id=lop_id)
 
-        #svs = Hssv.objects.filter(malop__in=lh).select_related("malop").order_by("malop", "msv")
-        for l in lh:
-            lmhs = LopMonhoc.objects.filter(lop_id=l.id).select_related("monhoc").order_by("ngaystart")
-            for lmh in lmhs:
-                lmh.ttgvs = Ttgv.objects.filter(lopmh_id=lmh.id).select_related("gv").order_by("gv_id")
-            l.lmhs = lmhs
+        lmhs = LopMonhoc.objects.filter(lop_id=lop.id).select_related("monhoc").order_by("ngaystart")
+        for lmh in lmhs:
+            lmh.ttgvs = Ttgv.objects.filter(lopmh_id=lmh.id).select_related("gv").order_by("gv_id")
 
         messages.success(request, "Tìm kiếm thành công!")
-        paginator = Paginator(lh, 1)
-        page = request.GET.get('page')
-        lh = paginator.get_page(page)
+
+        #export to excel
+        if opt == 2:
+            #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+            exp=[]
+            exp.append({"Lớp": lop.ten})
+            for lmh in lmhs:
+                exp.append({"Môn học": lmh.monhoc.ten})
+                for tt in lmh.ttgvs:
+                    exp.append({"Giao viên": tt.gv.hoten,
+                                "Số tiết": tt.sotiet, 
+                                "$ Dự kiến": tt.sotien1, 
+                                "$ Thực trả": tt.sotien2 
+                                })
+
+            # Convert the QuerySet to a DataFrame
+            df = pd.DataFrame(list(exp))
+
+            # Define the Excel file response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=report-ttgv.xlsx'
+
+            # Use Pandas to write the DataFrame to an Excel file
+            df.to_excel(response, index=False, engine='openpyxl')
+
+            return response
+
     context = {
+        "lmhs": lmhs,
         "lh": lh,
-        "query_tt": query_tt,
-        "query_lop": query_lop
+        "lop": lop
     }
     return render(request, "sms/report_ttgv.html", context)
 

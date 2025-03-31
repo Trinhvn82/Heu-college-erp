@@ -154,7 +154,8 @@ def hs_chart(request, lop, hk):
     query = """
                 select max(sv.id) as id, coalesce(hs.status,'Chưa nhập dữ liệu') as labels,count(coalesce(hs.status,'Chưa nhập dữ liệu')) as data from sms_hssv sv
                 left outer join public.sms_hs81 hs
-                    on sv.id = hs.sv_id and hs.hk_id=%s and sv.lop_id=%s
+                    on sv.id = hs.sv_id and hs.hk_id=%s 
+                where sv.lop_id=%s
                 group by hs.status
             """
 

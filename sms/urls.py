@@ -24,7 +24,7 @@ urlpatterns = [
     path('gv_monhoc/<int:gv_id>/', views.gv_monhoc, name='gv_monhoc'),
     path('gv_lmh/<int:gv_id>/', views.gv_lmh, name='gv_lmh'),
     path('gv_lmh_htmx/<int:gv_id>/', view_restart, name='gv_lmh_htmx'),
-    path('search_lmh_htmx/', view_search, name='search_lmh_htmx'),
+    path('search_lmh_htmx/<int:gv_id>/', view_search, name='search_lmh_htmx'),
 
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),
@@ -35,7 +35,7 @@ urlpatterns = [
     path('export-lh/', views.export_lh, name='export_lh'),
 
     path('report_hs81/<int:opt>/', views_report.report_hs81, name='report_hs81'),
-    path('report_ttgv/', views_report.report_ttgv, name='report_ttgv'),
+    path('report_ttgv/<int:opt>/', views_report.report_ttgv, name='report_ttgv'),
     path('report_kqht/<int:opt>/', views_report.report_kqht, name='report_kqht'),
 
     path('export_hs81/', views_report.export_hs81, name='export_hs81'),

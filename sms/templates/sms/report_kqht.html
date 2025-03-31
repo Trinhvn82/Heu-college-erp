@@ -49,7 +49,7 @@
                                     <select name="lop" class="form-control" required id="id_monhoc">
                                         <option value="" selected>----</option>
                                         {% for ct in lh %}
-                                        <option value="{{ct.id}}">{{ct.ma}}-{{ct.ten}}</option>
+                                        <option value="{{ct.id}}" {% if ct.id == lop.id %} selected {% endif %}>{{ct.ma}}-{{ct.ten}}</option>
                                         {% endfor%}
                                     </select>
                     

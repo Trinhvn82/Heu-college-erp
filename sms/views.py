@@ -44,13 +44,34 @@ from django.http import HttpResponseForbidden,HttpResponse
 
 @login_required
 def index(request):
-    if request.user.is_superuser or request.user.is_supervisor:
+    if request.user.is_superuser:
         return redirect("shop-statistics")
-    elif request.user.is_phr:
-        return redirect("gv_list")
-    elif request.user.is_pctsv:
-        return redirect("sv_list")
-    elif request.user.is_hv or request.user.is_gv:
+    elif request.user.is_hv:
+        return redirect("lichhoc_list")
+    elif request.user.is_gv:
+        # assign role to gv based on lop mon hoc
+        gv = Hsgv.objects.get(user = request.user)
+        gmhs = GvLmh.objects.filter(gv = gv, status =1).select_related('lopmh')
+        lmhs = LopMonhoc.objects.all()
+
+        for lmh in lmhs:
+            if gv.user.has_perm('assign_lopmonhoc', lmh):
+                remove_perm('assign_lopmonhoc', gv.user, lmh)
+
+        for lmh  in gmhs:
+            assign_perm('assign_lopmonhoc', gv.user, lmh.lopmh)
+
+        lop = Lop.objects.all()
+        #Add Gv to assign_lop permission
+        for l in lop:
+            if gv.user.has_perm('assign_lop', l):
+                remove_perm('assign_lop', gv.user, l)
+
+        for l in lop:
+            lmh = LopMonhoc.objects.filter(lop_id = l.id)
+            if gmhs.filter(lopmh__in=lmh).exists():
+                assign_perm('assign_lop', gv.user, l)
+
         return redirect("lichhoc_list")
     elif request.user.is_internalstaff:
         return redirect("lop_list")
@@ -2256,7 +2277,9 @@ def edit_ttgv(request, lopmh_id, gv_id):
     if Ttgv.objects.filter(lopmh_id=lopmh_id, gv_id=gv_id).exists():
         ttgv = Ttgv.objects.get(lopmh_id=lopmh_id, gv_id=gv_id)
     else:
-        ttgv = Ttgv(lopmh_id=lopmh_id, gv_id=gv_id)
+        lhs = Lichhoc.objects.filter(lmh_id = lopmh_id, giaovien_id = gv_id)
+        sotiet = lhs.aggregate(Sum('sotiet'))['sotiet__sum']
+        ttgv = Ttgv(lopmh_id=lopmh_id, gv_id=gv_id,sotiet = sotiet)
         ttgv.save()
 
     lmh = LopMonhoc.objects.get(id=lopmh_id)

@@ -739,6 +739,7 @@ class LopHk(models.Model):
 
 
 class Ttgv(models.Model):
+    sotiet = models.IntegerField(default= 0, blank= True, null=True)
     sotien1 = models.IntegerField(default= 0, blank= True, null=True)
     sotien2 = models.IntegerField(default= 0, blank= True, null=True)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
