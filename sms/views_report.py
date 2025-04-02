@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, LogDiem
+from .models import Lop, Ctdt, Hssv, Hsgv, Hsns, SvStatus, HocphiStatus, LopMonhoc, Trungtam, LogDiem
+from .models import NsLop
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -40,7 +41,15 @@ def must_be_supervisor(user):
 @permission_required('dashboard.view_report',raise_exception=True)
 def report_hs81(request, opt = None):
     svs = None
-    lops = Lop.objects.all()
+    #lops = Lop.objects.all()
+    if request.user.is_superuser:
+        lops = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lops = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lops = None
     hks = Hocky.objects.all()
     lop  = None
     hk  = None
@@ -139,7 +148,15 @@ def export_hs81(request):
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
 def report_ttgv(request, opt=None):
-    lh = Lop.objects.all()
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
+#    lh = Lop.objects.all()
     #query_tt = None
     lop= None
     lmhs = None
@@ -209,7 +226,14 @@ def report_ttgv(request, opt=None):
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
 def report_kqht(request, opt = None):
-    lh = Lop.objects.all()
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
     #query_tt = None
     svs = None
     lop= None

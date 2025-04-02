@@ -4,11 +4,13 @@ from .models import Dept, Class, Student, Attendance, Course, Teacher, Assign, A
     DAYS_OF_WEEK, AssignTime, AttendanceClass, StudentCourse, Marks, MarksClass
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib import messages
 from sms.models import Hsns, Hsgv, Hssv
+from django.http import HttpResponseForbidden,HttpResponse
+
 
 
 User = get_user_model()
@@ -428,9 +430,11 @@ def add_student(request):
     return render(request, 'info/add_student.html', context)
 
 @login_required()
+@permission_required('info.add_user',raise_exception=True)
 def add_gvuser(request, id):
-    if not request.user.is_superuser:
-        return redirect("/")
+    # if not request.user.is_superuser:
+    #     #return redirect("/")
+    #     return HttpResponseForbidden("Bạn không có quyền thực hiện chức năng này")
     gv = Hsgv.objects.get(id = id)
     # Check if username already exists
     if User.objects.filter(username="gv_"+gv.ma).exists():
@@ -455,9 +459,10 @@ def add_gvuser(request, id):
     return redirect("gv_list")
 
 @login_required()
+@permission_required('info.add_user',raise_exception=True)
 def add_hvuser(request, id):
-    if not request.user.is_superuser:
-        return redirect("/")
+    # if not request.user.is_superuser:
+    #     return redirect("/")
     sv = Hssv.objects.get(id = id)
     # Check if username already exists
     if User.objects.filter(username="hv_"+sv.msv).exists():
@@ -482,9 +487,10 @@ def add_hvuser(request, id):
     return redirect("sv_list")
 
 @login_required()
+@permission_required('info.add_user',raise_exception=True)
 def reset_pwd(request, ns_id):
-    if not request.user.is_superuser:
-        return redirect("/")
+    # if not request.user.is_superuser:
+    #     return redirect("/")
     ns = Hsns.objects.get(id = ns_id)
     # Check if username already exists
     if ns.user:
@@ -495,9 +501,10 @@ def reset_pwd(request, ns_id):
     return redirect("ns_list")
 
 @login_required()
+@permission_required('info.add_user',raise_exception=True)
 def reset_pwd_gv(request, gv_id):
-    if not request.user.is_superuser:
-        return redirect("/")
+    # if not request.user.is_superuser:
+    #     return redirect("/")
     gv = Hsgv.objects.get(id = gv_id)
     # Check if username already exists
     if gv.user:
@@ -508,9 +515,10 @@ def reset_pwd_gv(request, gv_id):
     return redirect("gv_list")
 
 @login_required()
+@permission_required('info.add_user',raise_exception=True)
 def reset_pwd_hv(request, hv_id):
-    if not request.user.is_superuser:
-        return redirect("/")
+    # if not request.user.is_superuser:
+    #     return redirect("/")
     sv = Hssv.objects.get(id = hv_id)
     # Check if username already exists
     if sv.user:
@@ -521,9 +529,10 @@ def reset_pwd_hv(request, hv_id):
     return redirect("sv_list")
 
 @login_required()
+@permission_required('info.add_user',raise_exception=True)
 def add_nsuser(request, id):
-    if not request.user.is_superuser:
-        return redirect("/")
+    # if not request.user.is_superuser:
+    #     return redirect("/")
     ns = Hsns.objects.get(id = id)
     # Check if username already exists
     if User.objects.filter(username="ns_" +ns.ma).exists():
@@ -552,7 +561,8 @@ def user_changepwd(request):
         return redirect("lop_list")
     return render(request, "sms/changepwd.html")
 
-@login_required
+@login_required()
+@permission_required('info.add_user',raise_exception=True)
 def ns_quyen(request, ns_id):
     from django.contrib.auth.models import Group
 

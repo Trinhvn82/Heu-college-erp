@@ -2488,12 +2488,14 @@ def details_sv(request, sv_id, opt = None):
                     tbm2_heso = ld.heso
                 ldl.append({"ma":ld.ma, "dtplst": dtpl})
                 
+            tbmkt = round((tbm1_diem/tbm1_heso),1) if tbm1_heso else 0
             tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
             tbmhk= tbmhk+tbm*mh.monhoc.sotinchi
             tchk=tchk+mh.monhoc.sotinchi
             lml.append({ "ten":mh.monhoc.ten,
                         "tc": mh.monhoc.sotinchi,
                         "tbm": tbm,
+                        "tbmkt": tbmkt,
                         "kttx1": kttx1, 
                         "n_kttx1": n_kttx1, 
                         "kttx2": kttx2, 
@@ -2522,20 +2524,32 @@ def details_sv(request, sv_id, opt = None):
         exp.append({"Học viên": sv.hoten
                     })
         for hk in hks:
-            exp.append({"Học kỳ|Môn học": hk.ten, "Tín chỉ": hk.tchk, "TBM": hk.tbmhk
+            exp.append({"Học kỳ|Môn học": hk.ten, 
+                        "Tín chỉ": hk.tchk, 
+                        "kttx1": "",
+                        "kttx2": "",
+                        "kttx3": "",
+                        "ktdk1": "",
+                        "ktdk2": "",
+                        "ktdk3": "",
+                        "TBM KT": "",
+                        "ktkt1": "",
+                        "ktkt2": "",
+                        "TBM": hk.tbmhk
                     })
             for mh in hk.lml:
                 exp.append({"Học kỳ|Môn học": mh['ten'], 
                             "Tín chỉ": mh['tc'], 
-                            "TBM": mh['tbm'], 
-                            "ktkt1": mh['ktkt1'],
-                            "ktkt2": mh['ktkt2'],
+                            "kttx1": mh['kttx1'],
+                            "kttx2": mh['kttx2'],
+                            "kttx3": mh['kttx3'],
                             "ktdk1": mh['ktdk1'],
                             "ktdk2": mh['ktdk2'],
                             "ktdk3": mh['ktdk3'],
-                            "kttx1": mh['kttx1'],
-                            "kttx2": mh['kttx2'],
-                            "kttx3": mh['kttx3']
+                            "TBM KT": mh['tbmkt'], 
+                            "ktkt1": mh['ktkt1'],
+                            "ktkt2": mh['ktkt2'],
+                            "TBM": mh['tbm']
                         })
 
         # Convert the QuerySet to a DataFrame
