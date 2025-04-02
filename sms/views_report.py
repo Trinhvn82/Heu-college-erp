@@ -268,6 +268,8 @@ def report_kqht(request, opt = None):
 
         for sv in svs:
             hkl=[]
+            tctl, diem4 = 0,0
+            xl = ""
             for hk in hks:
                 lml=[]
                 tbmhk, tchk = 0,0
@@ -329,8 +331,37 @@ def report_kqht(request, opt = None):
                                 "ktkt1": ktkt1,
                                 "ktkt2": ktkt2
                                 })
-#                hk.lml = lml
-                hkl.append({"ma": hk.ma, "tchk":tchk,"tbmhk":round(tbmhk/tchk,1)})
+                    
+                tbmhk = round(tbmhk/tchk,1)
+                if tbmhk >=8.5 and tbmhk <=10:
+                    tbmhk4 = 4
+                elif tbmhk >=7 and tbmhk <=8.4:
+                    tbmhk4 = 3
+                elif tbmhk >=5.5 and tbmhk <=6.9:
+                    tbmhk4 = 2
+                elif tbmhk >=4 and tbmhk <=5.4:
+                    tbmhk4 = 1
+                elif tbmhk  < 4:
+                    tbmhk4 = 0
+
+                tctl = tctl + tchk
+                diem4 = diem4 +tbmhk4
+
+                tbctl = round(diem4/tctl,1)
+
+                if tbctl >=3.5 and tbctl <=4:
+                    xl = "Xuất xắc"
+                elif tbctl >=3 and tbctl <3.5:
+                    xl = "Giỏi"
+                elif tbctl >=2.5 and tbctl <3:
+                    xl = "Khá"
+                elif tbctl >=2 and tbctl <2.5:
+                    xl = "Trung bình"
+                elif tbctl <2:
+                    xl = "Yếu"
+
+                hkl.append({"ma":hk.ma, "tbmhk":tbmhk, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
+
                 # hk.tchk = tchk
                 # hk.tbmhk = round(tbmhk/tchk,1)
             sv.hkl = hkl
@@ -346,29 +377,45 @@ def report_kqht(request, opt = None):
                 for hk in sv.hkl:
                     print('printing hk')
                     if hk['ma'] == 1:
-                        tchk1 = hk['tchk']
                         tbmhk1 = hk['tbmhk']
+                        tbmhk41 = hk['tbmhk4']
+                        tbctl1 = hk['tbctl']
+                        xl1 = hk['xl']
                     elif hk['ma'] == 2:
-                        tchk2 = hk['tchk']
                         tbmhk2 = hk['tbmhk']
+                        tbmhk42 = hk['tbmhk4']
+                        tbctl2 = hk['tbctl']
+                        xl2 = hk['xl']
                     elif hk['ma'] == 3:
-                        tchk3 = hk['tchk']
                         tbmhk3 = hk['tbmhk']
+                        tbmhk43 = hk['tbmhk4']
+                        tbctl3 = hk['tbctl']
+                        xl3 = hk['xl']
                     elif hk['ma'] == 4:
-                        tchk4 = hk['tchk']
                         tbmhk4 = hk['tbmhk']
+                        tbmhk44 = hk['tbmhk4']
+                        tbctl4 = hk['tbctl']
+                        xl4 = hk['xl']
 
                     
                 exp.append({"Mã học tên": sv.msv,
                             "Họ tên": sv.hoten, 
-                            "HK1 TC":tchk1, 
-                            "HK1 TBM":tbmhk1 , 
-                            "HK2 TC":tchk2, 
-                            "HK2 TBM":tbmhk2 , 
-                            "HK3 TC":tchk3, 
-                            "HK3 TBM":tbmhk3 , 
-                            "HK4 TC":tchk4, 
-                            "HK4 TBM":tbmhk4
+                            "HK1 TBM 10":tbmhk1, 
+                            "HK1 TBM 4":tbmhk41 , 
+                            "HK1 TBCTL":tbctl1 , 
+                            "HK1 XL":xl1 , 
+                            "HK2 TBM 10":tbmhk2, 
+                            "HK2 TBM 4":tbmhk42 , 
+                            "HK2 TBCTL":tbctl2 , 
+                            "HK2 XL":xl2 , 
+                            "HK3 TBM 10":tbmhk3, 
+                            "HK3 TBM 4":tbmhk43 , 
+                            "HK3 TBCTL":tbctl3 , 
+                            "HK3 XL":xl3 , 
+                            "HK4 TBM 10":tbmhk4, 
+                            "HK4 TBM 4":tbmhk44 , 
+                            "HK4 TBCTL":tbctl4 , 
+                            "HK4 XL":xl4 , 
                             })
 
             # Convert the QuerySet to a DataFrame

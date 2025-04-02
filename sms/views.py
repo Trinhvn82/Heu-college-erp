@@ -2432,7 +2432,7 @@ def details_sv(request, sv_id, opt = None):
 
     #     mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
 
-
+    tctl, diem4 = 0,0
     for hk in hks:
         lml=[]
         tbmhk, tchk = 0,0
@@ -2516,6 +2516,31 @@ def details_sv(request, sv_id, opt = None):
         hk.lml = lml
         hk.tchk = tchk
         hk.tbmhk = round(tbmhk/tchk,1)
+        if hk.tbmhk >=8.5 and hk.tbmhk <=10:
+            hk.tbmhk4 = 4
+        elif hk.tbmhk >=7 and hk.tbmhk <=8.4:
+            hk.tbmhk4 = 3
+        elif hk.tbmhk >=5.5 and hk.tbmhk <=6.9:
+            hk.tbmhk4 = 2
+        elif hk.tbmhk >=4 and hk.tbmhk <=5.4:
+            hk.tbmhk4 = 1
+        elif hk.tbmhk  < 4:
+            hk.tbmhk4 = 0
+        tctl = tctl + tchk
+        diem4 = diem4 + hk.tbmhk4
+        hk.tbctl = round(diem4/tctl,1)
+
+        if hk.tbctl >=3.5 and hk.tbctl <=4:
+            hk.xl = "Xuất xắc"
+        elif hk.tbctl >=3 and hk.tbctl <3.5:
+            hk.xl = "Giỏi"
+        elif hk.tbctl >=2.5 and hk.tbctl <3:
+            hk.xl = "Khá"
+        elif hk.tbctl >=2 and hk.tbctl <2.5:
+            hk.xl = "Trung bình"
+        elif hk.tbctl <2:
+            hk.xl = "Yếu"
+
 
     #export to excel
     if opt == 3:
@@ -2535,7 +2560,9 @@ def details_sv(request, sv_id, opt = None):
                         "TBM KT": "",
                         "ktkt1": "",
                         "ktkt2": "",
-                        "TBM": hk.tbmhk
+                        "TBM 10": hk.tbmhk,
+                        "TBM 4": hk.tbmhk4,
+                        "Xếp loại": hk.xl
                     })
             for mh in hk.lml:
                 exp.append({"Học kỳ|Môn học": mh['ten'], 
@@ -2549,7 +2576,7 @@ def details_sv(request, sv_id, opt = None):
                             "TBM KT": mh['tbmkt'], 
                             "ktkt1": mh['ktkt1'],
                             "ktkt2": mh['ktkt2'],
-                            "TBM": mh['tbm']
+                            "TBM 10": mh['tbm']
                         })
 
         # Convert the QuerySet to a DataFrame
