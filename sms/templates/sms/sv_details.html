@@ -39,15 +39,18 @@
                                 <th>STT</th>
                                 <th>Môn học</th>
                                 <th>Tín chỉ</th>
-                                <th>TBM</th>
-                                <th>KTKT1</th>
-                                <th>KTKT2</th>
-                                <th>KTĐK1</th>
-                                <th>KTĐK2</th>
-                                <th>KTĐK3</th>
                                 <th>KTTX1</th>
                                 <th>KTTX2</th>
                                 <th>KTTX3</th>
+                                <th>KTĐK1</th>
+                                <th>KTĐK2</th>
+                                <th>KTĐK3</th>
+                                <th>TBM KT</th>
+                                <th>KTKT1</th>
+                                <th>KTKT2</th>
+                                <th>TBM 10</th>
+                                <th>TBM 4</th>
+                                <th>Xếp loại</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -56,8 +59,23 @@
                                 <td></td>
                                 <td>{{ hk.ten }}</td>
                                 <td>{{ hk.tchk }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
                                 <td>
                                     <span class="font-weight-bold text-success">{{ hk.tbmhk }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ hk.tbmhk4 }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ hk.xl }}</span>
                                 </td>
                             </tr>
                             {% for mh in hk.lml %}
@@ -65,17 +83,22 @@
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ mh.ten }}</td>
                                 <td>{{ mh.tc }}</td>
-                                <td>
-                                    <span class="font-weight-bold text-success">{{ mh.tbm }}</span>
-                                </td>
-                                {% if mh.n_ktkt1%}<td>{{ mh.ktkt1 }}</td>{% else %}<td></td>{% endif %}
-                                {% if mh.n_ktkt2%}<td>{{ mh.ktkt2 }}</td>{% else %}<td></td>{% endif %}
-                                {% if mh.n_ktdk1%}<td>{{ mh.ktdk1 }}</td>{% else %}<td></td>{% endif %}
-                                {% if mh.n_ktdk2%}<td>{{ mh.ktdk2 }}</td>{% else %}<td></td>{% endif %}
-                                {% if mh.n_ktdk3%}<td>{{ mh.ktdk3 }}</td>{% else %}<td></td>{% endif %}
                                 {% if mh.n_kttx1%}<td>{{ mh.kttx1 }}</td>{% else %}<td></td>{% endif %}
                                 {% if mh.n_kttx2%}<td>{{ mh.kttx2 }}</td>{% else %}<td></td>{% endif %}
                                 {% if mh.n_kttx3%}<td>{{ mh.kttx3 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktdk1%}<td>{{ mh.ktdk1 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktdk2%}<td>{{ mh.ktdk2 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktdk3%}<td>{{ mh.ktdk3 }}</td>{% else %}<td></td>{% endif %}
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbmkt }}</span>
+                                </td>
+                                {% if mh.n_ktkt1%}<td>{{ mh.ktkt1 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktkt2%}<td>{{ mh.ktkt2 }}</td>{% else %}<td></td>{% endif %}
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbm }}</span>
+                                </td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             {% endfor %}
                             {% endfor %}

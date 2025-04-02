@@ -78,10 +78,14 @@
                                 <th>#</th>
                                 <th>Mã</th>
                                 <th>Học viên</th>
-                                <th>TBM HK1</th>
-                                <th>TBM HK2</th>
-                                <th>TBM HK3</th>
-                                <th>TBM HK4</th>
+                                <th>TBC TL</th>
+                                <th>XL HK1</th>
+                                <th>TBC TL</th>
+                                <th>XL HK2</th>
+                                <th>TBC TL</th>
+                                <th>XL HK3</th>
+                                <th>TBC TL</th>
+                                <th>XL HK4</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,7 +99,8 @@
                                 </td>
                                 <td>{{ sv.hoten }}</td>
                                 {% for hk in sv.hkl %}
-                                <td>{{ hk.tbmhk }}</td>
+                                <td>{{ hk.tbctl }}</td>
+                                <td>{{ hk.xl }}</td>
                                 {% endfor %}
                             </tr>
                             {% endfor %}
