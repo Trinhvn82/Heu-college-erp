@@ -11,6 +11,7 @@ from django.db.models import Sum
 import psycopg2
 import openpyxl, xlsxwriter 
 import shutil, os
+import locale
 
 from django.conf import settings
 from django.http import HttpResponse, Http404
@@ -47,7 +48,10 @@ def report_hs81(request, opt = None):
         lop_id = request.POST.get('lop', None)
         hk_id = request.POST.get('hk', None)
 #        svs = Hssv.objects.filter(lop_id=lop_id)
-        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
+        locale.setlocale(locale.LC_ALL, 'vi_VN')
+        #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+#        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
         hk = Hocky.objects.get(id = hk_id)
         lop = Lop.objects.get(id = lop_id)
 
@@ -144,11 +148,30 @@ def report_ttgv(request, opt=None):
         #svs = Hssv.objects.filter(lop_id=lop_id)
         lop = Lop.objects.get(id=lop_id)
 
-        lmhs = LopMonhoc.objects.filter(lop_id=lop.id).select_related("monhoc").order_by("ngaystart")
+        #lmh = LopMonhoc.objects.get(id = lmh_id)
+        lmhs = LopMonhoc.objects.filter(lop = lop).select_related("monhoc", "lop")
+
+        
         for lmh in lmhs:
-            lmh.ttgvs = Ttgv.objects.filter(lopmh_id=lmh.id).select_related("gv").order_by("gv_id")
+            lhs = Lichhoc.objects.filter(lmh = lmh).select_related("lop", "monhoc")
+            gvs = Hsgv.objects.filter(id__in = lhs.values_list('giaovien_id', flat=True))
+            lmh.sotiet = lhs.aggregate(Sum('sotiet'))['sotiet__sum']
+            for gv in gvs:
+
+                lhs = Lichhoc.objects.filter(lmh = lmh, giaovien = gv)
+                gv.sotiet = lhs.aggregate(Sum('sotiet'))['sotiet__sum']
+                if Ttgv.objects.filter(lopmh = lmh, gv = gv).exists():
+                    gv.sotien1 = Ttgv.objects.get(lopmh = lmh, gv = gv).sotien1
+                    gv.sotien2 = Ttgv.objects.get(lopmh = lmh, gv = gv).sotien2
+                else:
+                    gv.sotien1 = 0
+                    gv.sotien2 = 0
+            lmh.ttgvs=gvs
+
 
         messages.success(request, "Tìm kiếm thành công!")
+
+
 
         #export to excel
         if opt == 2:
@@ -156,9 +179,9 @@ def report_ttgv(request, opt=None):
             exp=[]
             exp.append({"Lớp": lop.ten})
             for lmh in lmhs:
-                exp.append({"Môn học": lmh.monhoc.ten})
+                exp.append({"Môn học": lmh.monhoc.ten,"Số tín chỉ": lmh.monhoc.sotinchi,"Số tiết": lmh.sotiet })
                 for tt in lmh.ttgvs:
-                    exp.append({"Giao viên": tt.gv.hoten,
+                    exp.append({"Giáo viên": tt.ma + "-" + tt.hoten,
                                 "Số tiết": tt.sotiet, 
                                 "$ Dự kiến": tt.sotien1, 
                                 "$ Thực trả": tt.sotien2 
@@ -193,7 +216,10 @@ def report_kqht(request, opt = None):
     if request.method == "POST":
         lop_id = request.POST.get('lop', None)
         #svs = Hssv.objects.filter(lop_id=lop_id)
-        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
+        locale.setlocale(locale.LC_ALL, 'vi_VN')
+        #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+        #svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
         lop = Lop.objects.get(id=lop_id)
         #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
         #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)

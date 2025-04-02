@@ -38,8 +38,9 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from datetime import datetime
-import pandas as pd
 from django.http import HttpResponseForbidden,HttpResponse
+import pandas as pd
+import locale
 
 
 @login_required
@@ -195,7 +196,8 @@ def sv_lop(request, lop_id):
     #students = Hssv.objects.all()
     tenlop = Lop.objects.get(id = lop_id).ten
     #students = Hssv.objects.filter(lop_id = lop_id).order_by('ten')
-    ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: ans.ten, reverse=False)
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
     paginator = Paginator(ans, 50)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
@@ -1262,7 +1264,9 @@ def export_gv(request):
 def export_lopsv(request, lop_id):
     # Query the Person model to get all records
     #svs = Hssv.objects.all().filter(lop_id=lop_id).values().order_by("ten")
-    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
     exp=[]
     for sv in svs:
         exp.append({"Mã học tên": sv.msv,"Họ tên": sv.hoten})
@@ -1796,7 +1800,10 @@ def hv_hp81_list(request, sv_id, lop_id):
 @login_required
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def hv_hp81_new_list(request, lop_id):
-    svs = Hssv.objects.filter(lop_id = lop_id)
+    #svs = Hssv.objects.filter(lop_id = lop_id)
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
     lop = Lop.objects.get(id = lop_id)
 
     for sv in svs:
@@ -1824,7 +1831,10 @@ def hv_hs81_list(request, sv_id, lop_id):
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def hv_hs81_new_list(request, lop_id):
     #hs81s = Hs81.objects..select_related("sv", "hk")
-    svs = Hssv.objects.filter(lop_id = lop_id)
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+    #svs = Hssv.objects.filter(lop_id = lop_id)
     lop = Lop.objects.get(id = lop_id)
 
     for sv in svs:

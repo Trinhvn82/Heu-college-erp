@@ -344,7 +344,7 @@ class Hsgv(models.Model):
         unique_together = ('ma',)
 
     def __str__(self):
-        return self.hoten
+        return self.ma + "|" + self.hoten
 
 class Hsns(models.Model):
     tddt_choice = (
