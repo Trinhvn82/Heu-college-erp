@@ -374,7 +374,10 @@ def diemtp_lmh_lst(request, lmh_id):
     #Details section
 
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop","monhoc")[0]
-    svs = Hssv.objects.filter(lop_id=lmh.lop_id)
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    svs = sorted(Hssv.objects.filter(lop_id = lmh.lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+
+    #svs = Hssv.objects.filter(lop_id=lmh.lop_id)
     dtp = Diemthanhphan.objects.filter(sv__in = svs)
     lds1 = Loaidiem.objects.all()
     svl=[]
@@ -557,7 +560,7 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
     return render(request, "sms/diem-lmh.html", context)
 
 @login_required
-def create_diemtp(request, lmh_id, dtp_id):
+def create_diemtp(request, lop_id, lmh_id, dtp_id):
 
     #students = Hssv.objects.all()
     #lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
@@ -603,7 +606,7 @@ def create_diemtp(request, lmh_id, dtp_id):
     return render(request, "sms/diem-lmh.html", context)
 
 @login_required
-def edit_diemtp(request, lmh_id, dtp_id, log_id):
+def edit_diemtp(request, lop_id, lmh_id, dtp_id, log_id):
 
     #students = Hssv.objects.all()
     #lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
@@ -1472,9 +1475,13 @@ def diemdanh_list(request, lh_id):
 def diemdanh_lop(request, lh_id):
     ttlh = Lichhoc.objects.get(id = lh_id)
     lmh = LopMonhoc.objects.get(id =ttlh.lmh_id)
-    svlop = Hssv.objects.filter(lop_id = lmh.lop_id)
+    
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    svlop = sorted(Hssv.objects.filter(lop_id = lmh.lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+    #svlop = Hssv.objects.filter(lop_id = lmh.lop_id)
     mh = Monhoc.objects.get(id = lmh.monhoc_id)
-    dds = Diemdanh.objects.filter(lichhoc_id = lh_id).order_by('sv_id')
+    dds = Diemdanh.objects.filter(lichhoc_id = lh_id).order_by('id')
     #sv = Hssv.objects.filter(lop_id = ttlh.lop_id)
     if request.method == "POST":
         for stud in svlop:
@@ -1494,7 +1501,7 @@ def diemdanh_lop(request, lh_id):
             dd = Diemdanh(sv_id = stud.id, lichhoc_id = lh_id, status=1)
             dd.save()
 
-    dds = Diemdanh.objects.select_related("sv").filter(lichhoc_id = lh_id).order_by('sv_id')
+    dds = Diemdanh.objects.select_related("sv").filter(lichhoc_id = lh_id).order_by('id')
     context = {
         "dds": dds,
         "lmh": lmh,
@@ -1786,6 +1793,7 @@ def lop_monhoc_gv(request):
         return render(request, "sms/lop-monhoc_list.html", context)
 
 @login_required
+@permission_required('sms.view_hp81',raise_exception=True)
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def hv_hp81_list(request, sv_id, lop_id):
         hp81s = Hp81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
@@ -1888,7 +1896,9 @@ def create_lichhoc(request):
     return render(request, "sms/create_lichhoc.html", context)
 
 @login_required
-def create_hp81(request, sv_id):
+@permission_required('sms.add_hp81',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def create_hp81(request, lop_id, sv_id):
     sv = Hssv.objects.get(id = sv_id) 
     if request.method == "POST":
         hk_id = request.POST.get('hk', None)
@@ -1911,7 +1921,9 @@ def create_hp81(request, sv_id):
     return render(request, "sms/create_hp81.html", context)
 
 @login_required
-def create_hs81(request, sv_id):
+@permission_required('sms.add_hs81',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def create_hs81(request, lop_id, sv_id):
     sv = Hssv.objects.get(id = sv_id) 
     if request.method == "POST":
         hk_id = request.POST.get('hk', None)
@@ -2283,7 +2295,9 @@ def edit_lopmonhoc(request, lmh_id):
     return render(request, "sms/edit_lopmonhoc.html", context)
 
 @login_required
-def edit_ttgv(request, lopmh_id, gv_id):
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+@permission_required('sms.change_ttgv',raise_exception=True)
+def edit_ttgv(request, lop_id, lopmh_id, gv_id):
     if Ttgv.objects.filter(lopmh_id=lopmh_id, gv_id=gv_id).exists():
         ttgv = Ttgv.objects.get(lopmh_id=lopmh_id, gv_id=gv_id)
     else:
@@ -2652,7 +2666,9 @@ def details_diemtp(request, lop_id, lmh_id):
     return render(request, "sms/details_diemtp.html", context)
 
 @login_required
-def edit_hp81(request, hp81_id):
+@permission_required('sms.change_hp81',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def edit_hp81(request, lop_id, hp81_id):
     hp = Hp81.objects.get(id=hp81_id)
     sv_id = hp.sv_id
     hk_id = hp.hk_id
@@ -2676,7 +2692,9 @@ def edit_hp81(request, hp81_id):
     return render(request, "sms/edit_hp81.html", context)
 
 @login_required
-def edit_hs81(request, hs81_id):
+@permission_required('sms.change_hs81',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def edit_hs81(request, lop_id, hs81_id):
     hs = Hs81.objects.get(id=hs81_id)
     sv_id = hs.sv_id
     hk_id = hs.hk_id

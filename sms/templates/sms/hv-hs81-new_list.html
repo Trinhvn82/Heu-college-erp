@@ -61,7 +61,7 @@
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'create_hs81' sv.id %}">
+                                               href="{% url 'create_hs81' lop.id sv.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Thêm mới
                                             </a>
                                         </div>
@@ -85,7 +85,7 @@
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
                                             <a class="dropdown-item edit_item"
-                                               href="{% url 'edit_hs81' hs.id %}">
+                                               href="{% url 'edit_hs81' lop.id hs.id %}">
                                                 <span class="fas fa-edit mr-2"></span>Cập nhật
                                             </a>
                                         </div>

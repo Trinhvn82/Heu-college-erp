@@ -16,6 +16,8 @@ import locale
 
 from django.conf import settings
 from django.http import HttpResponse, Http404
+from guardian.decorators import permission_required_or_403
+
 
 
 User = get_user_model()
@@ -442,6 +444,7 @@ def report_kqht(request, opt = None):
 
 @login_required
 @permission_required('sms.add_hs81',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def import_hs81(request, lop_id):
     if request.method == "POST":
         excel_file = request.FILES['excel_file']
@@ -507,8 +510,10 @@ def import_hs81(request, lop_id):
 
         messages.success(request, "Import thông tin hồ sơ 81 thành công!")
         return redirect("hv_hs81_new_list", lop_id)
+
 @login_required
 @permission_required('sms.add_hp81',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def import_hp81(request, lop_id):
     if request.method == "POST":
         excel_file = request.FILES['excel_file']
@@ -566,7 +571,9 @@ def import_hp81(request, lop_id):
         return redirect("hv_hp81_new_list", lop_id)
     
 @login_required
-def import_diemtp(request, lmh_id, ld_id):
+@permission_required('sms.add_diemthanhphan',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def import_diemtp(request, lop_id, lmh_id, ld_id):
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
     ld = Loaidiem.objects.get(id = ld_id)
     stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
@@ -623,7 +630,9 @@ def import_diemtp(request, lmh_id, ld_id):
     return render(request, "sms/import_diemtp.html", context)
 
 @login_required
-def import_edit_diemtp(request, lmh_id, ld_id, log_id):
+@permission_required('sms.change_diemthanhphan',raise_exception=True)
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def import_edit_diemtp(request, lop_id, lmh_id, ld_id, log_id):
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
     ld = Loaidiem.objects.get(id = ld_id)
     stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
