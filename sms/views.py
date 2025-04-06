@@ -2947,9 +2947,13 @@ def upload_file_gv(request, gv_id):
 
     else:
         form = CreateUploadFile()
-    files = UploadedFile.objects.filter(user = gv.user)
-    for file in files:
-        file.ten = file.file.name.split("/")[-1]
+
+    if gv.user:
+        files = UploadedFile.objects.filter(user = gv.user)
+        for file in files:
+            file.ten = file.file.name.split("/")[-1]
+    else:
+        files = None
 
     tl=[{"ma":"Bằng Tốt nghiệp"}, {"ma":"Bảng điểm"}, {"ma":"Chứng chỉ NVSP/dạy nghề"}, {"ma":"Sơ yếu lý lịch"}, {"ma":"Chứng chỉ tiếng Anh"}, {"ma":"Chứng chỉ tin học"}]
 
