@@ -2897,7 +2897,7 @@ def upload_file(request):
     return render(request, "sms/file_list.html", context)
 
 @login_required
-@permission_required('sms.add_uploadedfile',raise_exception=True)
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
 def upload_file_gv(request, gv_id):
 
     gv = Hsgv.objects.get(id = gv_id)
