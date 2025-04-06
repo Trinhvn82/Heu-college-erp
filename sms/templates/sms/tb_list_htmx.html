@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Tạo Giáo viên {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thông báo và cảnh báo</li>
+                </ol>
+            </div>
+        </div>
+        <div class="row item-row">
+          <div class="col-md-12">
+            <div class="input-group input-group-merge search-bar">
+              <span class="input-group-text" id="topbar-addon"><span class="fas fa-search"></span></span>
+              <input 
+                  type="text" 
+                  class="form-control"
+                  name = "search" 
+                  id="topbarInputIconLeft" 
+                  placeholder="Type to filter" 
+                  aria-label="Type to filter" 
+                  aria-describedby="topbar-addon"
+                  hx-get="{% url 'search_tb_htmx'%}"
+                  hx-trigger="keyup delay:500ms"
+                  hx-include="#filter-form"
+                  hx-target="#sad-monsters"
+                  >
+            </div>
+   
+          </div>
+  
+        </div>
+        <div class="row item-row">
+
+        <div class="col-12">
+            <div class="card card-body bg-white border-light shadow-sm mb-4">
+              <form id="filter-form"
+                  method="POST"
+                  action=""
+                  hx-post="{% url 'tb_list_htmx'%}"
+                  hx-vals='{"use_block": ["happy-monsters", "sad-monsters"]}'
+                  hx-swap="none"
+                >
+                {% csrf_token %}
+
+                          <div>
+                          {% block sad-monsters %}
+                            <div id="sad-monsters"
+                                hx-swap-oob="true">
+                                <table class="table table-centered mb-0 rounded">
+                                  <thead class="thead-light">
+                                        <tr>
+                                        <th>STT</th>
+                                        <th>Người gửi</th>
+                                        <th>Thời gian</th>
+                                        <th>Nội dung</th>
+                                        <th>Mức độ</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                    {% for tb in sad_monsters %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ tb.actor }}</td>
+                                        <td>{{ tb.timestamp | date:"d/m/y H:m" }}</td>
+                                        <td>{{ tb.verb }}</td>
+                                        {% if tb.level == 'error' %}
+                                        <td>
+                                            <p class="text-danger">
+                                                {{ tb.level }}
+                                            </p>
+                                        </td>
+                                            {% else %}
+                                        <td>
+                                            <p class="text-{{ tb.level }}">
+                                                {{ tb.level }}
+                                            </p>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                              </table>
+                            </div>
+                          {% endblock %}
+                          </div>
+              </form>
+            </div>
+          </div>
+      </div>
+    </main>
+  <script>
+    $(document).on("click", ".yourclass", function(){
+      location.reload();      
+    });
+    
+  </script>
+{% endblock content %}

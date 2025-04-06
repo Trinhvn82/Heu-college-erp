@@ -5,6 +5,9 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 from info.models import User
 from django.db.models.functions import StrIndex, Reverse, Right, Concat, Substr
+from django.core.validators import FileExtensionValidator
+#from sms.formatChecker import ContentTypeRestrictedFileField
+
 
 # Create your models here.
 tl_choice = (
@@ -777,10 +780,29 @@ class GvLmh(models.Model):
     def __str__(self):
         return self.lopmh.lop.ten + "|" + self.lopmh.monhoc.ma + "|" + self.lopmh.monhoc.ten
 
+def upload_directory_name(instance, filename):
+    import os
+    user = getattr(instance, 'user', None)
+    if user:
+        name = user.username
+    else:
+        name=str(instance)
+    model_name = instance._meta.verbose_name.replace(' ', '-')
+    return str(os.path.pathsep).join(["uploads/",model_name, "/" ,filename])
+
 class UploadedFile(models.Model):
-    file = models.FileField(upload_to='uploads/')
+    #file = models.FileField(upload_to='uploads/')
+
+    
+    file = models.FileField(upload_to="uploads/files/%Y/%m/%d")
+
+    #file = ContentTypeRestrictedFileField(upload_to="uploads/files/%Y/%m/%d", content_types=['image/gif', 'image/jpeg', 'image/png', ],max_upload_size=5242880,blank=True, null=True)
+
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.CharField(max_length=100, blank=True, null = True)
     mota = models.CharField(max_length=100)
+    lopmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT, blank=True, null = True)
+    user = models.ForeignKey(User, on_delete=models.RESTRICT, blank=True, null = True)
     history = HistoricalRecords()
     def __str__(self):
         return self.file.name

@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
-
+from django.http import FileResponse
 
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
@@ -41,6 +41,10 @@ from datetime import datetime
 from django.http import HttpResponseForbidden,HttpResponse
 import pandas as pd
 import locale
+
+from PIL import Image
+from pypdf import PdfReader
+from pypdf.errors import PdfReadError
 
 
 @login_required
@@ -2275,8 +2279,10 @@ def create_teacher(request):
 
 @login_required
 def edit_lopmonhoc(request, lmh_id):
-    lmh = LopMonhoc.objects.get(id=lmh_id)
-    lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
+    lmh = LopMonhoc.objects.filter(id=lmh_id).select_related("lop", "monhoc")[0]
+    lop_id = lmh.lop_id
+    mh = Monhoc.objects.get(id=lmh.monhoc_id)
+
     lmh_forms = CreateLopMonhoc(instance=lmh)
 
     if request.method == "POST":
@@ -2289,8 +2295,7 @@ def edit_lopmonhoc(request, lmh_id):
 
     context = {
         "forms": lmh_forms,
-        "lop_id": lop_id,
-        "monhoc_id": monhoc_id
+        "lmh": lmh
     }
     return render(request, "sms/edit_lopmonhoc.html", context)
 
@@ -2414,7 +2419,7 @@ def edit_sv(request, sv_id):
     context = {
         "forms": lh_forms,
 #        "img": sv.image,
-        "msv": sv.msv
+        "sv": sv
     }
     return render(request, "sms/edit_sv.html", context)
 
@@ -2733,7 +2738,7 @@ def edit_gv(request, gv_id):
 
     context = {
         "forms": lh_forms,
-        "ma": gv.ma
+        "gv": gv
     }
     return render(request, "sms/edit_gv.html", context)
 
@@ -2874,7 +2879,7 @@ def download_file1(request):
     raise Http404
 
 @login_required
-@permission_required('sms.add_uploadfile',raise_exception=True)
+@permission_required('sms.add_uploadedfile',raise_exception=True)
 def upload_file(request):
     if request.method == 'POST':
         form = CreateUploadFile(request.POST, request.FILES)
@@ -2892,13 +2897,320 @@ def upload_file(request):
     return render(request, "sms/file_list.html", context)
 
 @login_required
-@permission_required('sms.view_uploadfile',raise_exception=True)
+@permission_required('sms.add_uploadedfile',raise_exception=True)
+def upload_file_gv(request, gv_id):
+
+    gv = Hsgv.objects.get(id = gv_id)
+    if request.method == 'POST':
+        if not(gv.user == request.user):
+            return HttpResponseForbidden()
+        #test if file upload is image        
+        image = request.FILES['file']
+
+        pre, ext = os.path.splitext(image.name)
+        print(ext)
+        if ext =='.pdf':
+            try:
+                PdfReader(image)
+            except PdfReadError:
+                #print("invalid PDF file")
+                messages.error(request, "invalid PDF file")
+                return redirect('upload_file_gv', gv_id)
+        # check file ảnh
+        else:
+            try:
+                img = Image.open(image)
+                img = img.convert('RGB')
+            except Exception as e:
+                messages.error(request, 'Chỉ chấp nhận file ảnh')
+                return redirect('upload_file_gv', gv_id)
+        #img.save("uploads/temp.pdf", format="PDF")
+
+        limit = 5 * 1024 * 1024
+        if image.size > limit:
+            #raise ValidationError('File too large. Size should not exceed 2 MiB.')
+            messages.error(request, 'File too large. Size should not exceed 5 MiB.')
+            return redirect('upload_file_gv', gv_id)
+
+        form = CreateUploadFile(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.save()
+            file.user = request.user
+            file.uploaded_by = request.user.username
+            file.save()
+            messages.success(request, "File được tải thành công!")
+            return redirect('upload_file_gv', gv_id)
+        else:
+            for error in form.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+    else:
+        form = CreateUploadFile()
+    files = UploadedFile.objects.filter(user = gv.user)
+    for file in files:
+        file.ten = file.file.name.split("/")[-1]
+
+    tl=[{"ma":"Bằng Tốt nghiệp"}, {"ma":"Bảng điểm"}, {"ma":"Chứng chỉ NVSP/dạy nghề"}, {"ma":"Sơ yếu lý lịch"}, {"ma":"Chứng chỉ tiếng Anh"}, {"ma":"Chứng chỉ tin học"}]
+
+    context = {
+        'form': form,
+        'gv': gv,
+        'tl': tl,
+        'files': files
+    }
+    return render(request, "sms/file_list_gv.html", context)
+
+@login_required
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
+def upload_file_hv(request, hv_id):
+
+    sv = Hssv.objects.get(id = hv_id)
+    if request.method == 'POST':
+        if not(sv.user == request.user):
+            return HttpResponseForbidden()
+        #test if file upload is image        
+        image = request.FILES['file']
+
+        pre, ext = os.path.splitext(image.name)
+        print(ext)
+        if ext =='.pdf':
+            try:
+                PdfReader(image)
+            except PdfReadError:
+                #print("invalid PDF file")
+                messages.error(request, "invalid PDF file")
+                return redirect('upload_file_hv', hv_id)
+        # check file ảnh
+        else:
+            try:
+                img = Image.open(image)
+                img = img.convert('RGB')
+            except Exception as e:
+                messages.error(request, 'Chỉ chấp nhận file ảnh')
+                return redirect('upload_file_hv', hv_id)
+        #img.save("uploads/temp.pdf", format="PDF")
+
+        limit = 5 * 1024 * 1024
+        if image.size > limit:
+            #raise ValidationError('File too large. Size should not exceed 2 MiB.')
+            messages.error(request, 'File too large. Size should not exceed 5 MiB.')
+            return redirect('upload_file_hv', hv_id)
+
+        form = CreateUploadFile(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.save()
+            file.user = request.user
+            file.uploaded_by = request.user.username
+            file.save()
+            messages.success(request, "File được tải thành công!")
+            return redirect('upload_file_hv', hv_id)
+        else:
+            for error in form.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+    else:
+        form = CreateUploadFile()
+
+    if sv.user:
+        files = UploadedFile.objects.filter(user = sv.user)
+        for file in files:
+            file.ten = file.file.name.split("/")[-1]
+    else:
+        files = None
+
+
+    tl=[{"ma":"Phiếu xét tuyển"}, 
+        {"ma":"Bằng TN"}, 
+        {"ma":"Giay CNTTTT"}, 
+        {"ma":"Học bạ THCS"}, 
+        {"ma":"CCCD"}, 
+        {"ma":"Giấy khai sinh"}, 
+        {"ma":"Sổ HK"}, 
+        {"ma":"Ảnh 3x4"}
+        ]
+
+    context = {
+        'form': form,
+        'sv': sv,
+        'tl': tl,
+        'files': files
+    }
+    return render(request, "sms/file_list_hv.html", context)
+
+@login_required
+@permission_required('sms.add_uploadedfile',raise_exception=True)
+def upload_file_lmh(request, lmh_id):
+
+    lmh = LopMonhoc.objects.get(id = lmh_id)
+    if request.method == 'POST':
+        # if not(gv.user == request.user):
+        #     return HttpResponseForbidden()
+        #test if file upload is image        
+        image = request.FILES['file']
+
+        pre, ext = os.path.splitext(image.name)
+        print(ext)
+        if ext =='.pdf':
+            try:
+                PdfReader(image)
+            except PdfReadError:
+                #print("invalid PDF file")
+                messages.error(request, "invalid PDF file")
+                return redirect('upload_file_lmh', lmh_id)
+        # check file ảnh
+        else:
+            try:
+                img = Image.open(image)
+                img = img.convert('RGB')
+            except Exception as e:
+                messages.error(request, 'Chỉ chấp nhận file ảnh')
+                return redirect('upload_file_lmh', lmh_id)
+        #img.save("uploads/temp.pdf", format="PDF")
+
+        limit = 5 * 1024 * 1024
+        if image.size > limit:
+            #raise ValidationError('File too large. Size should not exceed 2 MiB.')
+            messages.error(request, 'File too large. Size should not exceed 5 MiB.')
+            return redirect('upload_file_lmh', lmh_id)
+
+        form = CreateUploadFile(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.save()
+            file.uploaded_by = request.user.username
+            file.lopmh_id = lmh_id
+            file.save()
+            messages.success(request, "File được tải thành công!")
+            return redirect('upload_file_lmh', lmh_id)
+        else:
+            for error in form.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+    else:
+        form = CreateUploadFile()
+
+    files = UploadedFile.objects.filter(lopmh_id = lmh_id)
+    for file in files:
+        file.ten = file.file.name.split("/")[-1]
+        
+    tl=[{"ma":"Tiến độ, kế hoạch, CTĐT"}, 
+        {"ma":"Phiếu báo giảng"}, 
+        {"ma":"Giáo án"}, 
+        {"ma":"Sổ tay giảng viên"}, 
+        {"ma":"Danh sách học sinh ký thi"}, 
+        {"ma":"Bài thi"},
+        {"ma":"Đề thi/đáp án"}, 
+        ]
+
+    context = {
+        'form': form,
+        'tl': tl,
+        'lmh': lmh,
+        'files': files
+    }
+    return render(request, "sms/file_list_lmh.html", context)
+
+@login_required
+@permission_required('sms.view_uploadedfile',raise_exception=True)
 def download_file(request, file_id):
     uploaded_file = UploadedFile.objects.get(pk=file_id)
     response = HttpResponse(uploaded_file.file, content_type='application/force-download')
     response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}"'
     return response
 
+@login_required
+#@permission_required('sms.view_uploadedfile',raise_exception=True)
+def view_file(request, file_id):
+    #import magic
+    from PIL import Image
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+    if request.user.is_gv:
+        gv = Hsgv.objects.get(user = request.user)
+        if not(uploaded_file.user == gv.user):
+            return HttpResponseForbidden()
+    elif request.user.is_hv:
+        sv = Hssv.objects.get(user = request.user)
+        if not(uploaded_file.user == sv.user):
+            return HttpResponseForbidden()
+    elif not request.user.has_perm('sms.view_uploadedfile'): 
+        return HttpResponseForbidden()
+
+    try:
+        file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
+
+        pre, ext = os.path.splitext(file_path)
+        if ext !='.pdf':
+            filepdf = pre + '.pdf'
+        #    os.rename(renamee, pre + new_extension)
+            img = Image.open(file_path)
+            img = img.convert('RGB')
+            img.save(filepdf, format="PDF")
+        else:
+            filepdf = file_path
+        head, tail = os.path.split(filepdf)
+        print(head)
+        print(tail)
+        return FileResponse(open(filepdf, 'rb'), content_type='application/pdf')
+    except Exception as e:
+        messages.error(request, 'Có lỗi khi view file')
+
+    #response = HttpResponse(uploaded_file.file, content_type='application/force-download')
+    #response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}"'
+    #return response
+
+@login_required
+#@permission_required('sms.delete_uploadedfile',raise_exception=True)
+def delete_file_gv(request, gv_id, file_id):
+
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+
+    if request.user.is_gv:
+        gv = Hsgv.objects.get(user = request.user)
+        if not(uploaded_file.user == gv.user):
+            return HttpResponseForbidden()
+    elif not request.user.has_perm('sms.delete_uploadedfile'): 
+        return HttpResponseForbidden()
+
+
+    uploaded_file.delete()
+    file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        messages.success(request, "File được xóa thành công!")
+    return redirect('upload_file_gv', gv_id)
+
+@login_required
+#@permission_required('sms.delete_uploadedfile',raise_exception=True)
+def delete_file_hv(request, hv_id, file_id):
+
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+
+    if request.user.is_hv:
+        sv = Hssv.objects.get(user = request.user)
+        if not(uploaded_file.user == sv.user):
+            return HttpResponseForbidden()
+    elif not request.user.has_perm('sms.delete_uploadedfile'): 
+        return HttpResponseForbidden()
+
+    uploaded_file.delete()
+    file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        messages.success(request, "File được xóa thành công!")
+    return redirect('upload_file_hv', hv_id)
+
+@login_required
+@permission_required('sms.delete_uploadedfile',raise_exception=True)
+def delete_file_lmh(request, lmh_id, file_id):
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+    uploaded_file.delete()
+    file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        messages.success(request, "File được xóa thành công!")
+    return redirect('upload_file_lmh', lmh_id)
 @login_required
 def download_file2(request):
     import pandas as pd

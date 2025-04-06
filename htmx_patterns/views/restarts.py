@@ -7,12 +7,15 @@ from sms.models import GvLmh, LopMonhoc, Lop, Monhoc, Hsgv
 from htmx_patterns.utils import for_htmx, is_htmx, make_get_request
 from django.db.models import Q
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, permission_required
 
 
+@login_required
 @for_htmx(use_block_from_params=True)
 def view_restart(request: HttpRequest, gv_id):
     return _view_restart(request, gv_id)
 
+@login_required
 def view_search(request, gv_id):
     query = request.GET.get('search','')
     #sad_monsters, happy_monsters = partition(lambda m: m.status, monsters)

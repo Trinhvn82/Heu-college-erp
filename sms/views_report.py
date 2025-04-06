@@ -692,3 +692,16 @@ def import_edit_diemtp(request, lop_id, lmh_id, ld_id, log_id):
         "ld": ld
     }
     return render(request, "sms/import_edit_diemtp.html", context)
+
+@login_required
+def tb_list(request):
+    #students = Hssv.objects.all()
+    tbaos = request.user.notifications.all()[0:50]
+    paginator = Paginator(tbaos, 60)
+    page = request.GET.get('page')
+    tbs = paginator.get_page(page)
+
+    context = {
+        "tbs": tbs
+    }
+    return render(request, "sms/tb_list.html", context)

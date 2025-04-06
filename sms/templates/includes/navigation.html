@@ -1,4 +1,7 @@
-
+{% load static notifications_tags %}
+{% register_notify_callbacks callbacks='fill_notification_list,fill_notification_badge' fetch=20 refresh_period=5 %}
+{% notifications_unread as unread_count %}
+        
         <nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark pl-0 pr-2 pb-0">
             <div class="container-fluid px-0">
               <div class="d-flex justify-content-between w-100" id="navbarSupportedContent">
@@ -27,13 +30,36 @@
                             {% else %}
                               Xin chào: {{ request.user.username }}
                             {% endif %}
-                                    </span>
+                          </span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
+                            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/>
+                          </svg>
+                          {% if unread_count %}
+                            <svg viewBox="0 0 8 8"
+                              width="8px"
+                              height="8px">
+                              <circle cx="4"
+                                      cy="4"
+                                      r="4"
+                                      fill="#ff6b6b"
+                                      ></circle>
+                            </svg>
+                          {% endif %}
                         </div>
                       </div>
                     </a>
                     <div class="dropdown-menu dashboard-dropdown dropdown-menu-right mt-2">
-                      <a class="dropdown-item font-weight-bold" href="#">
-                        <span class="fas fa-cog"></span>Settings</a>
+                      <a class="dropdown-item font-weight-bold" href="{% url 'tb_list_htmx' %}">
+                        <svg viewBox="0 0 8 8"
+                          width="8px"
+                          height="8px">
+                          <circle cx="4"
+                                  cy="4"
+                                  r="4"
+                                  fill="#ff6b6b"
+                                  ></circle>
+                      </svg>
+                        <span></span>Unread Messages: {%live_notify_badge %}</a>
                       <div role="separator" class="dropdown-divider"></div>
                       <a class="dropdown-item font-weight-bold" href="{% url 'changepwd' %}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-toggles" viewBox="0 0 16 16">

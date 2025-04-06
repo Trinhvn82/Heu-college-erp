@@ -26,19 +26,21 @@
                 <div class="row justify-content-center form-bg-image" data-background="/static/assets/img/illustrations/signin.svg">
                     <div class="col-12 d-flex align-items-center justify-content-center">
                         <div class="signin-inner my-3 my-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
-
                             <div class="text-center text-md-center mb-4 mt-md-0">
                                 <h1 class="mb-0 h3">Sign IN
                                 </h1>
                                 <br />
-                                <p>
-                                    {% if msg %}
-                                        {{ msg | safe }}
+                                    {% if form.errors %}
+                                        <p style = "color: red">
+                                            Your username and password didn't match. Please try again.
+                                        </p>
                                     {% else %}
-                                        Add your credentials
+                                        <p>
+                                            Add your credentials                                   
+                                        </p>
                                     {% endif %}                                     
                                 </p>    
-                            </div>
+                                </div>
 
                             <form method="post" action="" class="mt-4">
                                 

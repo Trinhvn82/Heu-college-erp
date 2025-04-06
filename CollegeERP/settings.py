@@ -36,7 +36,7 @@ ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'info.User'
 
-SESSION_COOKIE_AGE =  60000 # 5 minutes
+SESSION_COOKIE_AGE =  6000 # 5 minutes
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
 
 MEDIA_URL = '/media/'
@@ -67,6 +67,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.sitemaps',
     'guardian',
+    'notifications',
+    'django_q',
 #    'import_export'
 #    'rest_framework'
 
@@ -108,7 +110,17 @@ AUTHENTICATION_BACKENDS = (
     'guardian.backends.ObjectPermissionBackend',
 )
 
+# Settings for Django-Q
+# https://mattsegal.dev/simple-scheduled-tasks.html
 
+Q_CLUSTER = {
+    'orm': 'default',  # should use django's ORM and database as a broker.
+    'workers': 4,
+    'timeout': 30,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+}
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 

@@ -141,6 +141,7 @@ class CreateLopHk(forms.ModelForm):
             'end_hk': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
        }
 
+
 class CreateUploadFile(forms.ModelForm):
     class Meta:
         model = UploadedFile
@@ -152,6 +153,7 @@ class CreateUploadFile(forms.ModelForm):
         }
         widgets = {
             'mota': forms.TextInput(attrs={'class': 'form-control'}),
+            #'file' : forms.FileField(validators=[file_size])
        }
 
 class CreateLopMonhoc(forms.ModelForm):

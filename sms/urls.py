@@ -3,6 +3,9 @@ from . import views, views_report
 from django.contrib import admin
 from info.views import add_hvuser, add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv,reset_pwd_hv
 from htmx_patterns.views.restarts import view_restart, view_search
+from htmx_patterns.views.thongbao import view_tb, view_tb_search 
+from htmx_patterns.views.notifications import live_tester, make_notification
+from sms.tasks import schedule_fetch_tbs
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -23,8 +26,15 @@ urlpatterns = [
     path('gv_lop/<int:gv_id>/', views.gv_lop, name='gv_lop'),
     path('gv_monhoc/<int:gv_id>/', views.gv_monhoc, name='gv_monhoc'),
     path('gv_lmh/<int:gv_id>/', views.gv_lmh, name='gv_lmh'),
+
     path('gv_lmh_htmx/<int:gv_id>/', view_restart, name='gv_lmh_htmx'),
     path('search_lmh_htmx/<int:gv_id>/', view_search, name='search_lmh_htmx'),
+
+    path('tb_htmx/', view_tb, name='tb_list_htmx'),
+    path('search_tb_htmx/', view_tb_search, name='search_tb_htmx'),
+
+    path('notifications/', live_tester, name='notifications'),
+    path('test-make/', make_notification, name='test-make'),
 
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),
@@ -37,6 +47,7 @@ urlpatterns = [
     path('report_hs81/<int:opt>/', views_report.report_hs81, name='report_hs81'),
     path('report_ttgv/<int:opt>/', views_report.report_ttgv, name='report_ttgv'),
     path('report_kqht/<int:opt>/', views_report.report_kqht, name='report_kqht'),
+    path('thongbao/', views_report.tb_list, name='tb_list'),
 
     path('export_hs81/', views_report.export_hs81, name='export_hs81'),
     path('import_hs81/<int:lop_id>/', views_report.import_hs81, name='import_hs81'),
@@ -117,8 +128,17 @@ urlpatterns = [
     path('lophp-hk/<int:lop_id>/<int:hk_ma>/', views.lophp_hk, name='lophp-hk'),
     path('delete/<int:teacher_id>', views.delete_teacher, name='delete_teacher'),
     path('react', views.react, name='react'),
+
     path('upload/', views.upload_file, name='upload_file'),
+    path('upload-gv/<int:gv_id>/', views.upload_file_gv, name='upload_file_gv'),
+    path('upload-sv/<int:hv_id>/', views.upload_file_hv, name='upload_file_hv'),
+    path('upload-lmh/<int:lmh_id>/', views.upload_file_lmh, name='upload_file_lmh'),
+
     path('download-temp/<int:file_id>/', views.download_file, name='download_file'),
+    path('view-file/<int:file_id>/', views.view_file, name='view_file'),
+    path('delete-file-gv/<int:gv_id>/<int:file_id>/', views.delete_file_gv, name='delete_file_gv'),
+    path('delete-file-hv/<int:hv_id>/<int:file_id>/', views.delete_file_hv, name='delete_file_hv'),
+    path('delete-file-lmh/<int:lmh_id>/<int:file_id>/', views.delete_file_lmh, name='delete_file_lmh'),
     path('download-temp1/', views.download_file1, name='download_file1'),
     path('download-temp2/', views.download_file2, name='download_file2'),
 
@@ -132,6 +152,8 @@ urlpatterns = [
     path('resetpwd-hv/<int:hv_id>/', reset_pwd_hv, name='reset_pwd_hv'),
 
     path('changepwd/', user_changepwd, name='changepwd'),
+ 
+    path('scheduler/', schedule_fetch_tbs, name='scheduler'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'
