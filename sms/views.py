@@ -3076,10 +3076,18 @@ def lophk_list(request, lop_id, lhk_id):
     return render(request, "sms/lophk_list.html", context)
 
 @login_required
-@permission_required('sms.add_uploadedfile',raise_exception=True)
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
 def upload_file_lmh(request, lmh_id):
 
     lmh = LopMonhoc.objects.get(id = lmh_id)
+    lop = Lop.objects.get(id = lmh.lop_id)
+    if request.user.is_gv:
+        if not request.user.has_perm('assign_lopmonhoc', lmh):
+            return HttpResponseForbidden()
+    else:
+        if not request.user.has_perm('assign_lop', lop):
+            return HttpResponseForbidden()
+    
     if request.method == 'POST':
         # if not(gv.user == request.user):
         #     return HttpResponseForbidden()
@@ -3115,6 +3123,7 @@ def upload_file_lmh(request, lmh_id):
         if form.is_valid():
             file = form.save()
             file.uploaded_by = request.user.username
+            file.user = request.user
             file.lopmh_id = lmh_id
             file.save()
             messages.success(request, "File được tải thành công!")
@@ -3163,12 +3172,14 @@ def view_file(request, file_id):
     from PIL import Image
     uploaded_file = UploadedFile.objects.get(pk=file_id)
     if request.user.is_gv:
-        gv = Hsgv.objects.get(user = request.user)
-        if not(uploaded_file.user == gv.user):
-            return HttpResponseForbidden()
+        if uploaded_file.lopmh is not None:
+            if not request.user.has_perm('assign_lopmonhoc', uploaded_file.lopmh):
+                return HttpResponseForbidden()
+        else:
+            if not(uploaded_file.user == request.user):
+                return HttpResponseForbidden()
     elif request.user.is_hv:
-        sv = Hssv.objects.get(user = request.user)
-        if not(uploaded_file.user == sv.user):
+        if not(uploaded_file.user == request.user):
             return HttpResponseForbidden()
     elif not request.user.has_perm('sms.view_uploadedfile'): 
         return HttpResponseForbidden()
@@ -3203,8 +3214,7 @@ def delete_file_gv(request, gv_id, file_id):
     uploaded_file = UploadedFile.objects.get(pk=file_id)
 
     if request.user.is_gv:
-        gv = Hsgv.objects.get(user = request.user)
-        if not(uploaded_file.user == gv.user):
+        if not(uploaded_file.user == request.user):
             return HttpResponseForbidden()
     elif not request.user.has_perm('sms.delete_uploadedfile'): 
         return HttpResponseForbidden()
@@ -3224,8 +3234,7 @@ def delete_file_hv(request, hv_id, file_id):
     uploaded_file = UploadedFile.objects.get(pk=file_id)
 
     if request.user.is_hv:
-        sv = Hssv.objects.get(user = request.user)
-        if not(uploaded_file.user == sv.user):
+        if not(uploaded_file.user == request.user):
             return HttpResponseForbidden()
     elif not request.user.has_perm('sms.delete_uploadedfile'): 
         return HttpResponseForbidden()
@@ -3238,9 +3247,16 @@ def delete_file_hv(request, hv_id, file_id):
     return redirect('upload_file_hv', hv_id)
 
 @login_required
-@permission_required('sms.delete_uploadedfile',raise_exception=True)
+#@permission_required('sms.delete_uploadedfile',raise_exception=True)
 def delete_file_lmh(request, lmh_id, file_id):
     uploaded_file = UploadedFile.objects.get(pk=file_id)
+
+    if request.user.is_gv:
+        if not(uploaded_file.user == request.user):
+            return HttpResponseForbidden()
+    elif not request.user.has_perm('sms.delete_uploadedfile'): 
+        return HttpResponseForbidden()
+
     uploaded_file.delete()
     file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
     if os.path.exists(file_path):
