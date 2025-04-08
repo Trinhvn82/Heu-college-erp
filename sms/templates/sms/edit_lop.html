@@ -45,26 +45,6 @@
                             {% endif %}
                             {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            <span class="h4 font-weight-bold">Thông tin học kỳ</span>
-                        </div>
-                        <div class="row">
-                                {% for l in lhk %}
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-check-label">
-                                        {{l.hk.ten}}
-                                    </label>    
-                                    <div>
-                                        <label for="id_thoigian">Tgian bắt đầu:</label>
-                                        <input type="date" name="start{{l.hk.ma}}" class="form-control" value="{{l.start_hk | date:"20y-m-d" }}">
-                                    </div>
-                                    <div>
-                                        <label for="id_thoigian">Tgian kết thúc:</label>
-                                        <input type="date" name="end{{l.hk.ma}}" class="form-control" value="{{l.end_hk | date:"20y-m-d" }}">
-                                    </div>
-                                </div>
-                                {% endfor %}
-                        </div>
             
                         <div class="mt-3">
                             <button type="submit" class="btn btn-primary">Lưu</button>

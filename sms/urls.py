@@ -5,7 +5,7 @@ from info.views import add_hvuser, add_nsuser, reset_pwd, user_changepwd, ns_quy
 from htmx_patterns.views.restarts import view_restart, view_search
 from htmx_patterns.views.thongbao import view_tb, view_tb_search 
 from htmx_patterns.views.notifications import live_tester, make_notification
-from sms.tasks import schedule_fetch_tbs
+from sms.tasks import create_tbs
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -97,6 +97,8 @@ urlpatterns = [
     path('CreatexLop/', views.create_xlop, name='create_xlop'),
     path('EditLop/<int:lop_id>/', views.edit_lop, name='edit_lop'),
     path('EditLop-new/<int:lop_id>/', views.edit_lop_new, name='edit_lop_new'),
+    path('Lophk-list/<int:lop_id>/<int:lhk_id>/', views.lophk_list, name='lophk_list'),
+
     path('CreateSinhvien/', views.create_sv, name='create_sv'),
     path('EditSinhvien/<int:sv_id>/', views.edit_sv, name='edit_sv'),
     path('detailsSinhvien/<int:sv_id>/<int:opt>/', views.details_sv, name='details_sv'),
@@ -153,7 +155,7 @@ urlpatterns = [
 
     path('changepwd/', user_changepwd, name='changepwd'),
  
-    path('scheduler/', schedule_fetch_tbs, name='scheduler'),
+    path('create_tbs/', create_tbs, name='create_tbs'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

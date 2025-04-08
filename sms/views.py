@@ -6,6 +6,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.http import FileResponse
+from django.core.exceptions import ValidationError
+
 
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
@@ -2767,28 +2769,28 @@ def edit_lop(request, lop_id):
     lop = Lop.objects.get(id=lop_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     lop_forms = CreateLop(instance=lop)
-    lhk = LopHk.objects.select_related("hk").filter(lop_id=lop_id)
+#    lhk = LopHk.objects.select_related("hk").filter(lop_id=lop_id)
 
     if request.method == "POST":
         edit_forms = CreateLop(request.POST, request.FILES or None, instance=lop)
 
         if edit_forms.is_valid():
             edit_forms.save()
-            for hk in lhk:
-                start_hk = "start"+str(hk.hk.ma)
-                end_hk = "end"+str(hk.hk.ma)
-                elhk = LopHk.objects.get(lop_id = lop_id, hk_id = hk.hk.ma)
-                elhk.start_hk = request.POST[start_hk] if request.POST[start_hk] else None
-                elhk.end_hk = request.POST[end_hk] if request.POST[end_hk] else None
+            # for hk in lhk:
+            #     start_hk = "start"+str(hk.hk.ma)
+            #     end_hk = "end"+str(hk.hk.ma)
+            #     elhk = LopHk.objects.get(lop_id = lop_id, hk_id = hk.hk.ma)
+            #     elhk.start_hk = request.POST[start_hk] if request.POST[start_hk] else None
+            #     elhk.end_hk = request.POST[end_hk] if request.POST[end_hk] else None
 
-                elhk.save()
+            #     elhk.save()
             messages.success(request, "Cập nhật thông tin lớp thành công!")
             return redirect("lop_list")
 
     context = {
         "forms": lop_forms,
-        "ma": lop.ma,
-        "lhk": lhk
+        "ma": lop.ma
+#        "lhk": lhk
     }
     return render(request, "sms/edit_lop.html", context)
 
@@ -3042,6 +3044,36 @@ def upload_file_hv(request, hv_id):
         'files': files
     }
     return render(request, "sms/file_list_hv.html", context)
+
+@login_required
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
+def lophk_list(request, lop_id, lhk_id):
+    if lhk_id > 0:
+        lhk = LopHk.objects.filter(id = lhk_id).select_related('lop',"hk").order_by('hk__ma')[0]
+    else:
+        lhk = LopHk.objects.filter(lop_id = lop_id).select_related('lop',"hk").order_by('hk__ma')[0]
+    
+    lhks = LopHk.objects.filter(lop_id = lop_id).select_related('lop',"hk").order_by('hk__ma')
+    
+    if request.method == 'POST':
+        form = CreateLopHk(request.POST, request.FILES or None, instance=lhk)
+
+        if form.is_valid():
+            file = form.save()
+            messages.success(request, "Cập nhật thành công!")
+        # else:
+        #     for error in form.errors:
+        #         print(error)
+        #         messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+    else:
+        form = CreateLopHk(request.POST, request.FILES or None, instance=lhk)
+    context = {
+        'forms': form,
+        'lhks': lhks,
+        'lhk': lhk
+    }
+    return render(request, "sms/lophk_list.html", context)
 
 @login_required
 @permission_required('sms.add_uploadedfile',raise_exception=True)

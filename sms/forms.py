@@ -2,6 +2,7 @@
 from django import forms
 from .models import Ctdt, Diemdanh, Diemthanhphan, Hocphi, Hsgv, Lichhoc, Lop, TeacherInfo, CtdtMonhoc, Hssv, LopMonhoc
 from .models import LopHk, Monhoc, Hp81, Hs81, Ttgv, UploadedFile, Hsns
+from django.core.exceptions import ValidationError
 
 class CreateTeacher(forms.ModelForm):
     class Meta:
@@ -140,7 +141,12 @@ class CreateLopHk(forms.ModelForm):
             'start_hk': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_hk': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
        }
-
+    def clean(self):
+            cleaned_data = super().clean()
+            start_date = cleaned_data.get('start_hk')
+            end_date = cleaned_data.get('end_hk')
+            if end_date and start_date and end_date < start_date:
+                raise forms.ValidationError("End date must be greater than start date")
 
 class CreateUploadFile(forms.ModelForm):
     class Meta:
