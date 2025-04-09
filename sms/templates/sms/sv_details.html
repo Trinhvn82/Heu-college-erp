@@ -107,7 +107,7 @@
                 </div>
             </div>
             <div class="card-body">
-                <form action="{% url 'details_sv' sv.id 3%}" method="post">
+                <form action="{% url 'details_sv' sv.id 4%}" method="post">
                     {% csrf_token %}
                         <input hidden type="text" name="lop" class="form-control" value="{{lop.id}}" maxlength="100">
                         <button type="submit" class="btn btn-primary">

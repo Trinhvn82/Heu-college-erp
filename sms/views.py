@@ -39,7 +39,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from datetime import datetime
+from datetime import datetime, date
 from django.http import HttpResponseForbidden,HttpResponse
 import pandas as pd
 import locale
@@ -2427,14 +2427,27 @@ def edit_sv(request, sv_id):
 
 @login_required
 def details_sv(request, sv_id, opt = None):
+    
     sv = Hssv.objects.get(id=sv_id)
 
-    # for ar in args:
-    #     print ar
-    #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
-    #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
+    lhk = LopHk.objects.filter(lop_id = sv.lop_id).select_related('hk').order_by('hk_id')
+    next_hk=0
+
+    for l in lhk:
+        if l.end_hk and date.today() > l.end_hk:
+            next_hk = l.hk.ma
+            #break
+    if next_hk == 0:
+        next_hk = lhk.last().hk.ma + 1
+    else:
+        next_hk = next_hk + 1
+
+
     lds = Loaidiem.objects.all()
-    hks = Hocky.objects.all()
+    hks = Hocky.objects.filter(ma__lt = next_hk).order_by('ma')
+
+    # for ar in args:
+
     hps = Hp81.objects.filter(sv_id = sv_id)
     mhl=[]
     ldl=[]
@@ -2612,15 +2625,171 @@ def details_sv(request, sv_id, opt = None):
 
         return response
 
-    for hp in hps:
-        hp.duno = hp.sotien2-hp.sotien1
+    #export to excel template
+    if opt == 4:
+        import pandas as pd
+        # import pythoncom
+        # import win32com.client
+        # pythoncom.CoInitialize()
+        import random
+        import string
 
-    # for hk in hks:
-    #     if Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id).first():
-    #         hk.hp = Hp81.objects.filter(sv_id = sv_id,hk_id = hk.id)[0]
-    #         hk.hp.duno = hk.hp.sotien2-hk.hp.sotien1
-    #     else:
-    #         hk.hp = None
+
+        temp_path = "template_kqht.xlsx"
+        out_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + str(sv_id) + "_kqht.xlsx"
+        pdf_path = "sv_kqht.pdf"
+        temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
+        out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
+        pdf_file_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
+        shutil.copy(temp_file_path, out_file_path)
+        #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+        for hk in hks:
+            exp=[]
+            for mh in hk.lml:
+                exp.append({"Học kỳ|Môn học": mh['ten'], 
+                            "kttx1": mh['kttx1'],
+                            "kttx2": mh['kttx2'],
+                            "kttx3": mh['kttx3'],
+                            "ktdk1": mh['ktdk1'],
+                            "ktdk2": mh['ktdk2'],
+                            "ktdk3": mh['ktdk3'],
+                            "TBM KT": mh['tbmkt'], 
+                            "ktkt1": mh['ktkt1'],
+                            "ktkt2": mh['ktkt2'],
+                            "TBM 10": mh['tbm']
+                        })
+            # Convert the QuerySet to a DataFrame
+            dtf = pd.DataFrame(list(exp))
+
+
+            # use `with` to avoid other exceptions
+            with pd.ExcelWriter(out_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay",) as writer:
+                #writer.book = template
+
+                dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=4+(hk.ma-1)*25, startcol=0)
+
+        #if os.path.exists(out_file_path):
+        with open(out_file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(out_file_path)
+        
+        os.remove(out_file_path)
+
+        return response
+        #raise Http404
+        
+
+
+#         o = win32com.client.Dispatch("Excel.Application")
+
+#         o.Visible = False
+
+
+#         wb = o.Workbooks.Open(out_file_path)
+
+
+
+#         #ws_index_list = [1,4,5] #say you want to print these sheets
+#         ws_index_list = [1] #say you want to print these sheets
+
+
+#         print_area = 'A1:K98'
+
+#         try:
+
+
+#             for index in ws_index_list:
+
+#                 #off-by-one so the user can start numbering the worksheets at 1
+
+#                 ws = wb.Worksheets[index - 1]
+
+#                 ws.PageSetup.Zoom = False
+
+#                 ws.PageSetup.FitToPagesTall = 4
+
+#                 ws.PageSetup.FitToPagesWide = 1
+
+#                 ws.PageSetup.PrintArea = print_area
+
+
+
+#             wb.WorkSheets(ws_index_list).Select()
+
+#             wb.ActiveSheet.ExportAsFixedFormat(0, pdf_file_path)
+#         except Exception as e:
+#             print('failed.'+ str(e))
+#         else:
+#             print('Succeeded.')
+#         finally:
+#             #wb.Close()
+#             wb.Close(SaveChanges=True) 
+#             o.Quit()
+#         #writer.close()                
+
+#         # # Define the Excel file response
+#         # response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#         # response['Content-Disposition'] = 'attachment; filename=kqht-hv.xlsx'
+
+#         # # Use Pandas to write the DataFrame to an Excel file
+#         # df.to_excel(response, index=False, engine='openpyxl')
+
+#         # return response
+
+#     #export to pdf
+#     if opt == 4:
+#         import pandas as pd
+#         import pythoncom
+#         import win32com.client
+#         from openpyxl import load_workbook
+
+#         pythoncom.CoInitialize()
+
+#         temp_path = "template_kqht.xlsx"
+#         out_path = str(sv_id) + "sv_kqht.xlsx"
+#         temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
+#         out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
+
+#         template = load_workbook(temp_file_path)
+
+#         #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+#         for hk in hks:
+#             exp=[]
+#             for mh in hk.lml:
+#                 exp.append({"Học kỳ|Môn học": mh['ten'], 
+#                             "kttx1": mh['kttx1'],
+#                             "kttx2": mh['kttx2'],
+#                             "kttx3": mh['kttx3'],
+#                             "ktdk1": mh['ktdk1'],
+#                             "ktdk2": mh['ktdk2'],
+#                             "ktdk3": mh['ktdk3'],
+#                             "TBM KT": mh['tbmkt'], 
+#                             "ktkt1": mh['ktkt1'],
+#                             "ktkt2": mh['ktkt2'],
+#                             "TBM 10": mh['tbm']
+#                         })
+#             # Convert the QuerySet to a DataFrame
+#             dtf = pd.DataFrame(list(exp))
+
+#             writer = pd.ExcelWriter(temp_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay")
+
+#             #writer.book = template
+#             #writer.sheets = {ws.title: ws for ws in template.worksheets}
+# #            df.to_excel(writer, startrow=writer.sheets['Sheet1'].max_row, index=False, header=False)
+#             dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=4, startcol=0)
+#         #writer.save()
+
+#             # use `with` to avoid other exceptions
+#         #writer.close()                
+
+#         # # Define the Excel file response
+#         # response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#         # response['Content-Disposition'] = 'attachment; filename=kqht-hv.xlsx'
+
+#         # # Use Pandas to write the DataFrame to an Excel file
+        # df.to_excel(response, index=False, engine='openpyxl')
+
+        # return response
     
 
     context = {

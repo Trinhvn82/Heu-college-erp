@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from .models import Lop, Ctdt, Hssv, Hsgv, Hsns, SvStatus, HocphiStatus, LopMonhoc, Trungtam, LogDiem
-from .models import NsLop
+from .models import NsLop, LopHk
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -31,7 +31,8 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
-from datetime import datetime
+from datetime import datetime, date
+
 import pandas as pd
 from django.http import HttpResponseForbidden,HttpResponse
 
@@ -241,16 +242,23 @@ def report_kqht(request, opt = None):
     lop= None
     if request.method == "POST":
         lop_id = request.POST.get('lop', None)
-        #svs = Hssv.objects.filter(lop_id=lop_id)
         locale.setlocale(locale.LC_ALL, 'vi_VN')
-        #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
         svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
-        #svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: svs.ten, reverse=False)
         lop = Lop.objects.get(id=lop_id)
-        #lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id).select_related("monhoc").order_by('hk','ngaystart')
-        #dtp = Diemthanhphan.objects.filter(sv_id = sv_id)
+        lhk = LopHk.objects.filter(lop = lop).select_related('hk').order_by('hk_id')
+        next_hk=0
+
+        for l in lhk:
+            if l.end_hk and date.today() > l.end_hk:
+                next_hk = l.hk.ma
+                #break
+        if next_hk == 0:
+            next_hk = lhk.last().hk.ma + 1
+        else:
+            next_hk = next_hk + 1
+        print(next_hk)
         lds = Loaidiem.objects.all()
-        hks = Hocky.objects.all()
+        hks = Hocky.objects.filter(ma__lt = next_hk).order_by('ma')
         mhl=[]
         ldl=[]
         dtpl=[]
@@ -376,6 +384,10 @@ def report_kqht(request, opt = None):
             exp.append({"Lớp": lop.ten
                         })
             for sv in svs:
+                tbmhk1,tbmhk41,tbctl1,xl1 = None,None,None,None
+                tbmhk2,tbmhk42,tbctl2,xl2 = None,None,None,None
+                tbmhk3,tbmhk43,tbctl3,xl3 = None,None,None,None
+                tbmhk4,tbmhk44,tbctl4,xl4 = None,None,None,None   
                 for hk in sv.hkl:
                     print('printing hk')
                     if hk['ma'] == 1:
@@ -402,7 +414,7 @@ def report_kqht(request, opt = None):
                     
                 exp.append({"Mã học tên": sv.msv,
                             "Họ tên": sv.hoten, 
-                            "HK1 TBM 10":tbmhk1, 
+                            "HK1 TBM 10":tbmhk1 , 
                             "HK1 TBM 4":tbmhk41 , 
                             "HK1 TBCTL":tbctl1 , 
                             "HK1 XL":xl1 , 
