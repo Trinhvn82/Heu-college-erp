@@ -1444,7 +1444,7 @@ def lichhoc_list(request):
 
     #ngay =  datetime.date(1900, 5, 24)
 #    ngay = datetime.convert('Dec 1 1900')
-    ngay = datetime.strptime('Dec 1 1900', '%b %d %Y')
+    ngay = datetime.strptime('Dec 1 1945', '%b %d %Y')
     for l in lh:
         tgian = l.thoigian
 
