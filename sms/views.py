@@ -2578,6 +2578,7 @@ def details_sv(request, sv_id, opt = None):
 
     #export to excel
     if opt == 3:
+        import pandas as pd
         #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
         exp=[]
         exp.append({"Học viên": sv.hoten
@@ -2736,59 +2737,114 @@ def details_sv(request, sv_id, opt = None):
 
 #         # return response
 
-#     #export to pdf
-#     if opt == 4:
-#         import pandas as pd
-#         import pythoncom
-#         import win32com.client
-#         from openpyxl import load_workbook
+    #export to excel template and convert to pdf
+    if opt == 5:
+        import pandas as pd
+        import pandas.io.formats.excel
+        pandas.io.formats.excel.header_style = None
+        import pythoncom
+        import win32com.client
+        pythoncom.CoInitialize()
+        import random
+        import string
 
-#         pythoncom.CoInitialize()
 
-#         temp_path = "template_kqht.xlsx"
-#         out_path = str(sv_id) + "sv_kqht.xlsx"
-#         temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
-#         out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
+        temp_path = "template_kqht.xlsx"
+        out_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + str(sv_id) + "_kqht.xlsx"
+        pdf_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + str(sv_id) + "_kqht.pdf"
+        temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
+        out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
+        pdf_file_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
+        shutil.copy(temp_file_path, out_file_path)
+        #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+        for hk in hks:
+            exp=[]
+            for mh in hk.lml:
+                exp.append({"Học kỳ|Môn học": mh['ten'], 
+                            "kttx1": mh['kttx1'],
+                            "kttx2": mh['kttx2'],
+                            "kttx3": mh['kttx3'],
+                            "ktdk1": mh['ktdk1'],
+                            "ktdk2": mh['ktdk2'],
+                            "ktdk3": mh['ktdk3'],
+                            "TBM KT": mh['tbmkt'], 
+                            "ktkt1": mh['ktkt1'],
+                            "ktkt2": mh['ktkt2'],
+                            "TBM 10": mh['tbm']
+                        })
+            # Convert the QuerySet to a DataFrame
+            dtf = pd.DataFrame(list(exp))
 
-#         template = load_workbook(temp_file_path)
 
-#         #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
-#         for hk in hks:
-#             exp=[]
-#             for mh in hk.lml:
-#                 exp.append({"Học kỳ|Môn học": mh['ten'], 
-#                             "kttx1": mh['kttx1'],
-#                             "kttx2": mh['kttx2'],
-#                             "kttx3": mh['kttx3'],
-#                             "ktdk1": mh['ktdk1'],
-#                             "ktdk2": mh['ktdk2'],
-#                             "ktdk3": mh['ktdk3'],
-#                             "TBM KT": mh['tbmkt'], 
-#                             "ktkt1": mh['ktkt1'],
-#                             "ktkt2": mh['ktkt2'],
-#                             "TBM 10": mh['tbm']
-#                         })
-#             # Convert the QuerySet to a DataFrame
-#             dtf = pd.DataFrame(list(exp))
+            # use `with` to avoid other exceptions
+            #xlsxwriter, openpyxl
+            with pd.ExcelWriter(out_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay",) as writer:
+                #writer.book = template
 
-#             writer = pd.ExcelWriter(temp_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay")
+                dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=4+(hk.ma-1)*25, startcol=0)
 
-#             #writer.book = template
-#             #writer.sheets = {ws.title: ws for ws in template.worksheets}
-# #            df.to_excel(writer, startrow=writer.sheets['Sheet1'].max_row, index=False, header=False)
-#             dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=4, startcol=0)
-#         #writer.save()
+        
+        #writer.save()
+        #writer.close()
+# Get the xlsxwriter workbook and worksheet objects.
+        # workbook = writer.book
+        # worksheet = writer.sheets["hks"]
 
-#             # use `with` to avoid other exceptions
-#         #writer.close()                
+        # cell_format = workbook.add_format()
+        # cell_format.set_text_wrap()
+        # worksheet.set_column(0, 0, None, cell_format)
+        # writer.close()
+        #worksheet.set_column(0, 0, 20)   # Column  A   width set to 20.
+        # import xlsxwriter
 
-#         # # Define the Excel file response
-#         # response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#         # response['Content-Disposition'] = 'attachment; filename=kqht-hv.xlsx'
+        # workbook = xlsxwriter.Workbook(out_file_path)
+        # worksheet = workbook.worksheets('hks')
 
-#         # # Use Pandas to write the DataFrame to an Excel file
-        # df.to_excel(response, index=False, engine='openpyxl')
+        # currency_format = workbook.add_format({'num_format': '$#,##0.00'})
+        # worksheet.write('A1', 1234.56, currency_format)
 
+        # workbook.close()
+        #if os.path.exists(out_file_path):
+        # with open(out_file_path, 'rb') as fh:
+        #     response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+        #     response['Content-Disposition'] = 'inline; filename=' + os.path.basename(out_file_path)
+        
+        # os.remove(out_file_path)
+
+        # return response
+        #raise Http404
+        o = win32com.client.Dispatch("Excel.Application")
+        o.Visible = False
+        wb = o.Workbooks.Open(out_file_path)
+        ws_index_list = [1] #say you want to print these sheets
+        print_area = 'A1:K98'
+        try:
+            for index in ws_index_list:
+                #off-by-one so the user can start numbering the worksheets at 1
+                ws = wb.Worksheets[index - 1]
+                ws.PageSetup.Zoom = False
+                ws.PageSetup.FitToPagesTall = 4
+                ws.PageSetup.FitToPagesWide = 1
+                ws.PageSetup.PrintArea = print_area
+
+            wb.WorkSheets(ws_index_list).Select()
+            wb.ActiveSheet.ExportAsFixedFormat(0, pdf_file_path)
+        except Exception as e:
+            print('failed.'+ str(e))
+            messages.error(request, 'Export to pddf file failed.'+ str(e))        
+            os.remove(out_file_path)
+            wb.Close(SaveChanges=True) 
+            o.Quit()
+        else:
+            messages.success(request, 'Export to pddf file Succeeded.')
+            wb.Close(SaveChanges=True) 
+            o.Quit()
+            response = FileResponse(open(pdf_file_path, 'rb'), content_type='application/pdf')
+            os.remove(out_file_path)
+            #os.remove(pdf_file_path)
+            return response
+        
+            print('Succeeded.')
         # return response
     
 
