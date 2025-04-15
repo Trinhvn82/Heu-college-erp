@@ -1442,17 +1442,20 @@ def lichhoc_list(request):
 #    else:
 #        lh = lh.filter(thoigian__gte=datetime.now()).order_by('thoigian') if lh else lh
 
-    #ngay =  datetime.date(1900, 5, 24)
-#    ngay = datetime.convert('Dec 1 1900')
-    ngay = datetime.strptime('Dec 1 1945', '%b %d %Y')
+    ngay_first=lh[0].thoigian
+    count=0
     for l in lh:
-        tgian = l.thoigian
-
-        if tgian.date() == ngay.date():
-            l.ngay=None
-        else:
-            ngay = l.thoigian
+    
+        if l.thoigian.date() == ngay_first.date() and count == 0:
             l.ngay=l.thoigian
+            count=count+1
+        elif l.thoigian.date() == ngay_first.date() and count > 0:
+            l.ngay=None
+            count=count+1
+        elif l.thoigian.date() != ngay_first.date():    
+            l.ngay=l.thoigian
+            ngay_first = l.thoigian
+            count=count+1
             
 
     paginator = Paginator(lh, 30)
