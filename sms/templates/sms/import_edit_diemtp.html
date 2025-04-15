@@ -36,7 +36,7 @@
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
                     <h2 class="h5 mb-4">Import-cập nhật</h2>
                     <h6>{{lmh.monhoc.ten}} - {{ld.ten}}</h6>
-                    <form action="{% url 'import_edit_diemtp' lmh.id ld.id log_id%}" method="post" enctype="multipart/form-data">
+                    <form action="" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
