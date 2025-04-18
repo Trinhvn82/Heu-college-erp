@@ -2641,15 +2641,25 @@ def details_sv(request, sv_id, opt = None):
 
 
         temp_path = "template_kqht.xlsx"
-        out_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + str(sv_id) + "_kqht.xlsx"
+        out_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + sv.msv + "_kqht.xlsx"
         pdf_path = "sv_kqht.pdf"
         temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
         out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
         pdf_file_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
         shutil.copy(temp_file_path, out_file_path)
         #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+        exptt=[]
+        exptt.append({"Học viên": sv.hoten, "Mã": sv.msv, "Lớp": sv.lop.ten})
+        # use `with` to avoid other exceptions
+        dtftt = pd.DataFrame(list(exptt))
+        with pd.ExcelWriter(out_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay",) as writer:
+            #writer.book = template
+
+            dtftt.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=1, startcol=0)
+
         for hk in hks:
             exp=[]
+            expxl=[]
             for mh in hk.lml:
                 exp.append({"Học kỳ|Môn học": mh['ten'], 
                             "kttx1": mh['kttx1'],
@@ -2664,14 +2674,16 @@ def details_sv(request, sv_id, opt = None):
                             "TBM 10": mh['tbm']
                         })
             # Convert the QuerySet to a DataFrame
+            expxl.append({"XL": hk.xl})
             dtf = pd.DataFrame(list(exp))
-
+            dtfxl = pd.DataFrame(list(expxl))
 
             # use `with` to avoid other exceptions
             with pd.ExcelWriter(out_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay",) as writer:
                 #writer.book = template
 
-                dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=4+(hk.ma-1)*25, startcol=0)
+                dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=9+(hk.ma-1)*27, startcol=0)
+                dtfxl.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=24+(hk.ma-1)*27, startcol=1)
 
         #if os.path.exists(out_file_path):
         with open(out_file_path, 'rb') as fh:
