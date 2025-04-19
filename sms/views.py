@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.http import FileResponse
 from django.core.exceptions import ValidationError
+from notifications.signals import notify
 
 
 from django.contrib.auth import get_user_model
@@ -587,6 +588,10 @@ def create_diemtp(request, lop_id, lmh_id, dtp_id):
                 mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
                 mark.diem = diem
                 mark.save()
+                #send notification to Hv
+                if stud.user:
+                    notify.send(sender=stud.user, recipient= stud.user, verb='Thông tin điểm được cập nhật trên hệ thống', level='info')
+
             except Exception as e:
                 messages.error(request, 'Nhập điểm cho mã: ' + stud.msv  + ' có lỗi:' + str(e))
 
@@ -637,6 +642,10 @@ def edit_diemtp(request, lop_id, lmh_id, dtp_id, log_id):
                 mark.diem = diem
                 mark.status = 1
                 mark.save()
+                #send notification to Hv
+                if stud.user:
+                    notify.send(sender=stud.user, recipient= stud.user, verb='Thông tin điểm được cập nhật trên hệ thống', level='info')
+
         messages.success(request, "Cap nhat diem thanh cong!")
         return redirect("diemtp-lmh-lst", lmh_id)
 
@@ -2328,6 +2337,10 @@ def edit_ttgv(request, lop_id, lopmh_id, gv_id):
 
         if edit_forms.is_valid():
             edit_forms.save()
+            #send notification to gv
+            if gv.user:
+                notify.send(sender=gv.user, recipient= gv.user, verb='Thông tin thanh toán được cập nhật trên hệ thống', level='info')
+
             messages.success(request, "Cập nhật thông tin thanh toán thành công!")
             return redirect("gv-lmh-lst", lopmh_id)
 

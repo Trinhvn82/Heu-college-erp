@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     'guardian',
     'notifications',
     'django_q',
+    "debug_toolbar",
+    'django.contrib.humanize'
 #    'import_export'
 #    'rest_framework'
 
@@ -83,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",  
 ]
 
 ROOT_URLCONF = 'CollegeERP.urls'

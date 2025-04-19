@@ -45,6 +45,20 @@
                             {% for field in forms %}
                             {% if field.name == 'sv' %}
                                 <input hidden type="number" name="sv" class="form-control" value="{{sv.id}}" id="id_sogio">
+                            {% elif field.name == 'sotien1' %}
+                                <div class="col-md-6 mb-3">
+                                    <div>
+                                        <label for="id_sotien1">Số tiền giải ngân dự kiến:</label>
+                                        <input type="text" name="sotien1" value="{{ field.value}}" class="form-control" id="id_sotien1" maxlength="11">
+                                    </div>
+                                </div>
+                            {% elif field.name == 'sotien2' %}
+                                <div class="col-md-6 mb-3">
+                                    <div>
+                                        <label for="id_sotien1">Số tiền thực nhận từ học viên:</label>
+                                        <input type="text" name="sotien2" value="{{ field.value}}" class="form-control" id="id_sotien2" maxlength="11">
+                                    </div>
+                                </div>
                             {% else %}
                                 <div class="col-md-6 mb-3">
                                     <div>{{ field.label_tag }}{{ field }}</div>
@@ -61,5 +75,30 @@
             </div>
         </div>
     </main>
-
+    <script>  
+        //var inputField = document.querySelector("input");
+        var inputField1 = document.querySelector('#id_sotien1');    
+        inputField1.oninput = function () {
+          var removeChar = this.value.replace(/[^0-9\.]/g, ""); // This is to remove alphabets and special characters.
+          // console.log(removeChar);
+          var removeDot = removeChar.replace(/\./g, ""); // This is to remove "DOT"
+          this.value = removeDot;
+        
+          var formatedNumber = this.value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          // console.log(formatedNumber);
+          this.value = formatedNumber;
+        };
+        var inputField2 = document.querySelector('#id_sotien2');    
+        inputField2.oninput = function () {
+          var removeChar = this.value.replace(/[^0-9\.]/g, ""); // This is to remove alphabets and special characters.
+          // console.log(removeChar);
+          var removeDot = removeChar.replace(/\./g, ""); // This is to remove "DOT"
+          this.value = removeDot;
+        
+          var formatedNumber = this.value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+          // console.log(formatedNumber);
+          this.value = formatedNumber;
+        };
+    </script>    
+    
 {% endblock content %}

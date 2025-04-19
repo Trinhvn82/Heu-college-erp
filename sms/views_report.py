@@ -17,6 +17,7 @@ import locale
 from django.conf import settings
 from django.http import HttpResponse, Http404
 from guardian.decorators import permission_required_or_403
+from notifications.signals import notify
 
 
 
@@ -570,8 +571,11 @@ def import_hp81(request, lop_id):
                 
                 hp81.status_id = status
                 hp81.thoigian = v5
-                hp81.sotien1 = v6
-                hp81.sotien2 = v7
+                hp81.sotien1 = "{:,}".format(v6) if v6 else ""
+                hp81.sotien2 = "{:,}".format(v7) if v7 else ""
+                chu = "{:,}".format(v6)
+                print(chu)
+                print(type(chu))
                 try:
                     hp81.save()
                 except Exception as e:
@@ -628,6 +632,10 @@ def import_diemtp(request, lop_id, lmh_id, ld_id):
                 mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, log=log)[0]
                 mark.diem = v3
                 mark.save()
+    
+                #send notification to Hv
+                if sv.user:
+                    notify.send(sender=sv.user, recipient= sv.user, verb='Thông tin điểm được cập nhật trên hệ thống', level='info')
             except Exception as e:
                 messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
             #mark.save()
@@ -690,6 +698,9 @@ def import_edit_diemtp(request, lop_id, lmh_id, ld_id, log_id):
 
                 mark.diem = v3
                 mark.save()
+                #send notification to Hv
+                if sv.user:
+                    notify.send(sender=sv.user, recipient= sv.user, verb='Thông tin điểm được cập nhật trên hệ thống', level='info')
                 
             except Exception as e:
                 messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))

@@ -619,8 +619,8 @@ class Hp81(models.Model):
     #status = models.IntegerField(choices=st_choice1, default= 1)
     status = models.ForeignKey(HocphiStatus, on_delete=models.RESTRICT)
     thoigian = models.DateField(default= None, blank= True, null=True)
-    sotien1 = models.IntegerField(default= 0, blank= True, null=True)
-    sotien2 = models.IntegerField(default= 0, blank= True, null=True)
+    sotien1 = models.TextField(default= "", max_length=11,blank= True, null=True)
+    sotien2 = models.TextField(default= "", max_length=11,blank= True, null=True)
     hk = models.ForeignKey(Hocky, on_delete=models.RESTRICT)
     sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
@@ -743,8 +743,8 @@ class LopHk(models.Model):
 
 class Ttgv(models.Model):
     sotiet = models.IntegerField(default= 0, blank= True, null=True)
-    sotien1 = models.IntegerField(default= 0, blank= True, null=True)
-    sotien2 = models.IntegerField(default= 0, blank= True, null=True)
+    sotien1 = models.TextField(default= "", max_length=11,blank= True, null=True)
+    sotien2 = models.TextField(default= "", max_length=11,blank= True, null=True)
     ghichu = models.TextField(default= "", max_length=500,blank= True, null=True)
     lopmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT)
     gv = models.ForeignKey(Hsgv, on_delete=models.RESTRICT)
