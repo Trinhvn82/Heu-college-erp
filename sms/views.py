@@ -3145,7 +3145,13 @@ def upload_file(request):
             return redirect('upload_file')
     else:
         form = CreateUploadFile()
-    files = UploadedFile.objects.all()
+
+    list_of_ids = []
+    for f in UploadedFile.objects.all():
+        if not (f.lopmh_id or f.user_id):
+            list_of_ids.append(f.id)
+
+    files = UploadedFile.objects.filter(id__in=list_of_ids).order_by('-id')
     context = {
         'form': form,
         'files': files
@@ -3460,6 +3466,19 @@ def view_file(request, file_id):
     #response = HttpResponse(uploaded_file.file, content_type='application/force-download')
     #response['Content-Disposition'] = f'attachment; filename="{uploaded_file.file.name}"'
     #return response
+
+@login_required
+@permission_required('sms.delete_uploadedfile',raise_exception=True)
+def delete_file(request, file_id):
+
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+
+    uploaded_file.delete()
+    file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        messages.success(request, "File được xóa thành công!")
+    return redirect('upload_file')
 
 @login_required
 #@permission_required('sms.delete_uploadedfile',raise_exception=True)

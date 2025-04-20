@@ -138,6 +138,7 @@ urlpatterns = [
 
     path('download-temp/<int:file_id>/', views.download_file, name='download_file'),
     path('view-file/<int:file_id>/', views.view_file, name='view_file'),
+    path('delete-file/<int:file_id>/', views.delete_file, name='delete_file'),
     path('delete-file-gv/<int:gv_id>/<int:file_id>/', views.delete_file_gv, name='delete_file_gv'),
     path('delete-file-hv/<int:hv_id>/<int:file_id>/', views.delete_file_hv, name='delete_file_hv'),
     path('delete-file-lmh/<int:lmh_id>/<int:file_id>/', views.delete_file_lmh, name='delete_file_lmh'),
