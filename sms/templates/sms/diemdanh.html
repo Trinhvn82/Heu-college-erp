@@ -35,16 +35,16 @@
                 </div>
                     <div class="card-body">
                         <h6>Môn học: {{mh.ten}}</h6>
-                        <h6>Lịch học: {{ttlh.thoigian}}</h6>
+                        <h6>Lịch học: {{ttlh.thoigian | date:"d/m/Y h:i"}}</h6>
                         <div class="table-responsive">
                         <table class="table table-centered mb-0 rounded">
                             <thead class="thead-light">
                                 <tr>
                                     <th>STT</th>
                                     <th>Mã</th>
-                                    <th>Ten học vien</th>
+                                    <th>Tên học viên</th>
                                     <th>Sdt</th>
-                                    <th>Status</th>
+                                    <th>Trạng thái</th>
                                 </tr>
                 </thead>
                     <tbody>
@@ -60,19 +60,19 @@
 
                                         {% if ct.status == 1 %}
                                         <label class="btn btn-success">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Present
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Có mặt
                                         </label>
     
                                         <label class="btn btn-danger">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Absent
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Vắng mặt
                                         </label>
                                         {% else %}
                                         <label class="btn btn-outline-success">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Present
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Có mặt
                                         </label>
     
                                         <label class="btn btn-outline-danger active">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked> Absent
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked>Vắng mặt
                                         </label>
                                         {% endif %}
                                     </div>

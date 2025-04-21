@@ -47,6 +47,7 @@ urlpatterns = [
     path('report_hs81/<int:opt>/', views_report.report_hs81, name='report_hs81'),
     path('report_ttgv/<int:opt>/', views_report.report_ttgv, name='report_ttgv'),
     path('report_kqht/<int:opt>/', views_report.report_kqht, name='report_kqht'),
+    path('report_dd/<int:opt>/', views_report.report_dd, name='report_dd'),
     path('thongbao/', views_report.tb_list, name='tb_list'),
 
     path('export_hs81/', views_report.export_hs81, name='export_hs81'),

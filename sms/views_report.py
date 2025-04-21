@@ -229,6 +229,77 @@ def report_ttgv(request, opt=None):
 
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
+def report_dd(request, opt=None):
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
+#    lh = Lop.objects.all()
+    #query_tt = None
+    lop= None
+    lmhs = None
+    if request.method == "POST":
+        lop_id = request.POST.get('lop', None)
+        #svs = Hssv.objects.filter(lop_id=lop_id)
+        lop = Lop.objects.get(id=lop_id)
+
+        #lmh = LopMonhoc.objects.get(id = lmh_id)
+        lmhs = LopMonhoc.objects.filter(lop = lop).select_related("monhoc", "lop")
+
+        
+        for lmh in lmhs:
+            lhs = Lichhoc.objects.filter(lmh = lmh)
+            for lich in lhs:
+
+                dds = Diemdanh.objects.filter(lichhoc = lich, status = 0)
+                lich.vangmat = dds
+            lmh.lhs=lhs
+
+
+        messages.success(request, "Tìm kiếm thành công!")
+
+
+
+        #export to excel
+        if opt == 2:
+            #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+            exp=[]
+            exp.append({"Lớp": lop.ten})
+            for lmh in lmhs:
+                exp.append({"Môn học": lmh.monhoc.ten})
+                for lich in lmh.lhs:
+                    if lich.vangmat:
+                        exp.append({"Lịch học": lich.thoigian.strftime("%d/%m/%Y %H:%M"),
+                                    })
+                        for v in lich.vangmat:
+                            exp.append({"Học viên vắng mặt": v.sv.msv + "-" + v.sv.hoten,
+                                        })
+
+            # Convert the QuerySet to a DataFrame
+            df = pd.DataFrame(list(exp))
+
+            # Define the Excel file response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=report-dd.xlsx'
+
+            # Use Pandas to write the DataFrame to an Excel file
+            df.to_excel(response, index=False, engine='openpyxl')
+
+            return response
+
+    context = {
+        "lmhs": lmhs,
+        "lh": lh,
+        "lop": lop
+    }
+    return render(request, "sms/report_dd.html", context)
+
+@login_required
+@permission_required('dashboard.view_report',raise_exception=True)
 def report_kqht(request, opt = None):
     if request.user.is_superuser:
         lh = Lop.objects.all()

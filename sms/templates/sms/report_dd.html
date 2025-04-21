@@ -1,0 +1,138 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script>
+    $(document).ready(function() {
+        $('#id_monhoc').select2();
+    });    
+</script>
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Điểm danh</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Report filter</h2>
+                    <form action="{% url 'report_dd' 0%}" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div>
+                                    <label for="id_sogio">Lớp:</label>
+                                    <select name="lop" class="form-control" required id="id_monhoc">
+                                        <option value="" selected>----</option>
+                                        {% for ct in lh %}
+                                        <option value="{{ct.id}}" {% if ct.id == lop.id %} selected {% endif %} >{{ct.ma}}-{{ct.ten}}</option>
+                                        {% endfor%}
+                                    </select>
+                    
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                      </svg>
+                                    Xem báo cáo
+                                </button>
+                            </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Môn học</th>
+                                <th>Lịch học</th>
+                                <th>Học viên vắng mặt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                {% for mh in lmhs %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ mh.monhoc.ten }}</td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                    {% for l in mh.lhs %}
+                                    {% if l.vangmat%}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>{{ l.thoigian | date:"d/m/Y h:i"}}</td>
+                                        <td></td>
+                                    </tr>
+                                        {% for v in l.vangmat %}
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td>{{ v.sv.msv}}-{{ v.sv.hoten}}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                    {% endfor %}
+                                {% empty %}
+                                <p>Please enter report filter</p>
+                                {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if lop %}
+            <div class="card-body">
+                <form action="{% url 'report_dd' 2%}" method="post">
+                    {% csrf_token %}
+                        <input hidden type="text" name="lop" class="form-control" value="{{lop.id}}" maxlength="100">
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                              </svg><span></span>
+
+                            Download
+                        </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}
