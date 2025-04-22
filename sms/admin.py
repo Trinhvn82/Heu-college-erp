@@ -85,7 +85,7 @@ class GvLmhAdmin(NonDeleteModelAdmin):
 
 class LopHKAdmin(NonDeleteModelAdmin):
     list_display = ["lop","hk", "start_hk", "end_hk"]
-    search_fields = ["lop"]
+    search_fields = ["lop__ten"]
 
 #class CtdtAdmin(admin.ModelAdmin):
 class CtdtAdmin(NonDeleteModelAdmin):
