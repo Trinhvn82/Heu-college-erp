@@ -59,8 +59,21 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
+
+    # external apps
+    "django_extensions",
+    "widget_tweaks",
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'django_filters',
+    'django_htmx',
+    'template_partials',
+    'import_export',
+
     'dashboard',
     'sms',
+    'tracker',
     'htmx_patterns',
     'shop',
     'simple_history',
@@ -85,7 +98,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    "debug_toolbar.middleware.DebugToolbarMiddleware",  
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",  
 ]
 
 ROOT_URLCONF = 'CollegeERP.urls'

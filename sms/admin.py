@@ -119,15 +119,15 @@ class LopAdmin(NonDeleteAndAddModelAdmin):
 
 class HssvAdmin(NonDeleteAndAddModelAdmin):
     list_display = ["msv", "hoten"]
-    search_fields = ["hoten"]
+    search_fields = ["msv", "hoten"]
 
 class HsgvAdmin(NonDeleteAndAddModelAdmin):
     list_display = ["ma", "hoten"]
-    search_fields = ["hoten"]
+    search_fields = ["ma", "hoten"]
 
 class HsnsAdmin(NonDeleteAndAddModelAdmin):
     list_display = ["ma", "hoten"]
-    search_fields = ["hoten"]
+    search_fields = ["ma","hoten"]
 
 class DanhmucAdmin(NonDeleteModelAdmin):
     list_display = ["ma", "ten"]
@@ -139,7 +139,7 @@ class LoaiDiemAdmin(NonDeleteModelAdmin):
 
 class DiemTPAdmin(NonDeleteModelAdmin):
     list_display = ["sv","monhoc", "tp", "diem", "log"]
-    search_fields = ["monhoc__ten"]
+    search_fields = ["sv__hoten", "monhoc__ten"]
     list_filter = ["tp__ten", "log__id"]
 
 class LopMonhocAdmin(NonDeleteAndAddModelAdmin):

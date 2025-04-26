@@ -1,0 +1,133 @@
+{% extends 'tracker/base.html' %}
+
+{% block head_title %}
+    CTĐT Môn học
+{% endblock %}
+
+
+{% block content %}
+
+<div class="relative overflow-x-auto text-white" id="transaction-block">
+
+    <div class="breadcrumbs text-lg">
+        <ul>
+          <li>
+            <a>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                class="h-4 w-4 stroke-current">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+              </svg>
+              Home
+            </a>
+          </li>
+          <li>
+            <a>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                class="h-4 w-4 stroke-current">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+              </svg>
+              Documents
+            </a>
+          </li>
+          <li>
+            <span class="inline-flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                class="h-4 w-4 stroke-current">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Add Document
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      {% load widget_tweaks %}
+      {% load partials %}
+      {% load humanize %}
+      
+      <!-- Define Grid container div -->
+      <div class="flex flex-col-reverse md:grid md:grid-cols-4 md:gap-4"
+          id="transaction-container">
+      
+          <!-- 3/4 cols for the table of transactions -->
+          <div class="col-span-3">
+            <form action="{% url 'ctdt_monhoc' ctdt_id %}" method="post">
+                {% csrf_token %}
+      
+                <button class="btn btn-success" type="submit">
+                      Submit
+                </button>        
+
+      
+              <table class="table">
+                  <thead class="text-xs text-white uppercase">
+                      <tr>
+                          <th class="px-6 py-3">STT</th>
+                          <th class="px-6 py-3">Tên</th>
+                          <th class="px-6 py-3">Số tín chỉ</th>
+                          <th class="px-6 py-3">Tình trạng</th>
+                          <th></th>
+                      </tr>
+                  </thead>
+      
+                  <tbody>
+                    {% for ct in cms %}
+      
+                                <tr>
+                                  <td>{{ forloop.counter }}</td>
+                                  <td>{{ ct.monhoc.chuongtrinh }}-{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                                  <td>{{ ct.monhoc.sotinchi}}</td>
+                                  <td class="flex items-center">
+                                    <input 
+                                    type="checkbox" name="C{{ ct.id }}" 
+                                    {% if ct.status == 1 %} checked="checked" {% endif %}
+                                    class="toggle toggle-primary" />
+                                </td>
+                              </tr>
+                    {% endfor %}
+                  </tbody>
+              </table>
+            </form>
+          </div>
+      
+          <!-- 1/4 cols for the filter form -->
+          <div class="col-span-1">
+              <form>
+                  <div class="mb-2 form-control">
+                    <label class="label text-white" for="id_start_date">Filter:</label>
+                    <input type="text" name="search" class="input bg-gray-50 text-gray-900" id="id_start_date">
+                  </div>      
+                  <button class="btn btn-success" type="submit">
+                      Filter
+                  </button>        
+              </form>
+          </div>
+      </div>
+      
+      <span id="spinner" class="loading loading-spinner loading-lg htmx-indicator">
+      
+      </span>
+</div>
+
+{% endblock %}

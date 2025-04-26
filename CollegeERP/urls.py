@@ -10,6 +10,7 @@ urlpatterns = [
     path('info/', include('info.urls')),
     path('shop/', include('shop.urls')),
     path('sms/', include('sms.urls')),
+    path('tracker/', include('tracker.urls')),
     path('dashboard/', include('dashboard.urls')),
 
     path('notifications/', include(notifications.urls, namespace='notifications')),

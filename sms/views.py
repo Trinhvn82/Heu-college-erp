@@ -1534,14 +1534,18 @@ def ctdt_monhoc(request, ctdt_id):
     mhs = Monhoc.objects.all()
     cms = CtdtMonhoc.objects.filter(ctdt_id = ctdt_id).order_by('monhoc_id')
     if request.method == "POST":
+        list_of_ids = []
+
         for mh in cms:
             id = "C"+str(mh.id)
-            status = request.POST[id]
+            status = request.POST.get(id, None)
+            
             print(id)
             print(status)
-            cm = CtdtMonhoc.objects.get(id = mh.id)
-            cm.status=status
-            cm.save() 
+            if status:
+                list_of_ids.append(mh.id)
+        cms.update(status = 0)
+        cms.filter(id__in = list_of_ids).update(status=1)
         #     id = "C"+str(stud.id)
         #     status = request.POST[id]
         #     dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
@@ -1550,7 +1554,7 @@ def ctdt_monhoc(request, ctdt_id):
         # ttlh.status=1
         # ttlh.save()
         messages.success(request, "Cập nhật môn học thành công!")
-        return redirect("ctdt_list")
+        #return redirect("ctdt_list")
 
 
     for mh in mhs:
@@ -1558,12 +1562,12 @@ def ctdt_monhoc(request, ctdt_id):
             dd = CtdtMonhoc(ctdt_id = ctdt_id, monhoc_id = mh.id)
             dd.save()
 
-    cms = CtdtMonhoc.objects.filter(ctdt_id = ctdt_id).select_related("monhoc").order_by('monhoc_id')
+    cms = CtdtMonhoc.objects.filter(ctdt_id = ctdt_id).select_related("monhoc").order_by('-status','monhoc_id')
     context = {
         "ctdt_id": ctdt_id,
         "cms": cms
     }
-    return render(request, "sms/monhoc-ctdt.html", context)
+    return render(request, "sms/monhoc-ctdt-new.html", context)
 
 @login_required
 def ns_lop(request, ns_id):
