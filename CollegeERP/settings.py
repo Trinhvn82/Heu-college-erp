@@ -36,7 +36,7 @@ ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'info.User'
 
-SESSION_COOKIE_AGE =  6000 # 5 minutes
+SESSION_COOKIE_AGE =  600 # 5 minutes
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
 
 MEDIA_URL = '/media/'

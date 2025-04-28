@@ -1,5 +1,5 @@
 from django.urls import path, include
-from . import views, views_report
+from . import views, views_report, views_htmx
 from django.contrib import admin
 from info.views import add_hvuser, add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv,reset_pwd_hv
 from htmx_patterns.views.restarts import view_restart, view_search
@@ -158,6 +158,12 @@ urlpatterns = [
     path('changepwd/', user_changepwd, name='changepwd'),
  
     path('create_tbs/', create_tbs, name='create_tbs'),
+
+    #HTMX
+    path("lichhoc-new/", views_htmx.lichhoc_list, name='lichhoc_list-new'),
+    path("search-lh/", views_htmx.search_lh, name='search-lh'),
+    path('get-lichhoc/', views_htmx.get_lichhoc, name='get-lichhoc'),
+
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

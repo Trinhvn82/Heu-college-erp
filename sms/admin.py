@@ -1,5 +1,6 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
+from import_export.admin import ImportExportModelAdmin
 
 from sms.models import Lop
 from .models import Lop, Ctdt, Hssv, Hsgv, Hsns, SvStatus, LopMonhoc, Hp81
@@ -72,7 +73,7 @@ class NonDeleteAndAddModelAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None): # note the obj=None
         return True
 
-class MonhocAdmin(NonDeleteModelAdmin):
+class MonhocAdmin(NonDeleteModelAdmin, ImportExportModelAdmin):
     list_display = ["ma", "ten", "chuongtrinh", "sotinchi"]
     search_fields = ["ma", "ten", "chuongtrinh"]
     inlines = [CtdtMonhocInline]

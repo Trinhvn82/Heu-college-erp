@@ -427,7 +427,7 @@ def report_kqht(request, opt = None):
                     tbmhk4 = 0
 
                 tctl = tctl + tchk
-                diem4 = diem4 +tbmhk4
+                diem4 = diem4 +tbmhk4*tchk
 
                 tbctl = round(diem4/tctl,1)
 

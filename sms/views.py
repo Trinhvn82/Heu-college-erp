@@ -2582,7 +2582,7 @@ def details_sv(request, sv_id, opt = None):
         elif hk.tbmhk  < 4:
             hk.tbmhk4 = 0
         tctl = tctl + tchk
-        diem4 = diem4 + hk.tbmhk4
+        diem4 = diem4 + hk.tbmhk4*tchk
         hk.tbctl = round(diem4/tctl,1)
 
         if hk.tbctl >=3.5 and hk.tbctl <=4:

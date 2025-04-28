@@ -45,7 +45,7 @@ def transactions_list(request):
 
     return render(request, 'tracker/transactions-list.html', context)
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def lichhoc_list(request):
     lh = Lichhoc.objects.all()
     paginator = Paginator(lh, 20)
@@ -61,7 +61,7 @@ def lichhoc_list(request):
 
     return render(request, 'tracker/lichhoc-list.html', context)
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def search_lh(request):
     query = request.GET.get('search','')
     query_fr = request.GET.get('start_date',None)
@@ -159,7 +159,7 @@ def get_transactions(request):
         context
     )
 
-@login_required
+@login_required(login_url='/accounts/login/')
 def get_lichhoc(request):
     query = request.GET.get('search','')
     #sad_monsters, happy_monsters = partition(lambda m: m.status, monsters)
