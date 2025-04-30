@@ -76,7 +76,7 @@
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ tb.timestamp | date:"d/m/y H:m" }}</td>
-                                        <td>{{ tb.verb }}</td>
+                                        <td class="text-wrap">{{ tb.verb }}</td>
                                         {% if tb.level == 'error' %}
                                         <td>
                                             <p class="text-danger">

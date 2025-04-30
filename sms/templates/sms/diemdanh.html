@@ -3,7 +3,27 @@
 
 {% block title %} Cập nhật môn học {% endblock %}
 
+
 {% block content %}
+<style>
+    .form-switch .form-check-input {
+        height: 18px;
+        width: 36px;
+    }
+    .form-switch .form-check-input:focus {
+        border-color: rgba(0, 0, 0, 0.25);
+        outline: 0;
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(0,0,0,0.25)'/></svg>");
+    }
+    .form-switch .form-check-input:checked {
+        background-color: #30D158;
+        border-color: #30D158;
+        border: none;
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(255,255,255,1.0)'/></svg>");
+    }
+
+</style>
 
     <main class="content">
 
@@ -45,6 +65,7 @@
                                     <th>Tên học viên</th>
                                     <th>Sdt</th>
                                     <th>Trạng thái</th>
+                                    <th>Trạng thái</th>
                                 </tr>
                 </thead>
                     <tbody>
@@ -54,39 +75,10 @@
                             <td>{{ ct.sv.msv }}</td>
                             <td>{{ ct.sv.hoten }}</td>
                             <td>{{ ct.sv.sdths }}</td>
-                            <td>
-                                {% if perms.sms.add_diemdanh or perms.sms.change_diemdanh %}
-                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
-
-                                        {% if ct.status == 1 %}
-                                        <label class="btn btn-success">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Có mặt
-                                        </label>
-    
-                                        <label class="btn btn-danger">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Vắng mặt
-                                        </label>
-                                        {% else %}
-                                        <label class="btn btn-outline-success">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Có mặt
-                                        </label>
-    
-                                        <label class="btn btn-outline-danger active">
-                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked>Vắng mặt
-                                        </label>
-                                        {% endif %}
-                                    </div>
-                                    {% else %}
-                                    {% if ct.status == 1 %}
-                                    <label class="btn btn-outline-success">
-                                        Có mặt
-                                    </label>
-                                    {% else %}
-                                    <label class="btn btn-outline-danger active">
-                                        Vắng mặt
-                                    </label>
-                                    {% endif %}
-                                {% endif %}
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center form-check form-switch">
+                                    <input class="form-check-input" name="C{{ ct.sv.id }}" type="checkbox" {% if ct.status == 1 %} checked="checked" {% endif %}>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

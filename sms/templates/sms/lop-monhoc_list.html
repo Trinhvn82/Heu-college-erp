@@ -47,8 +47,8 @@
                             {% for ct in lm %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
-                                <td>{{ ct.ngaystart }}</td>
+                                <td class="text-wrap">{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                                <td>{{ ct.ngaystart  | date:"d/m/Y" }}</td>
                                 <td>
                                 {% if ct.status == 'Đã hoàn thành'%}
                                     <span class="font-weight-bold text-success">{{ ct.status }}</span>

@@ -57,29 +57,6 @@ def index(request):
     elif request.user.is_hv:
         return redirect("lichhoc_list")
     elif request.user.is_gv:
-        # assign role to gv based on lop mon hoc
-        gv = Hsgv.objects.get(user = request.user)
-        gmhs = GvLmh.objects.filter(gv = gv, status =1).select_related('lopmh')
-        lmhs = LopMonhoc.objects.all()
-
-        for lmh in lmhs:
-            if gv.user.has_perm('assign_lopmonhoc', lmh):
-                remove_perm('assign_lopmonhoc', gv.user, lmh)
-
-        for lmh  in gmhs:
-            assign_perm('assign_lopmonhoc', gv.user, lmh.lopmh)
-
-        lop = Lop.objects.all()
-        #Add Gv to assign_lop permission
-        for l in lop:
-            if gv.user.has_perm('assign_lop', l):
-                remove_perm('assign_lop', gv.user, l)
-
-        for l in lop:
-            lmh = LopMonhoc.objects.filter(lop_id = l.id)
-            if gmhs.filter(lopmh__in=lmh).exists():
-                assign_perm('assign_lop', gv.user, l)
-
         return redirect("lichhoc_list")
     elif request.user.is_internalstaff:
         return redirect("lop_list")
@@ -1505,9 +1482,9 @@ def diemdanh_lop(request, lh_id):
     if request.method == "POST":
         for stud in svlop:
             id = "C"+str(stud.id)
-            status = request.POST[id]
+            status = request.POST.get(id, None)
             dd = Diemdanh.objects.get(lichhoc_id = lh_id, sv_id=stud.id)
-            dd.status=status
+            dd.status= 1 if status else 0
             dd.save()
         #ttlh.status=1
         #ttlh.save()
@@ -1567,7 +1544,7 @@ def ctdt_monhoc(request, ctdt_id):
         "ctdt_id": ctdt_id,
         "cms": cms
     }
-    return render(request, "sms/monhoc-ctdt-new.html", context)
+    return render(request, "sms/monhoc-ctdt-htmx.html", context)
 
 @login_required
 def ns_lop(request, ns_id):
@@ -1578,17 +1555,19 @@ def ns_lop(request, ns_id):
     if request.method == "POST":
         for l in ls:
             id = "C"+str(l.id)
-            status = request.POST[id]
+            status = request.POST.get(id, None)
             nl = NsLop.objects.get(ns_id = ns_id, lop_id = l.id)
-            nl.status=status
+            print(status)
+            nl.status = 1 if status else 0
             nl.save()
             #Add Nhân sự to assign_lop permission
-            if status == "1":
-                if not ns.user.has_perm('assign_lop', l):
-                    assign_perm('assign_lop', ns.user, l)
-            else:
-                if ns.user.has_perm('assign_lop', l):
-                    remove_perm('assign_lop', ns.user, l)
+            if ns.user:
+                if status:
+                    if not ns.user.has_perm('assign_lop', l):
+                        assign_perm('assign_lop', ns.user, l)
+                else:
+                    if ns.user.has_perm('assign_lop', l):
+                        remove_perm('assign_lop', ns.user, l)
 
         messages.success(request, "Cập nhật lớp thành công!")
         return redirect("ns_list")
@@ -1848,6 +1827,35 @@ def hv_hp81_new_list(request, lop_id):
 
 @login_required
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def hv_hp81_hk_list(request, lop_id):
+    #svs = Hssv.objects.filter(lop_id = lop_id)
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    hks = Hocky.objects.all()
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+    lop = Lop.objects.get(id = lop_id)
+
+    if request.method == "POST":
+        hk_id = request.POST.get('hk', None)
+        hk = Hocky.objects.get(id = hk_id)
+    else:
+        hk = hks[0]
+
+    for sv in svs:
+        if Hp81.objects.filter(sv = sv, hk =  hk).exists():
+            sv.hp81 = Hp81.objects.filter(sv = sv, hk =  hk)[0]
+    
+    context = {
+        "svs": svs,
+        "hks": hks,
+        "hk": hk,
+        "lop": lop
+    }
+
+    return render(request, "sms/hv-hp81-hk_list.html", context)
+
+@login_required
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def hv_hs81_list(request, sv_id, lop_id):
         hs81s = Hs81.objects.filter(sv_id = sv_id).select_related("sv", "hk")
         sv = Hssv.objects.get(id = sv_id)
@@ -1878,6 +1886,35 @@ def hv_hs81_new_list(request, lop_id):
         "lop": lop
     }
     return render(request, "sms/hv-hs81-new_list.html", context)
+
+@login_required
+@permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
+def hv_hs81_hk_list(request, lop_id):
+    #hs81s = Hs81.objects..select_related("sv", "hk")
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    hks = Hocky.objects.all()
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+    #svs = Hssv.objects.filter(lop_id = lop_id)
+    lop = Lop.objects.get(id = lop_id)
+
+    if request.method == "POST":
+        hk_id = request.POST.get('hk', None)
+        hk = Hocky.objects.get(id = hk_id)
+    else:
+        hk = hks[0]
+
+    for sv in svs:
+        if Hs81.objects.filter(sv = sv, hk =  hk).exists():
+            sv.hs81 = Hs81.objects.filter(sv = sv, hk =  hk)[0]
+    
+    context = {
+        "svs": svs,
+        "hks": hks,
+        "hk": hk,
+        "lop": lop
+    }
+    return render(request, "sms/hv-hs81-hk_list.html", context)
 
 @login_required
 def single_hs81lop(request, lop_id):
@@ -1934,7 +1971,7 @@ def create_hp81(request, lop_id, sv_id):
             if forms.is_valid():
                 forms.save()
                 messages.success(request, "Bản ghi duoc tao thanh cong!")
-                return redirect("hv_hp81_new_list", sv.lop_id)
+                return redirect("hv_hp81_hk_list", sv.lop_id)
     else:
         forms = CreateHp81()
     context = {
@@ -1959,7 +1996,7 @@ def create_hs81(request, lop_id, sv_id):
             if forms.is_valid():
                 forms.save()
                 messages.success(request, "Bản ghi duoc tao thanh cong!")
-                return redirect("hv_hs81_new_list", sv.lop_id)
+                return redirect("hv_hs81_hk_list", sv.lop_id)
     else:
         forms = CreateHs81()
     context = {
@@ -2947,7 +2984,7 @@ def edit_hp81(request, lop_id, hp81_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Info Successfully!")
-            return redirect("hv_hp81_new_list", sv.lop_id)
+            return redirect("hv_hp81_hk_list", sv.lop_id)
 
     context = {
         "forms": lh_forms,
@@ -2973,7 +3010,7 @@ def edit_hs81(request, lop_id, hs81_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Info Successfully!")
-            return redirect("hv_hs81_new_list", sv.lop_id)
+            return redirect("hv_hs81_hk_list", sv.lop_id)
 
     context = {
         "forms": lh_forms,

@@ -1,10 +1,28 @@
 {% extends "layouts/base.html" %}
 {% load static %}
 
-{% block title %} Cập nhật lớp {% endblock %}
+{% block title %} Tạo Giáo viên {% endblock %}
 
 {% block content %}
+<style>
+    .form-switch .form-check-input {
+        height: 18px;
+        width: 36px;
+    }
+    .form-switch .form-check-input:focus {
+        border-color: rgba(0, 0, 0, 0.25);
+        outline: 0;
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(0,0,0,0.25)'/></svg>");
+    }
+    .form-switch .form-check-input:checked {
+        background-color: #30D158;
+        border-color: #30D158;
+        border: none;
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(255,255,255,1.0)'/></svg>");
+    }
 
+</style>
     <main class="content">
 
         {% include 'includes/navigation.html' %}
@@ -20,8 +38,8 @@
             <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'gv_list' %}">Thông tin giáo viên</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{gv.hoten}} - Gán Lớp môn học</li>
+                    <li class="breadcrumb-item"><a href="{% url 'ctdt_list' %}">Quản lý CTĐT</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Gán môn học</li>
                 </ol>
             </div>
         </div>
@@ -43,7 +61,7 @@
                                             placeholder="Type to filter" 
                                             aria-label="Type to filter" 
                                             aria-describedby="topbar-addon"
-                                            hx-get="{% url 'search_gv_lmh_htmx' gv.id%}"
+                                            hx-get="{% url 'search_mh_htmx' ctdt_id%}"
                                             hx-trigger="keyup delay:500ms"
                                             hx-include="#filter-form"
                                             hx-target="#sad-monsters"
@@ -61,7 +79,7 @@
           <div class="card border-light shadow-sm mb-4">
               <form id="filter-form"
                   method="POST"
-                  action="{% url 'gv_lmh_htmx' gv.id%}"
+                  action="{% url 'mh_list_htmx' ctdt_id%}"
                   hx-vals='{"use_block": ["happy-monsters", "sad-monsters"]}'
                   hx-swap="none"
                 >
@@ -80,6 +98,7 @@
                                         <tr>
                                             <th>STT</th>
                                             <th>Tên</th>
+                                            <th>Số TC</th>
                                             <th>Chọn môn học</th>
                                         </tr>
                                   </thead>
@@ -87,7 +106,8 @@
                                     {% for ct in cms %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
-                                        <td class="text-wrap">{{ ct}}</td>
+                                        <td class="text-wrap">{{ ct.monhoc.chuongtrinh }}-{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                                        <td>{{ct.monhoc.sotinchi }}</td>
                                         <td class="text-center">
                                             <div class="d-flex justify-content-center form-check form-switch">
                                                 <input class="form-check-input" name="C{{ ct.id }}" type="checkbox" {% if ct.status == 1 %} checked="checked" {% endif %}>
@@ -103,7 +123,11 @@
                     </div>      
               </form>
           </div>
-
-</main>
-
+    </main>
+  <script>
+    $(document).on("click", ".yourclass", function(){
+      location.reload();      
+    });
+    
+  </script>
 {% endblock content %}

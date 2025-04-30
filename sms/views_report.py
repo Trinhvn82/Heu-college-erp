@@ -535,7 +535,7 @@ def import_hs81(request, lop_id):
         wb = openpyxl.load_workbook(excel_file)
         if 'hs81' not in wb.sheetnames:
             messages.error(request, "File excel khong dung format")
-            return redirect("hv_hs81_new_list", lop_id)
+            return redirect("hv_hs81_hk_list", lop_id)
 
         sheet = wb["hs81"]
         #for r in range(3, sheet.max_row+1):
@@ -593,7 +593,7 @@ def import_hs81(request, lop_id):
                 hs81.save()
 
         messages.success(request, "Import thông tin hồ sơ 81 thành công!")
-        return redirect("hv_hs81_new_list", lop_id)
+        return redirect("hv_hs81_hk_list", lop_id)
 
 @login_required
 @permission_required('sms.add_hp81',raise_exception=True)
@@ -604,7 +604,7 @@ def import_hp81(request, lop_id):
         wb = openpyxl.load_workbook(excel_file)
         if 'hp81' not in wb.sheetnames:
             messages.error(request, "File excel khong dung format")
-            return redirect("hv_hp81_new_list", lop_id)
+            return redirect("hv_hp81_hk_list", lop_id)
 
         sheet = wb["hp81"]
         #for r in range(3, sheet.max_row+1):
@@ -655,7 +655,7 @@ def import_hp81(request, lop_id):
                 print(sv.hoten)
 
         messages.success(request, "Import thông tin học phí 81 thành công!")
-        return redirect("hv_hp81_new_list", lop_id)
+        return redirect("hv_hp81_hk_list", lop_id)
     
 @login_required
 @permission_required('sms.add_diemthanhphan',raise_exception=True)

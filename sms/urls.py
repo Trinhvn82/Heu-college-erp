@@ -2,8 +2,12 @@ from django.urls import path, include
 from . import views, views_report, views_htmx
 from django.contrib import admin
 from info.views import add_hvuser, add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv,reset_pwd_hv
+
 from htmx_patterns.views.restarts import view_restart, view_search
 from htmx_patterns.views.thongbao import view_tb, view_tb_search 
+from htmx_patterns.views.monhoc import view_mh, view_mh_search 
+from htmx_patterns.views.gv_lmh import view_gv_lmh_search, view_gv_lmh 
+
 from htmx_patterns.views.notifications import live_tester, make_notification
 from sms.tasks import create_tbs
 
@@ -27,11 +31,17 @@ urlpatterns = [
     path('gv_monhoc/<int:gv_id>/', views.gv_monhoc, name='gv_monhoc'),
     path('gv_lmh/<int:gv_id>/', views.gv_lmh, name='gv_lmh'),
 
-    path('gv_lmh_htmx/<int:gv_id>/', view_restart, name='gv_lmh_htmx'),
-    path('search_lmh_htmx/<int:gv_id>/', view_search, name='search_lmh_htmx'),
+    # path('gv_lmh_htmx/<int:gv_id>/', view_restart, name='gv_lmh_htmx'),
+    # path('search_lmh_htmx/<int:gv_id>/', view_search, name='search_lmh_htmx'),
 
     path('tb_htmx/', view_tb, name='tb_list_htmx'),
     path('search_tb_htmx/', view_tb_search, name='search_tb_htmx'),
+
+    path('mh_htmx/<int:ctdt_id>/', view_mh, name='mh_list_htmx'),
+    path('search_mh_htmx/<int:ctdt_id>/', view_mh_search, name='search_mh_htmx'),
+
+    path('gv_lmh_htmx/<int:gv_id>/', view_gv_lmh, name='gv_lmh_htmx'),
+    path('search_gv_lmh_htmx/<int:gv_id>/', view_gv_lmh_search, name='search_gv_lmh_htmx'),
 
     path('notifications/', live_tester, name='notifications'),
     path('test-make/', make_notification, name='test-make'),
@@ -70,9 +80,11 @@ urlpatterns = [
 
     path('hp81/<int:sv_id>/<int:lop_id>/', views.hv_hp81_list, name='hv_hp81_list'),
     path('hp81-new/<int:lop_id>/', views.hv_hp81_new_list, name='hv_hp81_new_list'),
+    path('hp81-hk/<int:lop_id>/', views.hv_hp81_hk_list, name='hv_hp81_hk_list'),
 
     path('hs_81/<int:sv_id>/<int:lop_id>/', views.hv_hs81_list, name='hv_hs81_list'),
     path('hs_81-new/<int:lop_id>/', views.hv_hs81_new_list, name='hv_hs81_new_list'),
+    path('hs_81-hk/<int:lop_id>/', views.hv_hs81_hk_list, name='hv_hs81_hk_list'),
 
 #    path('monhoc/<int:lop_id>/', views.lop_monhoc, name='lop_monhoc'),
     path('monhoc/<int:lop_id>/', views.lop_monhoc_testwithGuardian, name='lop_monhoc'),

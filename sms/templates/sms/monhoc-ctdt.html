@@ -36,34 +36,25 @@
                         <table class="table table-centered mb-0 rounded">
                             <thead class="thead-light">
                                 <tr>
+                                    <th>STT</th>
                                     <th>Tên</th>
-                                    <th>Tình trạng</th>
+                                    <th>Số TC</th>
+                                    <th>Gán Môn học</th>
                                 </tr>
                 </thead>
                     <tbody>
                         {% for ct in cms %}
                         <tr>
-                            <td>{{ forloop.counter }}:{{ ct.monhoc.chuongtrinh }}-{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ ct.monhoc.chuongtrinh }}-{{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ct.monhoc.sotinchi }}</td>
                             <td>
-                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                    {% if ct.status == 1 %}
-                                    <label class="btn btn-success">
-                                        <input type="radio" name="C{{ ct.id }}" id="option1" autocomplete="off" value="1" checked> Có
-                                    </label>
 
-                                    <label class="btn btn-danger">
-                                        <input type="radio" name="C{{ ct.id }}" id="option2" autocomplete="off" value="0"> Không
-                                    </label>
-                                    {% else %}
-                                    <label class="btn btn-outline-success">
-                                        <input type="radio" name="C{{ ct.id }}" id="option1" autocomplete="off" value="1"> Có
-                                    </label>
+                                <input 
+                                type="checkbox" name="C{{ ct.id }}" 
+                                {% if ct.status == 1 %} checked="checked" {% endif %}
+                                class="form-check-input" />
 
-                                    <label class="btn btn-outline-danger active">
-                                        <input type="radio" name="C{{ ct.id }}" id="option2" autocomplete="off" value="0" checked> Không
-                                    </label>
-                                    {% endif %}
-                                </div>
                             </td>
                         </tr>
                         {% endfor %}

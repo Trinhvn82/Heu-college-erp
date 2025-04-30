@@ -38,7 +38,7 @@
                                     <th>Trung tâm</th>
                                     <th>Mã Lớp</th>
                                     <th>Tên Lớp</th>
-                                    <th>Tình trạng</th>
+                                    <th>Gán lớp</th>
                                 </tr>
                             </thead>
                     <tbody>
@@ -48,25 +48,9 @@
                             <td>{{ nl.lop.trungtam }}</td>
                             <td>{{ nl.lop.ma }}</td>
                             <td>{{ nl.lop.ten }}</td>
-                            <td>
-                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                    {% if nl.status == 1 %}
-                                    <label class="btn btn-success">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1" checked> Có
-                                    </label>
-
-                                    <label class="btn btn-danger">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0"> Không
-                                    </label>
-                                    {% else %}
-                                    <label class="btn btn-outline-success">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option1" autocomplete="off" value="1"> Có
-                                    </label>
-
-                                    <label class="btn btn-outline-danger active">
-                                        <input type="radio" name="C{{ nl.lop_id }}" id="option2" autocomplete="off" value="0" checked> Không
-                                    </label>
-                                    {% endif %}
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center form-check form-switch">
+                                    <input class="form-check-input" name="C{{ nl.lop.id }}" type="checkbox" {% if nl.status == 1 %} checked="checked" {% endif %}>
                                 </div>
                             </td>
                         </tr>
