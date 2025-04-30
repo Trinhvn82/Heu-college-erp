@@ -40,7 +40,7 @@
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
                     <h2 class="h5 mb-4">Report filter</h2>
-                    <form action="{% url 'report_kqht' 0%}" method="post">
+                    <form onsubmit="openLoader()" action="{% url 'report_kqht' 0%}" method="post">
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -65,6 +65,14 @@
                             </div>
                             </div>
                     </form>
+
+
+                    <div class="d-flex justify-content-center">
+                            <div id="loadingModal"  style="display: none;">
+                                <label class="fs-1">Đang xử lý...</label>
+                                <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+                            </div>    
+                    </div>
                 </div>
             </div>
         </div>
@@ -163,10 +171,19 @@
                 {% endif %}
             </div>
         </div>
-        
+
     </main>
 
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+
+<script>
+
+    function openLoader() {
+        document.getElementById("loadingModal").style.display = "block";
+      }
+</script>
+
+{% endblock javascripts %}

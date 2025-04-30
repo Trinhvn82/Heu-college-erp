@@ -552,8 +552,11 @@ def create_diemtp(request, lop_id, lmh_id, dtp_id):
 
     #tenlop = Lop.objects.get(id = lop_id).ma
     #tenmh = Monhoc.objects.get(id = mh_id).ten
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
+    stud_list = sorted(Hssv.objects.filter(lop_id = lmh.lop.id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
 
-    stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
+    #stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     if request.method == "POST":
@@ -583,7 +586,8 @@ def create_diemtp(request, lop_id, lmh_id, dtp_id):
         mark = Diemthanhphan(diem =0, status = 1, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log=log) 
         #mark.log = log
         mark.save()
-    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
+    #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('id')
 
     context = {
         "diems": diems,
@@ -626,7 +630,7 @@ def edit_diemtp(request, lop_id, lmh_id, dtp_id, log_id):
         messages.success(request, "Cap nhat diem thanh cong!")
         return redirect("diemtp-lmh-lst", lmh_id)
 
-    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc.id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc.id, tp_id=dtp_id, log=log).order_by('id')
 
     context = {
         "diems": diems,

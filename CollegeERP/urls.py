@@ -12,6 +12,7 @@ urlpatterns = [
     path('sms/', include('sms.urls')),
     path('tracker/', include('tracker.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('htmx/', include('htmx_patterns.urls')),
 
     path('notifications/', include(notifications.urls, namespace='notifications')),
 

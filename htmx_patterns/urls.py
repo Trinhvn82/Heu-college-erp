@@ -62,6 +62,11 @@ urlpatterns = [
         name="modals_create_monster",
     ),
     path(
+        "show-history/<int:lmh_id>/",
+        modals.show_history,
+        name="show_history",
+    ),
+    path(
         "form-validation/",
         forms.form_validation,
         name="form_validation",
