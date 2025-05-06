@@ -2799,15 +2799,15 @@ def details_sv(request, sv_id, opt = None):
                 ]
             for mh in hk.lml:
                 data.append([mh['ten'], 
-                            mh['kttx1'],
-                            mh['kttx2'],
-                            mh['kttx3'],
-                            mh['ktdk1'],
-                            mh['ktdk2'],
-                            mh['ktdk3'],
+                            mh['kttx1'] if mh['n_kttx1'] else '',
+                            mh['kttx2'] if mh['n_kttx2'] else '',
+                            mh['kttx3'] if mh['n_kttx3'] else '',
+                            mh['ktdk1'] if mh['n_ktdk1'] else '',
+                            mh['ktdk2'] if mh['n_ktdk2'] else '',
+                            mh['ktdk3'] if mh['n_ktdk3'] else '',
                             mh['tbmkt'], 
-                            mh['ktkt1'],
-                            mh['ktkt2'],
+                            mh['ktkt1'] if mh['n_ktkt1'] else '',
+                            mh['ktkt2'] if mh['n_ktkt2'] else '',
                             mh['tbm']
                 ])
             data.append(['Xếp loại học tập: ', hk.xl, '', '', '', '', '', '', '', '', ''])
