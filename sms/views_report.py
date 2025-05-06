@@ -377,7 +377,7 @@ def report_kqht(request, opt = None):
                             elif i==1 and ld.ma == 'KTĐK':
                                 ktdk1 = dtp.diem
                             elif i==2 and ld.ma == 'KTĐK':
-                                kttdk2 = dtp.diem
+                                ktdk2 = dtp.diem
                             elif i==3 and ld.ma == 'KTĐK':
                                 ktdk3 = dtp.diem
                             elif i==1 and ld.ma == 'KTKT':
@@ -398,8 +398,8 @@ def report_kqht(request, opt = None):
                             tbm2_heso = ld.heso
                         ldl.append({"ma":ld.ma, "dtplst": dtpl})
                         
-                    tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
-                    tbmhk= tbmhk+tbm*mh.monhoc.sotinchi
+                    tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else  (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
+                    tbmhk= tbmhk+float(tbm)*mh.monhoc.sotinchi
                     tchk=tchk+mh.monhoc.sotinchi
                     lml.append({ "ten":mh.monhoc.ten,
                                 "tc": mh.monhoc.sotinchi,

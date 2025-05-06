@@ -2559,7 +2559,7 @@ def details_sv(request, sv_id, opt = None):
                         ktdk1 = dtp.diem
                         n_ktdk1 = 1
                     elif i==2 and ld.ma == 'KTĐK':
-                        kttdk2 = dtp.diem
+                        ktdk2 = dtp.diem
                         n_ktdk2 = 1
                     elif i==3 and ld.ma == 'KTĐK':
                         ktdk3 = dtp.diem
@@ -2585,7 +2585,7 @@ def details_sv(request, sv_id, opt = None):
                 ldl.append({"ma":ld.ma, "dtplst": dtpl})
                 
             tbmkt = round((tbm1_diem/tbm1_heso),1) if tbm1_heso else 0
-            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else round((tbm2_diem/tbm2_heso),1)
+            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
             print(tbm)
             tbmhk= tbmhk+float(tbm)*mh.monhoc.sotinchi
             tchk=tchk+mh.monhoc.sotinchi
