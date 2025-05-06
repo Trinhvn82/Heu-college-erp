@@ -2689,7 +2689,7 @@ def details_sv(request, sv_id, opt = None):
         return response
 
     #export to excel template
-    if opt == 4:
+    if opt == 5:
         import pandas as pd
         # import pythoncom
         # import win32com.client
@@ -2753,6 +2753,123 @@ def details_sv(request, sv_id, opt = None):
         return response
         #raise Http404
         
+    #export to pdf template
+    if opt == 4:
+        import random
+        import string
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import letter, A4, landscape
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak
+
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import Paragraph
+        import io
+
+
+        from reportlab.pdfbase.pdfmetrics import registerFont
+        from reportlab.pdfbase.ttfonts import TTFont
+        registerFont(TTFont('Arial','ARIAL.ttf'))
+
+
+        temp_path = "template_kqht.xlsx"
+        out_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + sv.msv + "_kqht.xlsx"
+        pdf_path = "sv_kqht.pdf"
+        temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
+        out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
+        pdf_file_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
+        shutil.copy(temp_file_path, out_file_path)
+        #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+
+        out_pdf = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + sv.msv + "_kqht.pdf"
+        pdf_file_path = os.path.join(settings.MEDIA_ROOT, out_pdf)
+        doc = SimpleDocTemplate(pdf_file_path, pagesize=landscape(A4))
+        story = []
+        buffer = io.BytesIO()
+
+        for hk in hks:
+            title = "Học viên: " + sv.hoten + " - Mã: " + sv.msv + " - Lớp: " + sv.lop.ten + " - Học kỳ: " + str(hk.ma)
+            data=[]
+            data = [
+                [title, '', '', '', '', '', '', '', '', '', ''],
+                ['Môn học/Mô-đun', 'Kết quả học tập Môn học/Mô đun', '', '', '', '', '', '', '', '', ''],
+                ['', 'Điểm kiểm tra thường xuyên', '','','Điểm kiểm tra định kỳ', '', '', 'Điểm TB\n điểm\n KT', 'Điểm kiểm tra\n hết MH/MĐ', '', 'Điểm\n tổng\n kết'],
+                ['', '', '', '', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', '', 'Lần 1', 'Lần 2', ''],
+                ]
+            for mh in hk.lml:
+                data.append([mh['ten'], 
+                            mh['kttx1'],
+                            mh['kttx2'],
+                            mh['kttx3'],
+                            mh['ktdk1'],
+                            mh['ktdk2'],
+                            mh['ktdk3'],
+                            mh['tbmkt'], 
+                            mh['ktkt1'],
+                            mh['ktkt2'],
+                            mh['tbm']
+                ])
+            data.append(['Xếp loại học tập: ', hk.xl, '', '', '', '', '', '', '', '', ''])
+
+            tblstyle = TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                                ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                                ('FONTNAME', (0,0), (-1,-1), 'Arial'),
+                                ('SPAN', (0,0), (-1,0)), # dòng 1
+                                ('SPAN', (1,1), (-1,1)), # dòng 2
+                                ('SPAN', (0,1), (0,4)), # cột 1, dòng 5
+                                ('SPAN', (1,2), (3,4)), # cột 2, dòng 3 - cột 4, dòng 5
+                                ('SPAN', (4,2), (6,4)), # cột 5, dòng 3 - cột 5, dòng 5
+                                ('SPAN', (7,2), (7,4)), # cột 5, dòng 3 - cột 5, dòng 5
+                                ('SPAN', (8,2), (9,3)), # cột 5, dòng 3 - cột 5, dòng 5
+                                ('SPAN', (10,2), (10,4)), # cột 5, dòng 3 - cột 5, dòng 5
+
+                                ('SPAN', (1,-1), (10,-1)), # cột 5, dòng 3 - cột 5, dòng 5
+
+                                ('VALIGN', (0, 1), (0, 1), 'MIDDLE'),  # second column
+                                ('ALIGN', (0,1), (0, 1), 'CENTER'),  # second column
+
+                                ('ALIGN', (0, 0), (0, 0), 'LEFT'),   # first column
+
+                                ('ALIGN', (0, 3), (0, -1), 'LEFT'),   # first column
+                                ('ALIGN', (1, 1), (1, 1), 'CENTER'),   # first column
+
+                                ('VALIGN', (1, 2), (10, 4), 'MIDDLE'),  # second column
+                                ('ALIGN', (1, 2), (10, 4), 'CENTER'),  # second column
+                                ])
+
+            tbl = Table(data, colWidths=[250, 45, 45],               
+                        )
+            tbl.setStyle(tblstyle)
+            story.append(tbl)
+            story.append(PageBreak())
+
+        doc.build(story)
+
+        # response = HttpResponse(pdf_file_path, content_type='application/force-download')
+        # response['Content-Disposition'] = f'attachment; filename="{os.path.basename(pdf_file_path)}"'
+        # return response
+
+        # response = HttpResponse(content_type='application/pdf')
+        # response['Content-Disposition'] = f'attachment; filename="{os.path.basename(pdf_file_path)}"'
+        # response.write(buffer.getvalue())
+        # buffer.close()
+
+        # return response
+        
+        #file_path = os.path.join(settings.MEDIA_ROOT, path)
+        if os.path.exists(pdf_file_path):
+            with open(pdf_file_path, 'rb') as fh:
+                response = HttpResponse(fh.read(), content_type="application/pdf")
+                response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(pdf_file_path)
+
+            os.remove(pdf_file_path)
+            return response
+
+        response = FileResponse(open(pdf_file_path, 'rb'), content_type='application/pdf')
+        #os.remove(pdf_file_path)
+        #os.remove(pdf_file_path)
+        return response
+
 
 
 #         o = win32com.client.Dispatch("Excel.Application")
@@ -2812,7 +2929,7 @@ def details_sv(request, sv_id, opt = None):
 #         # return response
 
     #export to excel template and convert to pdf
-    if opt == 5:
+    if opt == 7:
         import pandas as pd
         import pandas.io.formats.excel
         pandas.io.formats.excel.header_style = None
