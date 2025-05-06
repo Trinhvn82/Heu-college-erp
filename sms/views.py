@@ -2585,8 +2585,9 @@ def details_sv(request, sv_id, opt = None):
                 ldl.append({"ma":ld.ma, "dtplst": dtpl})
                 
             tbmkt = round((tbm1_diem/tbm1_heso),1) if tbm1_heso else 0
-            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
-            tbmhk= tbmhk+tbm*mh.monhoc.sotinchi
+            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else round((tbm2_diem/tbm2_heso),1)
+            print(tbm)
+            tbmhk= tbmhk+float(tbm)*mh.monhoc.sotinchi
             tchk=tchk+mh.monhoc.sotinchi
             lml.append({ "ten":mh.monhoc.ten,
                         "tc": mh.monhoc.sotinchi,
