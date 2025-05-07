@@ -392,7 +392,7 @@ def diemtp_lmh_lst(request, lmh_id):
                 tbm2_heso = ld.heso
             ldl.append({"ma":ld.ma, "dtplst": dtpl})
             
-        tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else 0
+        tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
 
         svl.append({ "ma":sv.msv,"hoten":sv.hoten,"tbm": tbm,"ttdiem": ldl})
 
