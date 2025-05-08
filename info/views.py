@@ -572,16 +572,10 @@ def ns_quyen(request, ns_id):
     if request.method == "POST":
         for gr in groups:
             id = "C"+str(gr.id)
-            print(id)
-            print(request.POST[id])
-            if request.POST[id] == "1" :
+            if request.POST.get(id, None) :
                 user.groups.add(gr)
-                print(id)
-                print("add group")
             else:
                 user.groups.remove(gr)
-                print(id)
-                print("remove group")
         
         #     id = "C"+str(stud.id)
         #     status = request.POST[id]
