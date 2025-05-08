@@ -2760,9 +2760,11 @@ def details_sv(request, sv_id, opt = None):
         import string
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import letter, A4, landscape
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, PageBreak,Spacer
+        from reportlab.graphics.shapes import Line, LineShape, Drawing
 
-        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib.enums import TA_LEFT, TA_RIGHT, TA_CENTER, TA_JUSTIFY
+        from reportlab.lib.styles import getSampleStyleSheet,ParagraphStyle
         from reportlab.platypus import Paragraph
         import io
 
@@ -2788,7 +2790,7 @@ def details_sv(request, sv_id, opt = None):
         buffer = io.BytesIO()
 
         for hk in hks:
-            title = "Học viên: " + sv.hoten + " - Mã: " + sv.msv + " - Lớp: " + sv.lop.ten + " - Học kỳ: " + str(hk.ma)
+            title = "Học kỳ: " + str(hk.ma)
             data=[]
             data = [
                 [title, '', '', '', '', '', '', '', '', '', ''],
@@ -2810,7 +2812,10 @@ def details_sv(request, sv_id, opt = None):
                             mh['ktkt2'] if mh['n_ktkt2'] else '',
                             mh['tbm']
                 ])
-            data.append(['Xếp loại học tập: ', hk.xl, '', '', '', '', '', '', '', '', ''])
+                
+            ptext = "<font name='%s'><b>%s</b></font>" % ("Arial", "Xếp loại học tập:")
+            titlesTable = Paragraph(ptext)
+            data.append([titlesTable, hk.xl, '', '', '', '', '', '', '', '', ''])
 
             tblstyle = TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
                                 ('BOX', (0,0), (-1,-1), 0.25, colors.black),
@@ -2841,6 +2846,33 @@ def details_sv(request, sv_id, opt = None):
             tbl = Table(data, colWidths=[250, 45, 45],               
                         )
             tbl.setStyle(tblstyle)
+
+            psHeaderText = ParagraphStyle('Arial', fontSize=12, alignment=TA_LEFT, borderWidth=3)
+            #text = 'OTRAS ACTIVIDADES Y DOCUMENTACIÓN'
+            text = "Học viên: " + sv.hoten + " - Mã: " + sv.msv + " - Lớp: " + sv.lop.ten
+            paragraphReportHeader = Paragraph('<font name="Arial">' + text + '</font>', psHeaderText)
+            story.append(paragraphReportHeader)
+
+            spacer = Spacer(5, 5)
+            story.append(spacer)
+
+            d = Drawing(500, 1)
+            line = Line(-15, 0, 705, 0)
+            line.strokeWidth = 1
+            d.add(line)
+            story.append(d)
+
+            spacer = Spacer(10, 1)
+            story.append(spacer)
+
+            d = Drawing(500, 1)
+            line = Line(-15, 0, 705, 0)
+            line.strokeWidth = 0.5
+            d.add(line)
+            story.append(d)
+
+            spacer = Spacer(10, 22)
+            story.append(spacer)
             story.append(tbl)
             story.append(PageBreak())
 
