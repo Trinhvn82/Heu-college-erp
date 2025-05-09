@@ -3,7 +3,7 @@ import json
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
-from sms.models import LopMonhoc
+from sms.models import LopMonhoc, Lichhoc, Ttgv, Hssv, Hsgv, Hsns, Diemthanhphan, Hp81, Hs81
 
 from ..models import Monster
 from ..utils import for_htmx
@@ -48,15 +48,32 @@ def create_monster(request: HttpRequest):
     return TemplateResponse(request, "sms/modals_create_monster.html", {"form": form})
 
 @for_htmx(use_block_from_params=True)
-def show_history(request: HttpRequest, lmh_id):
+def show_history(request: HttpRequest, obj_id, type_id):
     print("create_monster")
-    print(lmh_id)
-    lmh = LopMonhoc.objects.select_related("lop", "monhoc").get(id=lmh_id)
+    print(obj_id)
+    if type_id == 1:
+        obj = LopMonhoc.objects.get(id=obj_id)
+    elif type_id == 2:
+        obj = Lichhoc.objects.get(id=obj_id)
+    elif type_id == 3:
+        obj = Ttgv.objects.get(id=obj_id)
+    elif type_id == 4:
+        obj = Hssv.objects.get(id=obj_id)
+    elif type_id == 5:
+        obj = Hsgv.objects.get(id=obj_id)
+    elif type_id == 6:
+        obj = Hsns.objects.get(id=obj_id)
+    elif type_id == 7:
+        obj = Diemthanhphan.objects.get(id=obj_id)
+    elif type_id == 8:
+        obj = Hs81.objects.get(id=obj_id)
+    elif type_id == 9:
+        obj = Hp81.objects.get(id=obj_id)
     
     #poll = Poll.objects.get(pk=poll_id)
-    p = lmh.history.all()
+    p = obj.history.all()
     changes = []
-    if p is not None and lmh_id:
+    if p is not None and obj_id:
         last = p.first()
         for all_changes in range(p.count()):
             new_record, old_record = last, last.prev_record

@@ -2393,7 +2393,8 @@ def edit_ttgv(request, lop_id, lopmh_id, gv_id):
         "forms": ttgv_forms,
         "lmh": lmh,
         "mh": mh,
-        "gv": gv
+        "gv": gv,
+        "ttgv": ttgv
     }
     return render(request, "sms/edit_ttgv.html", context)
 
@@ -2441,7 +2442,8 @@ def edit_lichhoc(request, lh_id):
 
     context = {
         "forms": lh_forms,
-        "lmh": lmh
+        "lmh": lmh,
+        "lh": lh
     }
     return render(request, "sms/edit_lichhoc.html", context)
 @login_required
@@ -3143,6 +3145,7 @@ def edit_hp81(request, lop_id, hp81_id):
     context = {
         "forms": lh_forms,
         "sv": sv,
+        "hp": hp,
         "hk_id": hk_id
     }
     return render(request, "sms/edit_hp81.html", context)
@@ -3169,6 +3172,7 @@ def edit_hs81(request, lop_id, hs81_id):
     context = {
         "forms": lh_forms,
         "sv": sv,
+        "hs": hs,
         "hk_id": hk_id
     }
     return render(request, "sms/edit_hs81.html", context)
@@ -3209,7 +3213,7 @@ def edit_ns(request, ns_id):
 
     context = {
         "forms": ns_forms,
-        "ma": ns.ma
+        "ns": ns
     }
     return render(request, "sms/edit_ns.html", context)
 

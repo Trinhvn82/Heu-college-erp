@@ -62,7 +62,7 @@ urlpatterns = [
         name="modals_create_monster",
     ),
     path(
-        "show-history/<int:lmh_id>/",
+        "show-history/<int:obj_id>/<int:type_id>/",
         modals.show_history,
         name="show_history",
     ),
