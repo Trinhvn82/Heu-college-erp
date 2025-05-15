@@ -527,6 +527,235 @@ def report_kqht(request, opt = None):
     return render(request, "sms/report_kqht.html", context)
 
 @login_required
+@permission_required('dashboard.view_report',raise_exception=True)
+def report_kqht_optimised(request, opt = None):
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
+    #query_tt = None
+    svs = None
+    lop= None
+    if request.method == "POST":
+        lop_id = request.POST.get('lop', None)
+        locale.setlocale(locale.LC_ALL, 'vi_VN')
+        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+        lop = Lop.objects.get(id=lop_id)
+        lhk = LopHk.objects.filter(lop = lop).select_related('hk').order_by('hk_id')
+        next_hk=0
+
+        for l in lhk:
+            if l.end_hk and date.today() > l.end_hk:
+                next_hk = l.hk.ma
+                #break
+        if next_hk == 0:
+            next_hk = lhk.last().hk.ma + 1
+        else:
+            next_hk = next_hk + 1
+        print(next_hk)
+        lds = Loaidiem.objects.all()
+        hks = Hocky.objects.filter(ma__lt = next_hk).order_by('ma')
+        mhl=[]
+        ldl=[]
+        dtpl=[]
+
+
+
+        # for mh in lmhs:
+        #     ldl=[]
+        #     for l in ld:
+        #         dtpl=[]
+        #         for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
+        #             dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+
+        #         ldl.append({"ma":l.ma,"dtplst": dtpl})
+
+        #     mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
+
+        for sv in svs:
+            hkl=[]
+            tctl, diem4 = 0,0
+            xl = ""
+            dtp_all = Diemthanhphan.objects.filter(sv = sv, status=1)
+            for hk in hks:
+                lml=[]
+                tbmhk, tchk = 0,0
+                lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id, hk_id = hk.id).select_related("monhoc").order_by('ngaystart')
+                print(hk.ten)
+                for mh in lmhs:
+                    print(mh.monhoc.ten)
+                    ldl=[]
+                    tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
+                    kttx1,kttx2,kttx3,ktdk1,ktdk2,ktdk3,ktkt1,ktkt2 = 0,0,0,0,0,0,0,0
+                    for ld in lds:
+                        dtpl=[]
+                        dtps = dtp_all.filter(monhoc_id = mh.monhoc_id, tp_id = ld.id).order_by('log_id')
+
+                        i=1
+                        for dtp in dtps:
+                            if i==1 and ld.ma == 'KTTX':
+                                kttx1 = dtp.diem
+                            elif i==2 and ld.ma == 'KTTX':
+                                kttx2 = dtp.diem
+                            elif i==3 and ld.ma == 'KTTX':
+                                kttx3 = dtp.diem
+                            elif i==1 and ld.ma == 'KTĐK':
+                                ktdk1 = dtp.diem
+                            elif i==2 and ld.ma == 'KTĐK':
+                                ktdk2 = dtp.diem
+                            elif i==3 and ld.ma == 'KTĐK':
+                                ktdk3 = dtp.diem
+                            elif i==1 and ld.ma == 'KTKT':
+                                ktkt1 = dtp.diem
+                            elif i==2 and ld.ma == 'KTKT':
+                                ktkt2 = dtp.diem
+                            i=i+1
+                            dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+                            if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
+                                tbm1_diem = tbm1_diem + dtp.diem * ld.heso
+                                tbm1_heso = tbm1_heso + ld.heso
+                            elif ld.ma == 'KTKT' and dtp.diem > 0:
+                                tbm2_diem = dtp.diem * ld.heso
+                                # tbm2_heso = ld.heso
+                                # print(tbm2_diem)
+                                # print(tbm2_heso)
+                        if ld.ma == 'KTKT':
+                            tbm2_heso = ld.heso
+                        ldl.append({"ma":ld.ma, "dtplst": dtpl})
+                        
+                    tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else  (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
+                    tbmhk= tbmhk+float(tbm)*mh.monhoc.sotinchi
+                    tchk=tchk+mh.monhoc.sotinchi
+                    lml.append({ "ten":mh.monhoc.ten,
+                                "tc": mh.monhoc.sotinchi,
+                                "tbm": tbm,
+                                "kttx1": kttx1, 
+                                "kttx2": kttx2, 
+                                "kttx3": kttx3,
+                                "ktdk1": ktdk1,
+                                "ktdk2": ktdk2, 
+                                "ktdk3": ktdk3,
+                                "ktkt1": ktkt1,
+                                "ktkt2": ktkt2
+                                })
+                    
+                tbmhk = round(tbmhk/tchk,1)
+                if tbmhk >=8.5 and tbmhk <=10:
+                    tbmhk4 = 4
+                elif tbmhk >=7 and tbmhk <=8.4:
+                    tbmhk4 = 3
+                elif tbmhk >=5.5 and tbmhk <=6.9:
+                    tbmhk4 = 2
+                elif tbmhk >=4 and tbmhk <=5.4:
+                    tbmhk4 = 1
+                elif tbmhk  < 4:
+                    tbmhk4 = 0
+
+                tctl = tctl + tchk
+                diem4 = diem4 +tbmhk4*tchk
+
+                tbctl = round(diem4/tctl,1)
+
+                if tbctl >=3.5 and tbctl <=4:
+                    xl = "Xuất xắc"
+                elif tbctl >=3 and tbctl <3.5:
+                    xl = "Giỏi"
+                elif tbctl >=2.5 and tbctl <3:
+                    xl = "Khá"
+                elif tbctl >=2 and tbctl <2.5:
+                    xl = "Trung bình"
+                elif tbctl <2:
+                    xl = "Yếu"
+
+                hkl.append({"ma":hk.ma, "tbmhk":tbmhk, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
+
+                # hk.tchk = tchk
+                # hk.tbmhk = round(tbmhk/tchk,1)
+            sv.hkl = hkl
+        messages.success(request, "Tạo báo cáo theo tiêu chí thành công!")
+
+        #export to excel
+        if opt ==1:
+            #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+            exp=[]
+            exp.append({"Lớp": lop.ten
+                        })
+            for sv in svs:
+                tbmhk1,tbmhk41,tbctl1,xl1 = None,None,None,None
+                tbmhk2,tbmhk42,tbctl2,xl2 = None,None,None,None
+                tbmhk3,tbmhk43,tbctl3,xl3 = None,None,None,None
+                tbmhk4,tbmhk44,tbctl4,xl4 = None,None,None,None   
+                for hk in sv.hkl:
+                    print('printing hk')
+                    if hk['ma'] == 1:
+                        tbmhk1 = hk['tbmhk']
+                        tbmhk41 = hk['tbmhk4']
+                        tbctl1 = hk['tbctl']
+                        xl1 = hk['xl']
+                    elif hk['ma'] == 2:
+                        tbmhk2 = hk['tbmhk']
+                        tbmhk42 = hk['tbmhk4']
+                        tbctl2 = hk['tbctl']
+                        xl2 = hk['xl']
+                    elif hk['ma'] == 3:
+                        tbmhk3 = hk['tbmhk']
+                        tbmhk43 = hk['tbmhk4']
+                        tbctl3 = hk['tbctl']
+                        xl3 = hk['xl']
+                    elif hk['ma'] == 4:
+                        tbmhk4 = hk['tbmhk']
+                        tbmhk44 = hk['tbmhk4']
+                        tbctl4 = hk['tbctl']
+                        xl4 = hk['xl']
+
+                    
+                exp.append({"Mã học tên": sv.msv,
+                            "Họ tên": sv.hoten, 
+                            "HK1 TBM 10":tbmhk1 , 
+                            "HK1 TBM 4":tbmhk41 , 
+                            "HK1 TBCTL":tbctl1 , 
+                            "HK1 XL":xl1 , 
+                            "HK2 TBM 10":tbmhk2, 
+                            "HK2 TBM 4":tbmhk42 , 
+                            "HK2 TBCTL":tbctl2 , 
+                            "HK2 XL":xl2 , 
+                            "HK3 TBM 10":tbmhk3, 
+                            "HK3 TBM 4":tbmhk43 , 
+                            "HK3 TBCTL":tbctl3 , 
+                            "HK3 XL":xl3 , 
+                            "HK4 TBM 10":tbmhk4, 
+                            "HK4 TBM 4":tbmhk44 , 
+                            "HK4 TBCTL":tbctl4 , 
+                            "HK4 XL":xl4 , 
+                            })
+
+            # Convert the QuerySet to a DataFrame
+            df = pd.DataFrame(list(exp))
+
+            # Define the Excel file response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename=kqht-lop.xlsx'
+
+            # Use Pandas to write the DataFrame to an Excel file
+            df.to_excel(response, index=False, engine='openpyxl')
+
+            return response
+
+            
+    context = {
+        "lh": lh,
+        "lop": lop,
+        "svs": svs
+        # "query_tt": query_tt,
+        # "query_lop": query_lop
+    }
+    return render(request, "sms/report_kqht.html", context)
+
+@login_required
 @permission_required('sms.add_hs81',raise_exception=True)
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
 def import_hs81(request, lop_id):

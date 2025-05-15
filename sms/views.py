@@ -410,7 +410,7 @@ def diemtp_lmh_lst(request, lmh_id):
         "lol":lol,
         "tenmh": tenmh,
         "svl": svl,
-        "sv0": svl[0],
+        "sv0": svl[0] if svl else None,
         "lmh": lmh
     }
     return render(request, "sms/diemtp-lmh-lst.html", context)
