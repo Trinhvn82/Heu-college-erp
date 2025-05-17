@@ -417,14 +417,19 @@ def report_kqht(request, opt = None):
                 tbmhk = round(tbmhk/tchk,1)
                 if tbmhk >=8.5 and tbmhk <=10:
                     tbmhk4 = 4
+                    tbmhkc = "A"
                 elif tbmhk >=7 and tbmhk <=8.4:
                     tbmhk4 = 3
+                    tbmhkc = "B"
                 elif tbmhk >=5.5 and tbmhk <=6.9:
                     tbmhk4 = 2
+                    tbmhkc = "C"
                 elif tbmhk >=4 and tbmhk <=5.4:
                     tbmhk4 = 1
+                    tbmhkc = "D"
                 elif tbmhk  < 4:
                     tbmhk4 = 0
+                    tbmhkc = "F"
 
                 tctl = tctl + tchk
                 diem4 = diem4 +tbmhk4*tchk
@@ -442,7 +447,7 @@ def report_kqht(request, opt = None):
                 elif tbctl <2:
                     xl = "Yếu"
 
-                hkl.append({"ma":hk.ma, "tbmhk":tbmhk, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
+                hkl.append({"ma":hk.ma, "tbmhk":tbmhk, "tbmhkc":tbmhkc, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
 
                 # hk.tchk = tchk
                 # hk.tbmhk = round(tbmhk/tchk,1)
@@ -464,21 +469,25 @@ def report_kqht(request, opt = None):
                     print('printing hk')
                     if hk['ma'] == 1:
                         tbmhk1 = hk['tbmhk']
+                        tbmhkc1 = hk['tbmhkc']
                         tbmhk41 = hk['tbmhk4']
                         tbctl1 = hk['tbctl']
                         xl1 = hk['xl']
                     elif hk['ma'] == 2:
                         tbmhk2 = hk['tbmhk']
+                        tbmhkc2 = hk['tbmhkc']
                         tbmhk42 = hk['tbmhk4']
                         tbctl2 = hk['tbctl']
                         xl2 = hk['xl']
                     elif hk['ma'] == 3:
                         tbmhk3 = hk['tbmhk']
+                        tbmhkc3 = hk['tbmhkc']
                         tbmhk43 = hk['tbmhk4']
                         tbctl3 = hk['tbctl']
                         xl3 = hk['xl']
                     elif hk['ma'] == 4:
                         tbmhk4 = hk['tbmhk']
+                        tbmhkc4 = hk['tbmhkc']
                         tbmhk44 = hk['tbmhk4']
                         tbctl4 = hk['tbctl']
                         xl4 = hk['xl']
@@ -487,18 +496,22 @@ def report_kqht(request, opt = None):
                 exp.append({"Mã học tên": sv.msv,
                             "Họ tên": sv.hoten, 
                             "HK1 TBM 10":tbmhk1 , 
+                            "HK1 TBM CHỮ":tbmhkc1 , 
                             "HK1 TBM 4":tbmhk41 , 
                             "HK1 TBCTL":tbctl1 , 
                             "HK1 XL":xl1 , 
                             "HK2 TBM 10":tbmhk2, 
+                            "HK2 TBM CHỮ":tbmhkc2 , 
                             "HK2 TBM 4":tbmhk42 , 
                             "HK2 TBCTL":tbctl2 , 
                             "HK2 XL":xl2 , 
                             "HK3 TBM 10":tbmhk3, 
+                            "HK3 TBM CHỮ":tbmhkc3 , 
                             "HK3 TBM 4":tbmhk43 , 
                             "HK3 TBCTL":tbctl3 , 
                             "HK3 XL":xl3 , 
                             "HK4 TBM 10":tbmhk4, 
+                            "HK4 TBM CHỮ":tbmhkc4 , 
                             "HK4 TBM 4":tbmhk44 , 
                             "HK4 TBCTL":tbctl4 , 
                             "HK4 XL":xl4 , 

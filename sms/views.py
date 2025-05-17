@@ -2588,12 +2588,29 @@ def details_sv(request, sv_id, opt = None):
                 
             tbmkt = round((tbm1_diem/tbm1_heso),1) if tbm1_heso else 0
             tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
+            if tbm >=8.5 and tbm <=10:
+                tbm4 = 4
+                tbmc = "A"
+            elif tbm >=7 and tbm <=8.4:
+                tbm4 = 3
+                tbmc = "B"
+            elif tbm >=5.5 and tbm <=6.9:
+                tbm4 = 2
+                tbmc = "C"
+            elif tbm >=4 and tbm <=5.4:
+                tbm4 = 1
+                tbmc = "D"
+            elif tbm  < 4:
+                tbm4 = 0
+                tbmc = "F"
             print(tbm)
             tbmhk= tbmhk+float(tbm)*mh.monhoc.sotinchi
             tchk=tchk+mh.monhoc.sotinchi
             lml.append({ "ten":mh.monhoc.ten,
                         "tc": mh.monhoc.sotinchi,
                         "tbm": tbm,
+                        "tbmc": tbmc,
+                        "tbm4": tbm4,
                         "tbmkt": tbmkt,
                         "kttx1": kttx1, 
                         "n_kttx1": n_kttx1, 
@@ -2617,14 +2634,19 @@ def details_sv(request, sv_id, opt = None):
         hk.tbmhk = round(tbmhk/tchk,1)
         if hk.tbmhk >=8.5 and hk.tbmhk <=10:
             hk.tbmhk4 = 4
+            hk.tbmhkc = "A"
         elif hk.tbmhk >=7 and hk.tbmhk <=8.4:
             hk.tbmhk4 = 3
+            hk.tbmhkc = "B"
         elif hk.tbmhk >=5.5 and hk.tbmhk <=6.9:
             hk.tbmhk4 = 2
+            hk.tbmhkc = "C"
         elif hk.tbmhk >=4 and hk.tbmhk <=5.4:
             hk.tbmhk4 = 1
+            hk.tbmhkc = "D"
         elif hk.tbmhk  < 4:
             hk.tbmhk4 = 0
+            hk.tbmhkc = "F"
         tctl = tctl + tchk
         diem4 = diem4 + hk.tbmhk4*tchk
         hk.tbctl = round(diem4/tctl,1)
@@ -2661,22 +2683,26 @@ def details_sv(request, sv_id, opt = None):
                         "ktkt1": "",
                         "ktkt2": "",
                         "TBM 10": hk.tbmhk,
+                        "TBM CHỮ": hk.tbmhkc,
                         "TBM 4": hk.tbmhk4,
+                        "TBM TL": hk.tbctl,
                         "Xếp loại": hk.xl
                     })
             for mh in hk.lml:
                 exp.append({"Học kỳ|Môn học": mh['ten'], 
                             "Tín chỉ": mh['tc'], 
-                            "kttx1": mh['kttx1'],
-                            "kttx2": mh['kttx2'],
-                            "kttx3": mh['kttx3'],
-                            "ktdk1": mh['ktdk1'],
-                            "ktdk2": mh['ktdk2'],
-                            "ktdk3": mh['ktdk3'],
+                            "kttx1": mh['kttx1'] if mh['n_kttx1'] else "",
+                            "kttx2": mh['kttx2'] if mh['n_kttx2'] else "",
+                            "kttx3": mh['kttx3'] if mh['n_kttx3'] else "",
+                            "ktdk1": mh['ktdk1'] if mh['n_ktdk1'] else "", 
+                            "ktdk2": mh['ktdk2'] if mh['n_ktdk2'] else "",
+                            "ktdk3": mh['ktdk3'] if mh['n_ktdk3'] else "",
                             "TBM KT": mh['tbmkt'], 
-                            "ktkt1": mh['ktkt1'],
-                            "ktkt2": mh['ktkt2'],
-                            "TBM 10": mh['tbm']
+                            "ktkt1": mh['ktkt1'] if mh['n_ktkt1'] else "",  
+                            "ktkt2": mh['ktkt2'] if mh['n_ktkt2'] else "",
+                            "TBM 10": mh['tbm'],
+                            "TBM CHỮ": mh['tbmc'],
+                            "TBM 4": mh['tbm4']
                         })
 
         # Convert the QuerySet to a DataFrame
@@ -2907,172 +2933,10 @@ def details_sv(request, sv_id, opt = None):
 
 
 
-#         o = win32com.client.Dispatch("Excel.Application")
-
-#         o.Visible = False
-
-
-#         wb = o.Workbooks.Open(out_file_path)
-
-
-
-#         #ws_index_list = [1,4,5] #say you want to print these sheets
-#         ws_index_list = [1] #say you want to print these sheets
-
-
-#         print_area = 'A1:K98'
-
-#         try:
-
-
-#             for index in ws_index_list:
-
-#                 #off-by-one so the user can start numbering the worksheets at 1
-
-#                 ws = wb.Worksheets[index - 1]
-
-#                 ws.PageSetup.Zoom = False
-
-#                 ws.PageSetup.FitToPagesTall = 4
-
-#                 ws.PageSetup.FitToPagesWide = 1
-
-#                 ws.PageSetup.PrintArea = print_area
-
-
-
-#             wb.WorkSheets(ws_index_list).Select()
-
-#             wb.ActiveSheet.ExportAsFixedFormat(0, pdf_file_path)
-#         except Exception as e:
-#             print('failed.'+ str(e))
-#         else:
-#             print('Succeeded.')
-#         finally:
-#             #wb.Close()
-#             wb.Close(SaveChanges=True) 
-#             o.Quit()
-#         #writer.close()                
-
-#         # # Define the Excel file response
-#         # response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#         # response['Content-Disposition'] = 'attachment; filename=kqht-hv.xlsx'
-
-#         # # Use Pandas to write the DataFrame to an Excel file
-#         # df.to_excel(response, index=False, engine='openpyxl')
-
-#         # return response
-
-    #export to excel template and convert to pdf
-    if opt == 7:
-        import pandas as pd
-        import pandas.io.formats.excel
-        pandas.io.formats.excel.header_style = None
-        import pythoncom
-        import win32com.client
-        pythoncom.CoInitialize()
-        import random
-        import string
-
-
-        temp_path = "template_kqht.xlsx"
-        out_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + str(sv_id) + "_kqht.xlsx"
-        pdf_path = ''.join(random.choices(string.ascii_lowercase, k=5)) + "sv_" + str(sv_id) + "_kqht.pdf"
-        temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
-        out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
-        pdf_file_path = os.path.join(settings.MEDIA_ROOT, pdf_path)
-        shutil.copy(temp_file_path, out_file_path)
-        #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
-        for hk in hks:
-            exp=[]
-            for mh in hk.lml:
-                exp.append({"Học kỳ|Môn học": mh['ten'], 
-                            "kttx1": mh['kttx1'],
-                            "kttx2": mh['kttx2'],
-                            "kttx3": mh['kttx3'],
-                            "ktdk1": mh['ktdk1'],
-                            "ktdk2": mh['ktdk2'],
-                            "ktdk3": mh['ktdk3'],
-                            "TBM KT": mh['tbmkt'], 
-                            "ktkt1": mh['ktkt1'],
-                            "ktkt2": mh['ktkt2'],
-                            "TBM 10": mh['tbm']
-                        })
-            # Convert the QuerySet to a DataFrame
-            dtf = pd.DataFrame(list(exp))
-
-
-            # use `with` to avoid other exceptions
-            #xlsxwriter, openpyxl
-            with pd.ExcelWriter(out_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay",) as writer:
-                #writer.book = template
-
-                dtf.to_excel(writer, sheet_name='hks', index=False, header=False, startrow=4+(hk.ma-1)*25, startcol=0)
-
-        
-        #writer.save()
-        #writer.close()
-# Get the xlsxwriter workbook and worksheet objects.
-        # workbook = writer.book
-        # worksheet = writer.sheets["hks"]
-
-        # cell_format = workbook.add_format()
-        # cell_format.set_text_wrap()
-        # worksheet.set_column(0, 0, None, cell_format)
-        # writer.close()
-        #worksheet.set_column(0, 0, 20)   # Column  A   width set to 20.
-        # import xlsxwriter
-
-        # workbook = xlsxwriter.Workbook(out_file_path)
-        # worksheet = workbook.worksheets('hks')
-
-        # currency_format = workbook.add_format({'num_format': '$#,##0.00'})
-        # worksheet.write('A1', 1234.56, currency_format)
-
-        # workbook.close()
-        #if os.path.exists(out_file_path):
-        # with open(out_file_path, 'rb') as fh:
-        #     response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-        #     response['Content-Disposition'] = 'inline; filename=' + os.path.basename(out_file_path)
-        
-        # os.remove(out_file_path)
-
-        # return response
-        #raise Http404
-        o = win32com.client.Dispatch("Excel.Application")
-        o.Visible = False
-        wb = o.Workbooks.Open(out_file_path)
-        ws_index_list = [1] #say you want to print these sheets
-        print_area = 'A1:K98'
-        try:
-            for index in ws_index_list:
-                #off-by-one so the user can start numbering the worksheets at 1
-                ws = wb.Worksheets[index - 1]
-                ws.PageSetup.Zoom = False
-                ws.PageSetup.FitToPagesTall = 4
-                ws.PageSetup.FitToPagesWide = 1
-                ws.PageSetup.PrintArea = print_area
-
-            wb.WorkSheets(ws_index_list).Select()
-            wb.ActiveSheet.ExportAsFixedFormat(0, pdf_file_path)
-        except Exception as e:
-            print('failed.'+ str(e))
-            messages.error(request, 'Export to pddf file failed.'+ str(e))        
-            os.remove(out_file_path)
-            wb.Close(SaveChanges=True) 
-            o.Quit()
-        else:
-            messages.success(request, 'Export to pddf file Succeeded.')
-            wb.Close(SaveChanges=True) 
-            o.Quit()
-            response = FileResponse(open(pdf_file_path, 'rb'), content_type='application/pdf')
-            os.remove(out_file_path)
-            #os.remove(pdf_file_path)
-            return response
-        
-            print('Succeeded.')
-        # return response
     
+    for hk in hks:
+        hk.hs81 = Hs81.objects.get(sv_id = sv_id, hk_id = hk.id) if Hs81.objects.filter(sv_id = sv_id, hk_id = hk.id).exists() else None
+        hk.hp81 = Hp81.objects.get(sv_id = sv_id, hk_id = hk.id) if Hp81.objects.filter(sv_id = sv_id, hk_id = hk.id).exists() else None
 
     context = {
 #        "lml": lml,
@@ -3510,6 +3374,12 @@ def lophk_list(request, lop_id, lhk_id):
     if lhk_id > 0:
         lhk = LopHk.objects.filter(id = lhk_id).select_related('lop',"hk").order_by('hk__ma')[0]
     else:
+        #lhk = LopHk.objects.filter(lop_id = lop_id).select_related('lop',"hk").order_by('hk__ma')[0]
+        if not LopHk.objects.filter(lop_id = lop_id).exists():
+            hks= Hocky.objects.all()
+            for hk in hks:
+                lhk = LopHk.objects.create(hk_id = hk.id, lop_id = lop_id)
+                lhk.save()        
         lhk = LopHk.objects.filter(lop_id = lop_id).select_related('lop',"hk").order_by('hk__ma')[0]
     
     lhks = LopHk.objects.filter(lop_id = lop_id).select_related('lop',"hk").order_by('hk__ma')

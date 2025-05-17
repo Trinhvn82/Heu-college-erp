@@ -49,7 +49,9 @@
                                 <th>KTKT1</th>
                                 <th>KTKT2</th>
                                 <th>TBM 10</th>
+                                <th>TBM CHỮ</th>
                                 <th>TBM 4</th>
+                                <th>TBC TL</th>
                                 <th>Xếp loại</th>
                             </tr>
                         </thead>
@@ -72,7 +74,13 @@
                                     <span class="font-weight-bold text-success">{{ hk.tbmhk }}</span>
                                 </td>
                                 <td>
+                                    <span class="font-weight-bold text-success">{{ hk.tbmhkc }}</span>
+                                </td>
+                                <td>
                                     <span class="font-weight-bold text-success">{{ hk.tbmhk4 }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ hk.tbctl }}</span>
                                 </td>
                                 <td>
                                     <span class="font-weight-bold text-success">{{ hk.xl }}</span>
@@ -96,6 +104,12 @@
                                 {% if mh.n_ktkt2%}<td>{{ mh.ktkt2 }}</td>{% else %}<td></td>{% endif %}
                                 <td>
                                     <span class="font-weight-bold text-success">{{ mh.tbm }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbmc }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbm4 }}</span>
                                 </td>
                                 <td></td>
                                 <td></td>
@@ -154,22 +168,28 @@
                             <tr>
                                 <th>Học kỳ</th>
                                 <th>Trạng thái hồ sơ 81</th>
-                                <th>Trạng thái học phí</th>
-                                <th>Dư nợ học phí</th>
+                                <th>Trạng thái học phí 81</th>
+                                <th>$ Dự kiến</th>
+                                <th>$ Thực nhận</th>
                             </tr>
                         </thead>
                         <tbody>
                         {% for hk in hks %}
                             <tr>
                                 <td>{{ hk.ten }}</td>
-                                {% if hk.hp %}
-                                    <td>{{ hk.hp.hs81_st }}</td>
-                                    <td>{{ hk.hp.status }}</td>
-                                    <td>{{ hk.hp.duno }}</td>
+                                {% if hk.hs81 %}
+                                    <td>{{ hk.hs81.status }}</td>
                                 {% else %}
-                                    <td></td>
-                                    <td></td>
                                     <td><span class="font-weight-bold text-danger">Chưa có thông tin</span></td>
+                                {% endif %}
+                                {% if hk.hp81 %}
+                                    <td>{{ hk.hp81.status }}</td>
+                                    <td>{{ hk.hp81.sotien1 }}</td>
+                                    <td>{{ hk.hp81.sotien2 }}</td>
+                                {% else %}
+                                    <td><span class="font-weight-bold text-danger">Chưa có thông tin</span></td>
+                                    <td></td>
+                                    <td></td>
                                 {% endif %}
                             </tr>
                         {% endfor %}
