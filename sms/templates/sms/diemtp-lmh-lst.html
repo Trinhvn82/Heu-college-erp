@@ -28,26 +28,28 @@
                 </ol>
             </div>
         </div>
-        <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
             <h6>Lớp: {{lmh.lop}}</h6>
             <h8>Môn hoc: {{tenmh}}</h8>
-        <!-- <table class="table table-responsive-sm table-bordered table-striped table-sm"> -->
-                <table class="table table-responsive-sm table-bordered table-sm">
-                    <thead>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                    <thead class="thead-light">
                         <tr>
                             <th>#</th>
-                            <th>Điểm thành phần</th>
+                            <th class="text-wrap">Điểm thành phần</th>
                             <th>ID</th>
                             <th>Tạo lúc</th>
                             <th>Cập nhật</th>
-                            <th>Tác nghiệp</th>
+                            <th>Tác vụ</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for ld in lds %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ ld.ten }}</td>
+                            <td class="text-wrap">{{ ld.ten }}</td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -87,10 +89,10 @@
                         {% for log in ld.log %}
                         <tr>
                             <td></td>
-                            <td>Tạo/cập nhật: {{ log.ten }}</td>
+                            <td class="text-wrap">Tạo/cập nhật: {{ log.ten }}</td>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ log.created_at|date:'Y-m-d H:i' }}</td>
-                            <td>{{ log.capnhat_at|date:'Y-m-d H:i' }}</td>
+                            <td class="text-wrap">{{ log.created_at|date:'Y-m-d H:i' }}</td>
+                            <td class="text-wrap">{{ log.capnhat_at|date:'Y-m-d H:i' }}</td>
                             
                             <td>
                                 {% if perms.sms.change_diemthanhphan %}
@@ -130,50 +132,103 @@
                         {% endfor %}
                         {% endfor %}
                     </tbody>
-                </table>
+                    </table>
+                </div>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'download_temp_diem' lmh.id%}" method="post">
+                    {% csrf_token %}
+                        <input hidden type="text" name="lop" class="form-control" value="{{lop.id}}" maxlength="100">
+                        <button type="submit" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                              </svg><span></span>
 
-            {{ transactions.pagination }}
-
+                            Download import template
+                        </button>
+                </form>
+            </div>
         </div>
 
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
                 <h6>Chi tiết</h6>
-                        <div class="table-responsive">
+                <div class="table-responsive">
                     <table class="table table-centered mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
                                 <th>STT</th>
                                 <th>Mã</th>
                                 <th>Tên</th>
-                                <th>Điểm TBM</th>
-                                {% for ld in sv0.ttdiem%} 
-                                    {% for dtp in ld.dtplst%} 
-                                        <th>{{ ld.ma }}-{{forloop.counter }}</th>
-                                    {% endfor %}
-                                {% endfor %}
+                                <th>Tín chỉ</th>
+                                <th>KTTX1</th>
+                                <th>KTTX2</th>
+                                <th>KTTX3</th>
+                                <th>KTĐK1</th>
+                                <th>KTĐK2</th>
+                                <th>KTĐK3</th>
+                                <th>TBM KT</th>
+                                <th>KTKT1</th>
+                                <th>KTKT2</th>
+                                <th>TBM 10</th>
+                                <th>TBM CHỮ</th>
+                                <th>TBM 4</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for sv in svl %}
+                            {% for mh in lml %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ sv.ma }}</td>
-                                <td>{{ sv.hoten }}</td>
+                                <td>{{ mh.ma }}</td>
+                                <td>{{ mh.ten }}</td>
+                                <td>{{ mh.tc }}</td>
+                                {% if mh.n_kttx1%}<td>{{ mh.kttx1 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_kttx2%}<td>{{ mh.kttx2 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_kttx3%}<td>{{ mh.kttx3 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktdk1%}<td>{{ mh.ktdk1 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktdk2%}<td>{{ mh.ktdk2 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktdk3%}<td>{{ mh.ktdk3 }}</td>{% else %}<td></td>{% endif %}
                                 <td>
-                                    <span class="font-weight-bold text-success">{{ sv.tbm }}</span>
+                                    <span class="font-weight-bold text-success">{{ mh.tbmkt }}</span>
                                 </td>
-                                {% for ld in sv.ttdiem%} 
-                                    {% for dtp in ld.dtplst%} 
-                                        <td>{{ dtp.mark }}</td>
-                                    {% endfor %}
-                                {% endfor %}
+                                {% if mh.n_ktkt1%}<td>{{ mh.ktkt1 }}</td>{% else %}<td></td>{% endif %}
+                                {% if mh.n_ktkt2%}<td>{{ mh.ktkt2 }}</td>{% else %}<td></td>{% endif %}
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbm }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbmc }}</span>
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold text-success">{{ mh.tbm4 }}</span>
+                                </td>
                             </tr>
                             {% endfor %}
-                        </tbody>
+                    </tbody>
                     </table>
                 </div>
             </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div>
+                            <form action="" method="post">
+                                {% csrf_token %}
+                                    <input hidden type="text" name="lop" class="form-control" value="{{lop.id}}" maxlength="100">
+                                    <button type="submit" class="btn btn-primary">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                          </svg><span></span>
+            
+                                        Download as Raw data Excel
+                                    </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+    </div>
         </div>
 
 

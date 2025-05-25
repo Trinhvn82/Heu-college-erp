@@ -166,7 +166,7 @@ class CreateLopMonhoc(forms.ModelForm):
     class Meta:
         model = LopMonhoc
         #fields = "__all__"
-        fields = ('lop','hk','monhoc', 'ngaystart', 'ngayend', 'status', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4', 'hsdt5', 'hsdt6', 'hsdt7', 'hsdt')
+        fields = ('lop','hk','monhoc', 'ngaystart', 'ngayend', 'status', 'mhdk', 'hsdt1', 'hsdt2', 'hsdt3', 'hsdt4', 'hsdt5', 'hsdt6', 'hsdt7', 'hsdt')
         labels = {
             'hk': 'Học kỳ',
             'monhoc': 'Môn học',
@@ -181,6 +181,7 @@ class CreateLopMonhoc(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-control'}),
             'ngaystart': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'ngayend': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'mhdk': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'hsdt1': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'hsdt2': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'hsdt3': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

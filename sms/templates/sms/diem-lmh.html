@@ -4,6 +4,25 @@
 {% block title %} Cập nhật môn học {% endblock %}
 
 {% block content %}
+<style>
+    .form-switch .form-check-input {
+        height: 18px;
+        width: 36px;
+    }
+    .form-switch .form-check-input:focus {
+        border-color: rgba(0, 0, 0, 0.25);
+        outline: 0;
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(0,0,0,0.25)'/></svg>");
+    }
+    .form-switch .form-check-input:checked {
+        background-color: #30D158;
+        border-color: #30D158;
+        border: none;
+        background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(255,255,255,1.0)'/></svg>");
+    }
+
+</style>
 
     <main class="content">
 
@@ -21,7 +40,7 @@
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'diemtp-lmh-lst' lmh.id%}">Điểm thành phần</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'diemtp-lmh-lst' lmh.id 0%}">Điểm thành phần</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Kết quả học tập</li>
                 </ol>
             </div>
@@ -42,6 +61,7 @@
                                     <th>Môn học</th>
                                     <th>Điểm thành phần</th>
                                     <th>Điểm</th>
+                                    {% if mald == 'KTKT' %}<th>Đủ ĐK?</th>{% endif %}
                                     <th></th>
                                 </tr>
                             </thead>
@@ -56,6 +76,13 @@
                                     <td>
                                         <input type="number" name="C{{ diem.sv.id }}-{{ diem.tp.id }}" min="0" max="10" step="0.5" value="{{ diem.diem }}">
                                     </td>
+                                    {% if mald == 'KTKT' %}
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center form-check form-switch">
+                                            <input class="form-check-input" name="Att{{ diem.sv.id }}" type="checkbox" {% if diem.att == 1 %} checked="checked" {% endif %}>
+                                        </div>
+                                    </td>
+                                    {% endif %}
                                     <td>
                                         <button
                                         class="btn btn-secondary"

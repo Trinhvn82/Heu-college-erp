@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from .models import Lop, Ctdt, Hssv, Hsgv, Hsns, SvStatus, HocphiStatus, LopMonhoc, Trungtam, LogDiem
-from .models import NsLop, LopHk
+from .models import NsLop, LopHk, Hoclai, DiemTk
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -300,7 +300,68 @@ def report_dd(request, opt=None):
 
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
-def report_kqht(request, opt = None):
+def report_td(request, opt=None):
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
+#    lh = Lop.objects.all()
+    #query_tt = None
+    lop= None
+    lmhs = None
+    query_name, dsl = "", None
+    #from datetime import date
+    #today = str(date.today())
+    if request.method == "POST":
+        query_name = request.POST.get('ten', None)
+        if query_name and lh:
+            dsl = lh.filter(ten__contains=query_name)
+
+        #lop_id = request.POST.get('lop', None)
+        #svs = Hssv.objects.filter(lop_id=lop_id)
+        #lop = Lop.objects.get(id=lop_id)
+        if dsl:
+            for l in dsl:
+                lmh0, lmh1,pt = None, None,0
+                td="Không có dữ liệu!"
+                lhks = LopHk.objects.filter(lop = l).select_related('hk').order_by('hk_id')
+                if lhks.exists() and lhks.count() == 4:
+                    if lhks[0].start_hk and lhks[3].end_hk:
+                        start_lop = lhks[0].start_hk
+                        end_lop = lhks[3].end_hk
+                        if date.today() > end_lop:
+                            td="Lớp đã kết thúc!"
+                        elif date.today() < start_lop: 
+                            td="Lớp chưa bắt đầu!"
+                        else:
+                            sn1 = end_lop - start_lop
+                            sn2 = date.today() - start_lop
+                            pt = round((sn2.days/sn1.days)*100,0)
+                            td= str(pt) + "%"
+
+                #lmh = LopMonhoc.objects.get(id = lmh_id)
+                l.td = td
+                l.pt = pt
+                hks = Hocky.objects.all()
+                for hk in hks:
+                    hk.lmh0 = LopMonhoc.objects.filter(lop = l, hk=hk, status = "Lập kế hoạch").count()
+                    hk.lmh1 = LopMonhoc.objects.filter(lop = l, hk=hk, status = "Đã hoàn thành").count()
+                l.hks = hks
+        messages.success(request, "Tìm kiếm thành công!")
+
+    context = {
+        "dsl": dsl,
+        "query_name": query_name
+    }
+    return render(request, "sms/report_td.html", context)
+
+@login_required
+@permission_required('dashboard.view_report',raise_exception=True)
+def report_kqht_old(request, opt = None):
     if request.user.is_superuser:
         lh = Lop.objects.all()
     elif request.user.is_internalstaff:
@@ -523,6 +584,204 @@ def report_kqht(request, opt = None):
             # Define the Excel file response
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = 'attachment; filename=kqht-lop.xlsx'
+
+            # Use Pandas to write the DataFrame to an Excel file
+            df.to_excel(response, index=False, engine='openpyxl')
+
+            return response
+
+            
+    context = {
+        "lh": lh,
+        "lop": lop,
+        "svs": svs
+        # "query_tt": query_tt,
+        # "query_lop": query_lop
+    }
+    return render(request, "sms/report_kqht.html", context)
+
+@login_required
+@permission_required('dashboard.view_report',raise_exception=True)
+def report_kqht(request, opt = None):
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
+    #query_tt = None
+    svs = None
+    lop= None
+    if request.method == "POST":
+        lop_id = request.POST.get('lop', None)
+        locale.setlocale(locale.LC_ALL, 'vi_VN')
+        svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+        lop = Lop.objects.get(id=lop_id)
+        lhk = LopHk.objects.filter(lop = lop).select_related('hk').order_by('hk_id')
+        next_hk=0
+
+        for l in lhk:
+            if l.end_hk and date.today() > l.end_hk:
+                next_hk = l.hk.ma
+                #break
+        if next_hk == 0:
+            next_hk = lhk.last().hk.ma + 1
+        else:
+            next_hk = next_hk + 1
+        print(next_hk)
+        lds = Loaidiem.objects.all()
+        hks = Hocky.objects.filter(ma__lt = next_hk).order_by('ma')
+        mhl=[]
+        ldl=[]
+        dtpl=[]
+
+
+
+        # for mh in lmhs:
+        #     ldl=[]
+        #     for l in ld:
+        #         dtpl=[]
+        #         for dtp in Diemthanhphan.objects.filter(sv_id = sv_id, monhoc_id = mh.monhoc_id, tp_id = l.id, status=1).order_by('log_id'):
+        #             dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+
+        #         ldl.append({"ma":l.ma,"dtplst": dtpl})
+
+        #     mhl.append({ "ma":mh.monhoc.ten,"ttdiem0": ldl[0], "ttdiem": ldl})
+
+        for sv in svs:
+            hkl=[]
+            tctl, diem4 = 0,0
+            xl = ""
+            for hk in hks:
+                lml=[]
+                tbmhk, tchk = 0,0
+                dtks = DiemTk.objects.filter(sv_id = sv.id, hk_id = hk.id)
+                for dtk in dtks:
+                              
+                    if not dtk.mhdk:    
+                        tbmhk= tbmhk+ dtk.tbm*dtk.tc
+                        tchk=tchk+dtk.tc
+                        
+                tbmhk = round(tbmhk/tchk,1) if tchk else 0
+                if tbmhk >=8.5 and tbmhk <=10:
+                    tbmhk4 = 4
+                    tbmhkc = "A"
+                elif tbmhk >=7 and tbmhk <=8.4:
+                    tbmhk4 = 3
+                    tbmhkc = "B"
+                elif tbmhk >=5.5 and tbmhk <=6.9:
+                    tbmhk4 = 2
+                    tbmhkc = "C"
+                elif tbmhk >=4 and tbmhk <=5.4:
+                    tbmhk4 = 1
+                    tbmhkc = "D"
+                elif tbmhk  < 4:
+                    tbmhk4 = 0
+                    tbmhkc = "F"
+
+                tctl = tctl + tchk
+                diem4 = diem4 +tbmhk4*tchk
+
+                tbctl = round(diem4/tctl,1) if tctl else 0
+
+                if tbctl >=3.5 and tbctl <=4:
+                    xl = "Xuất xắc"
+                elif tbctl >=3 and tbctl <3.5:
+                    xl = "Giỏi"
+                elif tbctl >=2.5 and tbctl <3:
+                    xl = "Khá"
+                elif tbctl >=2 and tbctl <2.5:
+                    xl = "Trung bình"
+                elif tbctl <2:
+                    xl = "Yếu"
+
+                hkl.append({"ma":hk.ma, "tchk":tchk,"tbmhk":tbmhk, "tbmhkc":tbmhkc, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
+
+                # hk.tchk = tchk
+                # hk.tbmhk = round(tbmhk/tchk,1)
+            sv.hkl = hkl
+        messages.success(request, "Tạo báo cáo theo tiêu chí thành công!")
+
+        #export to excel
+        if opt ==1:
+            #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+            exp=[]
+            exp.append({"Lớp": lop.ten
+                        })
+            for sv in svs:
+                tchk1,tbmhk1,tbmhk41,tbctl1,xl1 = None,None,None,None,None
+                tchk2,tbmhk2,tbmhk42,tbctl2,xl2 = None,None,None,None,None
+                tchk2,tbmhk3,tbmhk43,tbctl3,xl3 = None,None,None,None,None
+                tchk4,tbmhk4,tbmhk44,tbctl4,xl4 = None,None,None,None,None
+                for hk in sv.hkl:
+                    print('printing hk')
+                    if hk['ma'] == 1:
+                        tchk1 = hk['tchk']
+                        tbmhk1 = hk['tbmhk']
+                        tbmhkc1 = hk['tbmhkc']
+                        tbmhk41 = hk['tbmhk4']
+                        tbctl1 = hk['tbctl']
+                        xl1 = hk['xl']
+                    elif hk['ma'] == 2:
+                        tchk2 = hk['tchk']
+                        tbmhk2 = hk['tbmhk']
+                        tbmhkc2 = hk['tbmhkc']
+                        tbmhk42 = hk['tbmhk4']
+                        tbctl2 = hk['tbctl']
+                        xl2 = hk['xl']
+                    elif hk['ma'] == 3:
+                        tchk3 = hk['tchk']
+                        tbmhk3 = hk['tbmhk']
+                        tbmhkc3 = hk['tbmhkc']
+                        tbmhk43 = hk['tbmhk4']
+                        tbctl3 = hk['tbctl']
+                        xl3 = hk['xl']
+                    elif hk['ma'] == 4:
+                        tchk4 = hk['tchk']
+                        tbmhk4 = hk['tbmhk']
+                        tbmhkc4 = hk['tbmhkc']
+                        tbmhk44 = hk['tbmhk4']
+                        tbctl4 = hk['tbctl']
+                        xl4 = hk['xl']
+
+                    
+                exp.append({"Mã học tên": sv.msv,
+                            "Họ tên": sv.hoten, 
+                            "HK1 TC":tchk1 , 
+                            "HK1 TBM 10":tbmhk1 , 
+                            "HK1 TBM CHỮ":tbmhkc1 , 
+                            "HK1 TBM 4":tbmhk41 , 
+                            "HK1 TBCTL":tbctl1 , 
+                            "HK1 XL":xl1 , 
+                            "HK2 TC":tchk2 , 
+                            "HK2 TBM 10":tbmhk2, 
+                            "HK2 TBM CHỮ":tbmhkc2 , 
+                            "HK2 TBM 4":tbmhk42 , 
+                            "HK2 TBCTL":tbctl2 , 
+                            "HK2 XL":xl2 , 
+                            "HK3 TC":tchk3 , 
+                            "HK3 TBM 10":tbmhk3, 
+                            "HK3 TBM CHỮ":tbmhkc3 , 
+                            "HK3 TBM 4":tbmhk43 , 
+                            "HK3 TBCTL":tbctl3 , 
+                            "HK3 XL":xl3 , 
+                            "HK4 TC":tchk4 , 
+                            "HK4 TBM 10":tbmhk4, 
+                            "HK4 TBM CHỮ":tbmhkc4 , 
+                            "HK4 TBM 4":tbmhk44 , 
+                            "HK4 TBCTL":tbctl4 , 
+                            "HK4 XL":xl4 , 
+                            })
+
+            # Convert the QuerySet to a DataFrame
+            df = pd.DataFrame(list(exp))
+            tenf = "kqht_"+ lop.ten + ".xlsx"
+            # Define the Excel file response
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            #response['Content-Disposition'] = 'attachment; filename=kqht-lop.xlsx'
+            response['Content-Disposition'] = 'attachment; filename=' + tenf
 
             # Use Pandas to write the DataFrame to an Excel file
             df.to_excel(response, index=False, engine='openpyxl')
@@ -905,14 +1164,17 @@ def import_hp81(request, lop_id):
 def import_diemtp(request, lop_id, lmh_id, ld_id):
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
     ld = Loaidiem.objects.get(id = ld_id)
-    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    hls = Hoclai.objects.filter(lmh_id = lmh_id)
+    stud_list = sorted(Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True)), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
     #teachers = Hsgv.objects.all().order_by('hoten')
     if request.method == "POST":
         excel_file = request.FILES['excel_file']
         wb = openpyxl.load_workbook(excel_file)
         if 'diemtp' not in wb.sheetnames:
             messages.error(request, "File excel khong dung format")
-            return redirect("diemtp-lmh-lst", lmh_id)
+            return redirect("diemtp-lmh-lst", lmh_id, 1)
 
         sheet = wb["diemtp"]
         #for r in range(3, sheet.max_row+1):
@@ -922,7 +1184,7 @@ def import_diemtp(request, lop_id, lmh_id, ld_id):
         log.ten = request.user.username
         log.save()
         for sv in stud_list:
-            dtp = Diemthanhphan(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, diem = 0, log=log) 
+            dtp = Diemthanhphan(sv_id = sv.id, tp_id = ld_id, lmh_id=lmh_id, monhoc_id = lmh.monhoc_id, status=0, att=0, diem = 0, log=log) 
             dtp.save()
 
         for r in range(2, sheet.max_row+1):
@@ -935,15 +1197,17 @@ def import_diemtp(request, lop_id, lmh_id, ld_id):
                     messages.error(request, 'Dòng: '+str(r)+' thiếu thông tin bắt buộc')
                     continue
                 if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id).exists():
-                    messages.error(request, 'Dòng: '+str(r)+' không có trong danh sách lóp')
+                    messages.error(request, 'Dòng: '+str(r)+' không có trong danh sách tham gia môn học')
                     continue
                 if not (v3 >=0 and v3<=10):
                     messages.error(request, 'Dòng: '+str(r)+' có điểm sai định dạng')
                     continue
                 sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop.id)[0]
 
-                mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, log=log)[0]
+                mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, lmh_id=lmh_id, monhoc_id = lmh.monhoc_id, log=log)[0]
                 mark.diem = v3
+                mark.status = 1
+                mark.att = 1
                 mark.save()
     
                 #send notification to Hv
@@ -954,7 +1218,7 @@ def import_diemtp(request, lop_id, lmh_id, ld_id):
             #mark.save()
 
         messages.success(request, "Import thông tin điểm thành công!")
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id, 1)
 
     context = {
         "lmh": lmh,
@@ -975,7 +1239,7 @@ def import_edit_diemtp(request, lop_id, lmh_id, ld_id, log_id):
         wb = openpyxl.load_workbook(excel_file)
         if 'diemtp' not in wb.sheetnames:
             messages.error(request, "File excel khong dung format")
-            return redirect("diemtp-lmh-lst", lmh_id)
+            return redirect("diemtp-lmh-lst", lmh_id,1)
 
         sheet = wb["diemtp"]
         #for r in range(3, sheet.max_row+1):
@@ -997,19 +1261,21 @@ def import_edit_diemtp(request, lop_id, lmh_id, ld_id, log_id):
                     messages.error(request, 'Mã: ' + v1+ ' thiếu thông tin bắt buộc')
                     continue
                 if not Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id).exists():
-                    messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách lóp')
+                    messages.error(request, 'Mã: ' + v1+ ' không có trong danh sách tham gia môn học')
                     continue
                 if not (v3 >=0 and v3<=10):
                     messages.error(request, 'Mã: ' + v1+ ' không có điểm')
                     continue
                 sv = Hssv.objects.filter(msv=v1, hoten=v2, lop_id = lmh.lop_id)[0]
-                if Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, status=1, log=log).exists():
-                    mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc_id, log=log)[0]
+                if Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, lmh_id=lmh_id, log=log).exists():
+                    mark = Diemthanhphan.objects.filter(sv_id = sv.id, tp_id = ld_id, lmh_id=lmh_id, monhoc_id = lmh.monhoc_id, log=log)[0]
                 #create new
                 else:
-                    mark = Diemthanhphan(sv_id = sv.id, tp_id = ld_id, monhoc_id=lmh.monhoc.id, status=1, diem = 0, log=log) 
+                    mark = Diemthanhphan(sv_id = sv.id, tp_id = ld_id,lmh_id=lmh_id, monhoc_id = lmh.monhoc_id, diem = 0, log=log) 
 
                 mark.diem = v3
+                mark.status = 1
+                mark.att = 1
                 mark.save()
                 #send notification to Hv
                 if sv.user:
@@ -1020,7 +1286,7 @@ def import_edit_diemtp(request, lop_id, lmh_id, ld_id, log_id):
 #                mark.save()
 
         messages.success(request, "Import thông tin điểm thành công!")
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id,1)
 
     context = {
         "lmh": lmh,

@@ -58,6 +58,7 @@ urlpatterns = [
     path('report_ttgv/<int:opt>/', views_report.report_ttgv, name='report_ttgv'),
     path('report_kqht/<int:opt>/', views_report.report_kqht, name='report_kqht'),
     path('report_dd/<int:opt>/', views_report.report_dd, name='report_dd'),
+    path('report_td/<int:opt>/', views_report.report_td, name='report_td'),
     path('thongbao/', views_report.tb_list, name='tb_list'),
 
     path('export_hs81/', views_report.export_hs81, name='export_hs81'),
@@ -104,7 +105,8 @@ urlpatterns = [
     path('EditLopMonhoc/<int:lmh_id>/', views.edit_lopmonhoc, name='edit_lopmonhoc'),
     path('HistoryLopMonhoc/<int:lmh_id>/', views.history_lopmonhoc, name='history_lopmonhoc'),
     path('EditLichhoc/<int:lh_id>/', views.edit_lichhoc, name='edit_lichhoc'),
-
+   path('hoclai/<int:lmh_id>/', views.hoclai_list, name='hoclai_list'),
+ 
     path('CreateDiem/<int:lh_id>/', views.create_diem, name='create_diem'),
     path('CreateLop/', views.create_lop, name='create_lop'),
     path('CreatexLop/', views.create_xlop, name='create_xlop'),
@@ -131,7 +133,7 @@ urlpatterns = [
     path('alldiem/<int:lop_id>/', views.diem_lop, name='diem-lop_list'),
     path('diemlmh/<int:lmh_id>/', views.diem_lmh, name='diem-lmh'),
     path('diemlmh-lst/<int:lmh_id>/', views.diem_lmh_lst, name='diem-lmh-lst'),
-    path('diemtplmh-lst/<int:lmh_id>/', views.diemtp_lmh_lst, name='diemtp-lmh-lst'),
+    path('diemtplmh-lst/<int:lmh_id>/<int:opt>/', views.diemtp_lmh_lst, name='diemtp-lmh-lst'),
     path('detailsDtp/<int:lop_id>/<int:lmh_id>/', views.details_diemtp, name='details_diemtp'),
 
     path('gvlmh-lst/<int:lmh_id>/', views.gv_lmh_lst, name='gv-lmh-lst'),
@@ -149,6 +151,9 @@ urlpatterns = [
     path('upload-sv/<int:hv_id>/', views.upload_file_hv, name='upload_file_hv'),
     path('upload-lmh/<int:lmh_id>/', views.upload_file_lmh, name='upload_file_lmh'),
 
+    path('hoclai-lmh/<int:lmh_id>/', views.hoclai_list, name='hoclai_list'),
+    path('delete-hoclai/<int:lmh_id>/<int:sv_id>/', views.delete_hoclai, name='delete_hoclai'),
+
     path('download-temp/<int:file_id>/', views.download_file, name='download_file'),
     path('view-file/<int:file_id>/', views.view_file, name='view_file'),
     path('delete-file/<int:file_id>/', views.delete_file, name='delete_file'),
@@ -157,6 +162,9 @@ urlpatterns = [
     path('delete-file-lmh/<int:lmh_id>/<int:file_id>/', views.delete_file_lmh, name='delete_file_lmh'),
     path('download-temp1/', views.download_file1, name='download_file1'),
     path('download-temp2/', views.download_file2, name='download_file2'),
+
+    path('download-temp-diem/<int:lmh_id>/', views.download_temp_diem, name='download_temp_diem'),
+
 
     path('add-ns/<int:id>/', add_nsuser, name='add_ns'),
     path('resetpwd/<int:ns_id>/', reset_pwd, name='reset_pwd'),

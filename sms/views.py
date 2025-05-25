@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop, GvLop, GvMonhoc
+from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop, GvLop, GvMonhoc, Hoclai, DiemTk
+
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -338,7 +339,7 @@ def diem_lmh_lst(request, lmh_id):
     return render(request, "sms/diem-lmh-lst.html", context)
 
 @login_required
-def diemtp_lmh_lst(request, lmh_id):
+def diemtp_lmh_lst(request, lmh_id, opt):
 
     #students = Hssv.objects.all()
     lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
@@ -346,71 +347,130 @@ def diemtp_lmh_lst(request, lmh_id):
 
     tenlop = Lop.objects.get(id = lop_id).ma
     tenmh = Monhoc.objects.get(id = mh_id).ten
-    lds= Loaidiem.objects.all()
-    lol=[]
-    diems = Diemthanhphan.objects.all()
-    stud_list = Hssv.objects.filter(lop_id = lop_id)
+
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop","monhoc", "hk")[0]
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+
+    hls = Hoclai.objects.filter(lmh_id = lmh_id)
+    svs = sorted(Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True)), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+
     lds= Loaidiem.objects.all().order_by('id')
     for ld in lds:
-        log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('id')
+        log = LogDiem.objects.filter(id__in=Diemthanhphan.objects.filter(sv__in=svs, monhoc_id =mh_id, tp_id=ld.id, status = 1).values_list('log_id', flat=True)).order_by('id')
         ld.log= log
 
     #Details section
 
-    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop","monhoc")[0]
-    locale.setlocale(locale.LC_ALL, 'vi_VN')
-    svs = sorted(Hssv.objects.filter(lop_id = lmh.lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
 
-    #svs = Hssv.objects.filter(lop_id=lmh.lop_id)
-    dtp = Diemthanhphan.objects.filter(sv__in = svs)
-    lds1 = Loaidiem.objects.all()
-    svl=[]
+    if opt:
+        for sv in svs:
+            tbmhk, tchk = 0,0
+            ldl=[]
+            tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
+            kttx1,kttx2,kttx3,ktdk1,ktdk2,ktdk3,ktkt1,ktkt2 = 0,0,0,0,0,0,0,0
+            n_kttx1,n_kttx2,n_kttx3,n_ktdk1,n_ktdk2,n_ktdk3,n_ktkt1,n_ktkt2 = 0,0,0,0,0,0,0,0
+            for ld in lds:
+                dtpl=[]
+                dtps = Diemthanhphan.objects.filter(sv = sv, lmh_id = lmh_id, tp_id = ld.id, status=1).order_by('log_id')
 
-    for sv in svs:
-        ldl=[]
-        tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
-        print(sv.hoten)
-        for ld in lds1:
-            dtpl=[]
-            dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = lmh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
-#            logs = dtps.log
-            for dtp in dtps:
-                dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
-                print(ld.ma)
-                print(ld.heso)
-                print(dtp.diem)
-                if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
-                    tbm1_diem = tbm1_diem + dtp.diem * ld.heso
-                    tbm1_heso = tbm1_heso + ld.heso
-                    print(tbm1_diem)
-                    print(tbm1_heso)
-                elif ld.ma == 'KTKT' and dtp.diem > 0:
-                    tbm2_diem = dtp.diem * ld.heso
-                    print(tbm2_diem)
-                    print(tbm2_heso)
-            if ld.ma == 'KTKT':
-                tbm2_heso = ld.heso
-            ldl.append({"ma":ld.ma, "dtplst": dtpl})
-            
-        tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
+                i=1
+                for dtp in dtps:
+                    if i==1 and ld.ma == 'KTTX':
+                        kttx1 = dtp.diem
+                        n_kttx1 = 1
+                    elif i==2 and ld.ma == 'KTTX':
+                        kttx2 = dtp.diem
+                        n_kttx2 = 1
+                    elif i==3 and ld.ma == 'KTTX':
+                        kttx3 = dtp.diem
+                        n_kttx3 = 1
+                    elif i==1 and ld.ma == 'KTĐK':
+                        ktdk1 = dtp.diem
+                        n_ktdk1 = 1
+                    elif i==2 and ld.ma == 'KTĐK':
+                        ktdk2 = dtp.diem
+                        n_ktdk2 = 1
+                    elif i==3 and ld.ma == 'KTĐK':
+                        ktdk3 = dtp.diem
+                        n_ktdk3 = 1
+                    elif i==1 and ld.ma == 'KTKT' and dtp.att ==1:
+                        ktkt1 = dtp.diem
+                        n_ktkt1 = 1
+                    elif i==2 and ld.ma == 'KTKT' and dtp.att ==1:
+                        ktkt2 = dtp.diem
+                        n_ktkt2 = 1
+                    i=i+1
+                    dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
+                    if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
+                        tbm1_diem = tbm1_diem + dtp.diem * ld.heso
+                        tbm1_heso = tbm1_heso + ld.heso
+                    elif ld.ma == 'KTKT' and dtp.att ==1:
+                        tbm2_diem = dtp.diem * ld.heso
+                        # tbm2_heso = ld.heso
+                        # print(tbm2_diem)
+                        # print(tbm2_heso)
+                if ld.ma == 'KTKT':
+                    tbm2_heso = ld.heso
+                
+            tbmkt = round((tbm1_diem/tbm1_heso),1) if tbm1_heso else 0
+            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
+            if tbm >=8.5 and tbm <=10:
+                tbm4 = 4
+                tbmc = "A"
+            elif tbm >=7 and tbm <=8.4:
+                tbm4 = 3
+                tbmc = "B"
+            elif tbm >=5.5 and tbm <=6.9:
+                tbm4 = 2
+                tbmc = "C"
+            elif tbm >=4 and tbm <=5.4:
+                tbm4 = 1
+                tbmc = "D"
+            elif tbm  < 4:
+                tbm4 = 0
+                tbmc = "F"
 
-        svl.append({ "ma":sv.msv,"hoten":sv.hoten,"tbm": tbm,"ttdiem": ldl})
+            if DiemTk.objects.filter(sv_id =sv.id, lmh_id = lmh_id).exists():
+                dtk = DiemTk.objects.get(sv_id =sv.id, lmh_id = lmh_id)
+            else:
+                dtk = DiemTk(sv_id =sv.id, lmh_id = lmh_id)
+            dtk.ma = sv.msv
+            dtk.ten = sv.hoten
+            dtk.hk_id = lmh.hk_id
+            dtk.monhoc_id = lmh.monhoc_id
+            dtk.monhoc = lmh.monhoc.ten
+            dtk.mhdk = lmh.mhdk
+            dtk.tc = lmh.monhoc.sotinchi
+            dtk.tbm = tbm
+            dtk.tbmc = tbmc
+            dtk.tbm4 = tbm4
+            dtk.tbmkt = tbmkt
+            dtk.kttx1 = kttx1
+            dtk.n_kttx1 = n_kttx1
+            dtk.kttx2 = kttx2
+            dtk.n_kttx2 = n_kttx2
+            dtk.kttx3 = kttx3
+            dtk.n_kttx3 = n_kttx3
+            dtk.ktdk1 = ktdk1
+            dtk.n_ktdk1 = n_ktdk1
+            dtk.ktdk2 = ktdk2
+            dtk.n_ktdk2 = n_ktdk2
+            dtk.ktdk3 = ktdk3
+            dtk.n_ktdk3 = n_ktdk3
+            dtk.ktkt1 = ktkt1
+            dtk.n_ktkt1 = n_ktkt1
+            dtk.ktkt2 = ktkt2
+            dtk.n_ktkt2 = n_ktkt2
+            dtk.save()
 
-    # context = {
-    #     "svl": svl,
-    #     "sv0": svl[0],
-    #     "lmh": lmh
-    # }
-
+    dtks = DiemTk.objects.filter(lmh_id = lmh_id)
     context = {
         "tenlop": tenlop,
         "lop_id": lop_id,
         "lds": lds,
         "lmh_id":lmh_id,
-        "lol":lol,
         "tenmh": tenmh,
-        "svl": svl,
-        "sv0": svl[0] if svl else None,
+        "lml": dtks,
         "lmh": lmh
     }
     return render(request, "sms/diemtp-lmh-lst.html", context)
@@ -519,7 +579,7 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
                 mark.status = 1
                 mark.save()
         messages.success(request, "Cap nhat diem thanh cong!")
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id,1)
 
 
     if not diems.first():
@@ -546,27 +606,28 @@ def diem_lmh_dtp(request, lmh_id, dtp_id):
 @login_required
 def create_diemtp(request, lop_id, lmh_id, dtp_id):
 
-    #students = Hssv.objects.all()
-    #lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop", "monhoc")[0]
+    mald = Loaidiem.objects.get(id = dtp_id).ma
 
-    #tenlop = Lop.objects.get(id = lop_id).ma
-    #tenmh = Monhoc.objects.get(id = mh_id).ten
     locale.setlocale(locale.LC_ALL, 'vi_VN')
-    #ans = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda ans: locale.strxfrm(ans.ten), reverse=False)
-    stud_list = sorted(Hssv.objects.filter(lop_id = lmh.lop.id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
 
-    #stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
-    #lds= Loaidiem.objects.filter(ma=dtp_id)
-    #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
+    hls = Hoclai.objects.filter(lmh_id = lmh_id)
+    stud_list = sorted(Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True)), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+
     if request.method == "POST":
         for stud in stud_list:
             try:
                 id = "C"+str(stud.id)+"-"+str(dtp_id)
+
+                id_att = "Att"+str(stud.id)
+                att = request.POST.get(id_att, None)
+
                 diem = request.POST[id]
                 log_id = request.POST["log"]
-                mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc_id, log_id=log_id)
+                mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, lmh_id=lmh_id,monhoc_id = lmh.monhoc_id,log_id=log_id)
                 mark.diem = diem
+                mark.att = 1 if mald != 'KTKT' else 1 if att else 0
+                mark.status = 1
                 mark.save()
                 #send notification to Hv
                 if stud.user:
@@ -576,22 +637,22 @@ def create_diemtp(request, lop_id, lmh_id, dtp_id):
                 messages.error(request, 'Nhập điểm cho mã: ' + stud.msv  + ' có lỗi:' + str(e))
 
         messages.success(request, "Cap nhat diem thanh cong!")
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id,1)
 
 
     #create mark record
     log = LogDiem(ten = request.user.username)  
     log.save()
     for stud in stud_list:
-        mark = Diemthanhphan(diem =0, status = 1, sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log=log) 
-        #mark.log = log
+        mark = Diemthanhphan(sv_id = stud.id, tp_id = dtp_id, lmh_id=lmh_id, monhoc_id = lmh.monhoc_id,log=log) 
+        print(stud.hoten)
         mark.save()
-    #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('tp_id', 'sv_id')
-    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc_id, tp_id=dtp_id, log=log).order_by('id')
+
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, lmh_id=lmh_id, tp_id=dtp_id, log=log).order_by('id')
 
     context = {
         "diems": diems,
-        "dtp_id": dtp_id,
+        "mald": mald,
         "log": log,
         "lmh":lmh
     }
@@ -603,11 +664,11 @@ def edit_diemtp(request, lop_id, lmh_id, dtp_id, log_id):
     #students = Hssv.objects.all()
     #lop_id = LopMonhoc.objects.get(id = lmh_id).lop_id
     lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("lop", "monhoc")[0]
+    mald = Loaidiem.objects.get(id = dtp_id).ma
 
-    #tenlop = Lop.objects.get(id = lop_id).ma
-    #tenmh = Monhoc.objects.get(id = mh_id).ten
+    hls = Hoclai.objects.filter(lmh_id = lmh_id)
 
-    stud_list = Hssv.objects.filter(lop_id = lmh.lop.id)
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True))
     #lds= Loaidiem.objects.filter(ma=dtp_id)
     #diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =mh_id, tp_id=dtp_id).order_by('tp_id', 'sv_id')
     log = LogDiem.objects.get(id = log_id)
@@ -617,24 +678,33 @@ def edit_diemtp(request, lop_id, lmh_id, dtp_id, log_id):
         log.save()
         for stud in stud_list:
             id = "C"+str(stud.id)+"-"+str(dtp_id)
+
             if request.POST.get(id, False):
+                id_att = "Att"+str(stud.id)
+                att = request.POST.get(id_att, None)
+
                 diem = request.POST.get(id, False)
-                mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, monhoc_id=lmh.monhoc.id, log_id=log_id)
+                mark = Diemthanhphan.objects.get(sv_id = stud.id, tp_id = dtp_id, lmh_id = lmh_id, log_id=log_id)
                 mark.diem = diem
                 mark.status = 1
+                mark.att = 1 if mald != 'KTKT' else 1 if att else 0
                 mark.save()
                 #send notification to Hv
                 if stud.user:
                     notify.send(sender=stud.user, recipient= stud.user, verb='Thông tin điểm được cập nhật trên hệ thống', level='info')
 
         messages.success(request, "Cap nhat diem thanh cong!")
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id, 1)
 
-    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, monhoc_id =lmh.monhoc.id, tp_id=dtp_id, log=log).order_by('id')
+    diems = Diemthanhphan.objects.all().select_related("sv", "tp", "monhoc").filter(sv__in=stud_list, lmh_id = lmh_id, tp_id=dtp_id, log=log).order_by('id')
+
+    for diem in diems:
+        print(diem.sv.hoten)
+        print(diem.diem) 
 
     context = {
         "diems": diems,
-        "dtp_id": dtp_id,
+        "mald": mald,
         "log": log,
         "lmh":lmh
     }
@@ -644,18 +714,21 @@ def edit_diemtp(request, lop_id, lmh_id, dtp_id, log_id):
 def delete_diemtp(request, lmh_id, dtp_id, log_id):
 
     lmh = LopMonhoc.objects.get(id = lmh_id)
-    stud_list = Hssv.objects.filter(lop_id = lmh.lop_id)
+    hls = Hoclai.objects.filter(lmh_id = lmh_id)
+    
+    stud_list = Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True))
     try:
         Diemthanhphan.objects.filter(sv__in=stud_list
                                     , monhoc_id =lmh.monhoc.id
+                                    , lmh_id = lmh.id
                                     , tp_id=dtp_id
                                     , log_id=log_id).delete()
         
         messages.success(request, "Xóa điểm thành công!")
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id, 1)
     except Exception as e:
         messages.error(request, 'Lỗi khi xóa điểm: ' + str(e))
-        return redirect("diemtp-lmh-lst", lmh_id)
+        return redirect("diemtp-lmh-lst", lmh_id,1)
 
 @login_required
 def lop81_hk(request, lop_id, hk_ma):
@@ -2534,104 +2607,16 @@ def details_sv(request, sv_id, opt = None):
     for hk in hks:
         lml=[]
         tbmhk, tchk = 0,0
-        lmhs = LopMonhoc.objects.filter(lop_id = sv.lop_id, hk_id = hk.id).select_related("monhoc").order_by('ngaystart')
-        print(hk.ten)
-        for mh in lmhs:
-            print(mh.monhoc.ten)
-            ldl=[]
-            tbm1_diem, tbm1_heso, tbm2_diem, tbm2_heso, tbm= 0,0,0,0,0
-            kttx1,kttx2,kttx3,ktdk1,ktdk2,ktdk3,ktkt1,ktkt2 = 0,0,0,0,0,0,0,0
-            n_kttx1,n_kttx2,n_kttx3,n_ktdk1,n_ktdk2,n_ktdk3,n_ktkt1,n_ktkt2 = 0,0,0,0,0,0,0,0
-            for ld in lds:
-                dtpl=[]
-                dtps = Diemthanhphan.objects.filter(sv = sv, monhoc_id = mh.monhoc_id, tp_id = ld.id, status=1).order_by('log_id')
+        dtks = DiemTk.objects.filter(sv_id = sv.id, hk_id = hk.id)
+        for dtk in dtks:
+                        
+            if not dtk.mhdk:    
+                tbmhk= tbmhk+ dtk.tbm*dtk.tc
+                tchk=tchk+dtk.tc
 
-                i=1
-                for dtp in dtps:
-                    if i==1 and ld.ma == 'KTTX':
-                        kttx1 = dtp.diem
-                        n_kttx1 = 1
-                    elif i==2 and ld.ma == 'KTTX':
-                        kttx2 = dtp.diem
-                        n_kttx2 = 1
-                    elif i==3 and ld.ma == 'KTTX':
-                        kttx3 = dtp.diem
-                        n_kttx3 = 1
-                    elif i==1 and ld.ma == 'KTĐK':
-                        ktdk1 = dtp.diem
-                        n_ktdk1 = 1
-                    elif i==2 and ld.ma == 'KTĐK':
-                        ktdk2 = dtp.diem
-                        n_ktdk2 = 1
-                    elif i==3 and ld.ma == 'KTĐK':
-                        ktdk3 = dtp.diem
-                        n_ktdk3 = 1
-                    elif i==1 and ld.ma == 'KTKT':
-                        ktkt1 = dtp.diem
-                        n_ktkt1 = 1
-                    elif i==2 and ld.ma == 'KTKT':
-                        ktkt2 = dtp.diem
-                        n_ktkt2 = 1
-                    i=i+1
-                    dtpl.append({"id":dtp.log_id,"mark":dtp.diem})
-                    if ld.ma == 'KTĐK' or ld.ma == 'KTTX':
-                        tbm1_diem = tbm1_diem + dtp.diem * ld.heso
-                        tbm1_heso = tbm1_heso + ld.heso
-                    elif ld.ma == 'KTKT' and dtp.diem > 0:
-                        tbm2_diem = dtp.diem * ld.heso
-                        # tbm2_heso = ld.heso
-                        # print(tbm2_diem)
-                        # print(tbm2_heso)
-                if ld.ma == 'KTKT':
-                    tbm2_heso = ld.heso
-                ldl.append({"ma":ld.ma, "dtplst": dtpl})
-                
-            tbmkt = round((tbm1_diem/tbm1_heso),1) if tbm1_heso else 0
-            tbm = round(((tbm1_diem/tbm1_heso)*(10-tbm2_heso) + tbm2_diem)/10,1) if tbm1_heso else (round((tbm2_diem/tbm2_heso),1) if tbm2_heso else 0)
-            if tbm >=8.5 and tbm <=10:
-                tbm4 = 4
-                tbmc = "A"
-            elif tbm >=7 and tbm <=8.4:
-                tbm4 = 3
-                tbmc = "B"
-            elif tbm >=5.5 and tbm <=6.9:
-                tbm4 = 2
-                tbmc = "C"
-            elif tbm >=4 and tbm <=5.4:
-                tbm4 = 1
-                tbmc = "D"
-            elif tbm  < 4:
-                tbm4 = 0
-                tbmc = "F"
-            print(tbm)
-            tbmhk= tbmhk+float(tbm)*mh.monhoc.sotinchi
-            tchk=tchk+mh.monhoc.sotinchi
-            lml.append({ "ten":mh.monhoc.ten,
-                        "tc": mh.monhoc.sotinchi,
-                        "tbm": tbm,
-                        "tbmc": tbmc,
-                        "tbm4": tbm4,
-                        "tbmkt": tbmkt,
-                        "kttx1": kttx1, 
-                        "n_kttx1": n_kttx1, 
-                        "kttx2": kttx2, 
-                        "n_kttx2": n_kttx2, 
-                        "kttx3": kttx3,
-                        "n_kttx3": n_kttx3, 
-                        "ktdk1": ktdk1,
-                        "n_ktdk1": n_ktdk1, 
-                        "ktdk2": ktdk2, 
-                        "n_ktdk2": n_ktdk2, 
-                        "ktdk3": ktdk3,
-                        "n_ktdk3": n_ktdk3, 
-                        "ktkt1": ktkt1,
-                        "n_ktkt1": n_ktkt1, 
-                        "ktkt2": ktkt2,
-                        "n_ktkt2": n_ktkt2
-                        })
-        hk.lml = lml
+        hk.lml = dtks
         hk.tchk = tchk
-        hk.tbmhk = round(tbmhk/tchk,1)
+        hk.tbmhk = round(tbmhk/tchk,1) if tchk else 0
         if hk.tbmhk >=8.5 and hk.tbmhk <=10:
             hk.tbmhk4 = 4
             hk.tbmhkc = "A"
@@ -2649,7 +2634,7 @@ def details_sv(request, sv_id, opt = None):
             hk.tbmhkc = "F"
         tctl = tctl + tchk
         diem4 = diem4 + hk.tbmhk4*tchk
-        hk.tbctl = round(diem4/tctl,1)
+        hk.tbctl = round(diem4/tctl,1) if tctl else 0
 
         if hk.tbctl >=3.5 and hk.tbctl <=4:
             hk.xl = "Xuất xắc"
@@ -2689,28 +2674,31 @@ def details_sv(request, sv_id, opt = None):
                         "Xếp loại": hk.xl
                     })
             for mh in hk.lml:
-                exp.append({"Học kỳ|Môn học": mh['ten'], 
-                            "Tín chỉ": mh['tc'], 
-                            "kttx1": mh['kttx1'] if mh['n_kttx1'] else "",
-                            "kttx2": mh['kttx2'] if mh['n_kttx2'] else "",
-                            "kttx3": mh['kttx3'] if mh['n_kttx3'] else "",
-                            "ktdk1": mh['ktdk1'] if mh['n_ktdk1'] else "", 
-                            "ktdk2": mh['ktdk2'] if mh['n_ktdk2'] else "",
-                            "ktdk3": mh['ktdk3'] if mh['n_ktdk3'] else "",
-                            "TBM KT": mh['tbmkt'], 
-                            "ktkt1": mh['ktkt1'] if mh['n_ktkt1'] else "",  
-                            "ktkt2": mh['ktkt2'] if mh['n_ktkt2'] else "",
-                            "TBM 10": mh['tbm'],
-                            "TBM CHỮ": mh['tbmc'],
-                            "TBM 4": mh['tbm4']
+                exp.append({"Học kỳ|Môn học": mh.monhoc, 
+                            "Tín chỉ": mh.tc, 
+                            "kttx1": mh.kttx1 if mh.n_kttx1 else "",
+                            "kttx2": mh.kttx2 if mh.n_kttx2 else "",
+                            "kttx3": mh.kttx3 if mh.n_kttx3 else "",
+                            "ktdk1": mh.ktdk1 if mh.n_ktdk1 else "",
+                            "ktdk2": mh.ktdk2 if mh.n_ktdk2 else "",
+                            "ktdk3": mh.ktdk3 if mh.n_ktdk3 else "",
+                            "TBM KT": mh.tbmkt, 
+                            "ktkt1": mh.ktkt1 if mh.n_ktkt1 else "",
+                            "ktkt2": mh.ktkt2 if mh.n_ktkt2 else "",
+                            "TBM 10": mh.tbm,
+                            "TBM CHỮ": mh.tbmc,
+                            "TBM 4": mh.tbm4
                         })
 
         # Convert the QuerySet to a DataFrame
         df = pd.DataFrame(list(exp))
 
+        tenf = "kqht_"+ sv.msv + ".xlsx"
         # Define the Excel file response
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename=kqht-hv.xlsx'
+        #response['Content-Disposition'] = 'attachment; filename=kqht-lop.xlsx'
+        response['Content-Disposition'] = 'attachment; filename=' + tenf
+
 
         # Use Pandas to write the DataFrame to an Excel file
         df.to_excel(response, index=False, engine='openpyxl')
@@ -2827,18 +2815,20 @@ def details_sv(request, sv_id, opt = None):
                 ['', '', '', '', '', '', '', '', '', '', ''],
                 ['', '', '', '', '', '', '', '', 'Lần 1', 'Lần 2', ''],
                 ]
+
+
             for mh in hk.lml:
-                data.append([mh['ten'], 
-                            mh['kttx1'] if mh['n_kttx1'] else '',
-                            mh['kttx2'] if mh['n_kttx2'] else '',
-                            mh['kttx3'] if mh['n_kttx3'] else '',
-                            mh['ktdk1'] if mh['n_ktdk1'] else '',
-                            mh['ktdk2'] if mh['n_ktdk2'] else '',
-                            mh['ktdk3'] if mh['n_ktdk3'] else '',
-                            mh['tbmkt'], 
-                            mh['ktkt1'] if mh['n_ktkt1'] else '',
-                            mh['ktkt2'] if mh['n_ktkt2'] else '',
-                            mh['tbm']
+                data.append([mh.monhoc,
+                            mh.kttx1 if mh.n_kttx1 else "",
+                            mh.kttx2 if mh.n_kttx2 else "",
+                            mh.kttx3 if mh.n_kttx3 else "",
+                            mh.ktdk1 if mh.n_ktdk1 else "",
+                            mh.ktdk2 if mh.n_ktdk2 else "",
+                            mh.ktdk3 if mh.n_ktdk3 else "",
+                            mh.tbmkt,
+                            mh.ktkt1 if mh.n_ktkt1 else "",
+                            mh.ktkt2 if mh.n_ktkt2 else "",
+                            mh.tbm
                 ])
                 
             ptext = "<font name='%s'><b>%s</b></font>" % ("Arial", "Xếp loại học tập:")
@@ -2939,9 +2929,6 @@ def details_sv(request, sv_id, opt = None):
         hk.hp81 = Hp81.objects.get(sv_id = sv_id, hk_id = hk.id) if Hp81.objects.filter(sv_id = sv_id, hk_id = hk.id).exists() else None
 
     context = {
-#        "lml": lml,
-#        "mhl0": mhl[0],
-        "ld": ld,
         "opt": opt,
         "hks": hks,
         "hps": hps,
@@ -3222,6 +3209,30 @@ def upload_file(request):
     return render(request, "sms/file_list.html", context)
 
 @login_required
+def hoclai_list(request,lmh_id):
+    if request.method == "POST":
+        sv_id = request.POST.get('sv', None)
+        #svs = Hssv.objects.filter(lop_id=lop_id)
+        hl = Hoclai(lmh_id=lmh_id, sv_id=sv_id)
+        hl.save()
+        messages.success(request, "Thêm học viên học lại thành công!")
+
+    lmh = LopMonhoc.objects.get(id = lmh_id )
+
+    hls = Hoclai.objects.filter(lmh_id = lmh_id).select_related("sv")
+    svs = Hssv.objects.exclude(lop_id = lmh.lop_id).exclude(id__in = hls.values_list('sv_id', flat=True)).order_by('-id')
+
+
+    svl = Hssv.objects.filter(id__in= hls.values_list('sv_id', flat=True)).order_by('-id')
+    print('ok')
+    context = {
+        'svl': svl,
+        'lmh': lmh,
+        'svs': svs
+    }
+    return render(request, "sms/hoclai_list.html", context)
+
+@login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
 def upload_file_gv(request, gv_id):
 
@@ -3396,7 +3407,7 @@ def lophk_list(request, lop_id, lhk_id):
         #         messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
 
     else:
-        form = CreateLopHk(request.POST, request.FILES or None, instance=lhk)
+        form = CreateLopHk(instance=lhk)
     context = {
         'forms': form,
         'lhks': lhks,
@@ -3495,6 +3506,37 @@ def download_file(request, file_id):
     return response
 
 @login_required
+@permission_required('sms.view_uploadedfile',raise_exception=True)
+def download_temp_diem(request, lmh_id):
+
+    lmh = LopMonhoc.objects.filter(id = lmh_id).select_related("monhoc", "lop")[0]
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+
+    hls = Hoclai.objects.filter(lmh_id = lmh_id)
+    svs = sorted(Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True)), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+
+    #export to excel
+    exp=[]
+    for sv in svs:
+        exp.append({"Mã học tên": sv.msv,
+                    "Họ tên": sv.hoten, 
+                    "Điểm": "", 
+                    })
+
+    # Convert the QuerySet to a DataFrame
+    df = pd.DataFrame(list(exp))
+    tenf = lmh.lop.ten + "_"+ lmh.monhoc.ma + ".xlsx"
+    print(tenf)
+    # Define the Excel file response
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=' + tenf
+
+    # Use Pandas to write the DataFrame to an Excel file
+    df.to_excel(response, sheet_name='diemtp', index=False, engine='openpyxl')
+
+    return response
+
+@login_required
 #@permission_required('sms.view_uploadedfile',raise_exception=True)
 def view_file(request, file_id):
     #import magic
@@ -3548,6 +3590,15 @@ def delete_file(request, file_id):
         os.remove(file_path)
         messages.success(request, "File được xóa thành công!")
     return redirect('upload_file')
+
+@login_required
+def delete_hoclai(request, lmh_id, sv_id):
+
+    hl = Hoclai.objects.get(sv_id=sv_id)
+    hl.delete()
+
+    messages.success(request, "Học viên học lại được xóa thành công!")
+    return redirect('hoclai_list', lmh_id)
 
 @login_required
 #@permission_required('sms.delete_uploadedfile',raise_exception=True)

@@ -546,6 +546,7 @@ class NsPhong(models.Model):
     def __str__(self):
         return self.phong.ten
 
+
 class LopMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
     ngaystart = models.DateField(blank= True, null=True, verbose_name="Ngày bắt đầu")
@@ -556,6 +557,7 @@ class LopMonhoc(models.Model):
     monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT)
     lop = models.ForeignKey(Lop, on_delete=models.RESTRICT)
     hsdt = models.TextField(max_length=500, default= "", blank= True, null=True, verbose_name="Ghi chú Xác nhận giảng dạy")
+    mhdk = models.BooleanField(default= False, verbose_name="Môn học điều kiện")
     hsdt1 = models.BooleanField(default= False, verbose_name="Tiến độ, kế hoạch, CTĐT")
     hsdt2 = models.BooleanField(default= False, verbose_name="Phiếu báo giảng")
     hsdt3 = models.BooleanField(default= False, verbose_name="Giáo án")   
@@ -576,6 +578,17 @@ class LopMonhoc(models.Model):
     def __str__(self):
         return self.lop.ten + "-" + self.monhoc.ten
     
+class Hoclai(models.Model):
+    lmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT)
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT)
+    class Meta:
+        verbose_name = "Thi lại"
+        verbose_name_plural = "Danh sác Thi lại"
+        unique_together = ('sv','lmh',)
+        ordering = ["-id"]
+    def __str__(self):
+        return self.sv.hoten + "-" + self.lmh.monhoc.ten
+
 class Lichhoc(models.Model):
     #ten = models.CharField(max_length=100)
     trungtam = models.CharField(max_length=100, blank= True, null=True)
@@ -704,15 +717,15 @@ class Loaidiem(models.Model):
     def __str__(self):
         return self.ten
 
-
-
 class Diemthanhphan(models.Model):
     #ghichu = models.CharField(max_length=300)
-    diem = models.DecimalField(max_digits=5, decimal_places=1, verbose_name="Điểm")
+    diem = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm")
     status = models.IntegerField(default= 0)
+    att = models.IntegerField(default= 1)
     tp = models.ForeignKey(Loaidiem, on_delete=models.RESTRICT, verbose_name="Điểm Thành phần")
     sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT, verbose_name="Học viên")
     monhoc = models.ForeignKey(Monhoc, on_delete=models.RESTRICT, verbose_name="Môn học")    
+    lmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT, default= None,blank= True, null=True, verbose_name="Lớp Môn học")    
     log = models.ForeignKey(LogDiem, on_delete=models.RESTRICT, null= True, verbose_name="ID Log")
     history = HistoricalRecords()
 
@@ -723,6 +736,49 @@ class Diemthanhphan(models.Model):
 
     def __str__(self):
         return str(self.diem)
+
+
+class DiemTk(models.Model):
+    #ghichu = models.CharField(max_length=300)
+    sv_id = models.IntegerField(default= 0, verbose_name="Mã học viên")
+    ma = models.CharField(default= "", max_length=100, verbose_name="Mã học viên")
+    ten = models.CharField(default= "", max_length=100, verbose_name="Họ tên học viên")
+    hk_id = models.IntegerField(default= 1, verbose_name="Mã lớp môn học")
+    lmh_id = models.IntegerField(default= 0, verbose_name="Mã lớp môn học")
+    mhdk = models.BooleanField(default= False)
+    monhoc_id = models.IntegerField(default= 0, verbose_name="Mã môn học")
+    monhoc = models.CharField(default= "", max_length=100, verbose_name="Tên môn học")
+    tc = models.IntegerField(default= 0, verbose_name="Số tín chỉ")
+    tbm = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm trung bình môn")
+    tbmc = models.CharField(default= "", max_length=5)
+    tbm4 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm trung bình môn 4")
+    tbmkt = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm trung bình môn kỳ thi")
+    kttx1 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTTX 1")
+    n_kttx1 = models.BooleanField(default= False)
+    kttx2 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTTX 2")
+    n_kttx2 = models.BooleanField(default= False)
+    kttx3 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTTX 3")
+    n_kttx3 = models.BooleanField(default= False)
+    ktdk1 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTDK 1")
+    n_ktdk1 = models.BooleanField(default= False)
+    ktdk2 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTDK 2")
+    n_ktdk2 = models.BooleanField(default= False)
+    ktdk3 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTDK 3")
+    n_ktdk3 = models.BooleanField(default= False)
+    ktkt1 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTKT 1")
+    n_ktkt1 = models.BooleanField(default= False)
+    ktkt2 = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm KTKT 2")
+    n_ktkt2 = models.BooleanField(default= False)
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Điểm tổng kết môn học"
+        verbose_name_plural = "Điểm tổng kết môn học"
+        ordering = ["id",]
+        unique_together = ('sv_id','lmh_id',)
+
+    def __str__(self):
+        return str(self.ten)
 
 class LopHk(models.Model):
     start_hk = models.DateField(default= None,blank= True, null=True, verbose_name="Ngày bắt đầu")

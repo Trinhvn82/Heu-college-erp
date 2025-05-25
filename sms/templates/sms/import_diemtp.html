@@ -24,7 +24,7 @@
                     <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
                     <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'diemtp-lmh-lst' lmh.id%}">Điểm thành phần</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'diemtp-lmh-lst' lmh.id 0%}">Điểm thành phần</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Import điểm</li>
                 </ol>
         </div>
