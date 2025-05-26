@@ -715,7 +715,7 @@ def delete_diemtp(request, lmh_id, dtp_id, log_id):
 
     lmh = LopMonhoc.objects.get(id = lmh_id)
     hls = Hoclai.objects.filter(lmh_id = lmh_id)
-    
+
     stud_list = Hssv.objects.filter(lop_id = lmh.lop.id) | Hssv.objects.filter(id__in = hls.values_list('sv_id', flat=True))
     try:
         Diemthanhphan.objects.filter(sv__in=stud_list
@@ -2606,32 +2606,20 @@ def details_sv(request, sv_id, opt = None):
     tctl, diem4 = 0,0
     for hk in hks:
         lml=[]
-        tbmhk, tchk = 0,0
+        tbmhk, tbmhk4, tchk = 0,0,0
         dtks = DiemTk.objects.filter(sv_id = sv.id, hk_id = hk.id)
         for dtk in dtks:
                         
             if not dtk.mhdk:    
                 tbmhk= tbmhk+ dtk.tbm*dtk.tc
+                tbmhk4= tbmhk4+ dtk.tbm4*dtk.tc
                 tchk=tchk+dtk.tc
 
         hk.lml = dtks
         hk.tchk = tchk
         hk.tbmhk = round(tbmhk/tchk,1) if tchk else 0
-        if hk.tbmhk >=8.5 and hk.tbmhk <=10:
-            hk.tbmhk4 = 4
-            hk.tbmhkc = "A"
-        elif hk.tbmhk >=7 and hk.tbmhk <=8.4:
-            hk.tbmhk4 = 3
-            hk.tbmhkc = "B"
-        elif hk.tbmhk >=5.5 and hk.tbmhk <=6.9:
-            hk.tbmhk4 = 2
-            hk.tbmhkc = "C"
-        elif hk.tbmhk >=4 and hk.tbmhk <=5.4:
-            hk.tbmhk4 = 1
-            hk.tbmhkc = "D"
-        elif hk.tbmhk  < 4:
-            hk.tbmhk4 = 0
-            hk.tbmhkc = "F"
+        hk.tbmhk4 = round(tbmhk4/tchk,1) if tchk else 0
+
         tctl = tctl + tchk
         diem4 = diem4 + hk.tbmhk4*tchk
         hk.tbctl = round(diem4/tctl,1) if tctl else 0
@@ -2668,7 +2656,7 @@ def details_sv(request, sv_id, opt = None):
                         "ktkt1": "",
                         "ktkt2": "",
                         "TBM 10": hk.tbmhk,
-                        "TBM CHỮ": hk.tbmhkc,
+                        "TBM CHỮ": "",
                         "TBM 4": hk.tbmhk4,
                         "TBM TL": hk.tbctl,
                         "Xếp loại": hk.xl

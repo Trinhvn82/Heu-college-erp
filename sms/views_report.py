@@ -656,30 +656,17 @@ def report_kqht(request, opt = None):
             xl = ""
             for hk in hks:
                 lml=[]
-                tbmhk, tchk = 0,0
+                tbmhk,tbmhk4, tchk = 0,0,0
                 dtks = DiemTk.objects.filter(sv_id = sv.id, hk_id = hk.id)
                 for dtk in dtks:
                               
                     if not dtk.mhdk:    
                         tbmhk= tbmhk+ dtk.tbm*dtk.tc
+                        tbmhk4= tbmhk4+ dtk.tbm4*dtk.tc
                         tchk=tchk+dtk.tc
                         
                 tbmhk = round(tbmhk/tchk,1) if tchk else 0
-                if tbmhk >=8.5 and tbmhk <=10:
-                    tbmhk4 = 4
-                    tbmhkc = "A"
-                elif tbmhk >=7 and tbmhk <=8.4:
-                    tbmhk4 = 3
-                    tbmhkc = "B"
-                elif tbmhk >=5.5 and tbmhk <=6.9:
-                    tbmhk4 = 2
-                    tbmhkc = "C"
-                elif tbmhk >=4 and tbmhk <=5.4:
-                    tbmhk4 = 1
-                    tbmhkc = "D"
-                elif tbmhk  < 4:
-                    tbmhk4 = 0
-                    tbmhkc = "F"
+                tbmhk4 = round(tbmhk4/tchk,1) if tchk else 0
 
                 tctl = tctl + tchk
                 diem4 = diem4 +tbmhk4*tchk
@@ -697,7 +684,7 @@ def report_kqht(request, opt = None):
                 elif tbctl <2:
                     xl = "Yếu"
 
-                hkl.append({"ma":hk.ma, "tchk":tchk,"tbmhk":tbmhk, "tbmhkc":tbmhkc, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
+                hkl.append({"ma":hk.ma, "tchk":tchk,"tbmhk":tbmhk, "tbmhk4":tbmhk4,"tbctl":tbctl, "xl":xl})
 
                 # hk.tchk = tchk
                 # hk.tbmhk = round(tbmhk/tchk,1)
@@ -720,28 +707,24 @@ def report_kqht(request, opt = None):
                     if hk['ma'] == 1:
                         tchk1 = hk['tchk']
                         tbmhk1 = hk['tbmhk']
-                        tbmhkc1 = hk['tbmhkc']
                         tbmhk41 = hk['tbmhk4']
                         tbctl1 = hk['tbctl']
                         xl1 = hk['xl']
                     elif hk['ma'] == 2:
                         tchk2 = hk['tchk']
                         tbmhk2 = hk['tbmhk']
-                        tbmhkc2 = hk['tbmhkc']
                         tbmhk42 = hk['tbmhk4']
                         tbctl2 = hk['tbctl']
                         xl2 = hk['xl']
                     elif hk['ma'] == 3:
                         tchk3 = hk['tchk']
                         tbmhk3 = hk['tbmhk']
-                        tbmhkc3 = hk['tbmhkc']
                         tbmhk43 = hk['tbmhk4']
                         tbctl3 = hk['tbctl']
                         xl3 = hk['xl']
                     elif hk['ma'] == 4:
                         tchk4 = hk['tchk']
                         tbmhk4 = hk['tbmhk']
-                        tbmhkc4 = hk['tbmhkc']
                         tbmhk44 = hk['tbmhk4']
                         tbctl4 = hk['tbctl']
                         xl4 = hk['xl']
@@ -751,25 +734,21 @@ def report_kqht(request, opt = None):
                             "Họ tên": sv.hoten, 
                             "HK1 TC":tchk1 , 
                             "HK1 TBM 10":tbmhk1 , 
-                            "HK1 TBM CHỮ":tbmhkc1 , 
                             "HK1 TBM 4":tbmhk41 , 
                             "HK1 TBCTL":tbctl1 , 
                             "HK1 XL":xl1 , 
                             "HK2 TC":tchk2 , 
                             "HK2 TBM 10":tbmhk2, 
-                            "HK2 TBM CHỮ":tbmhkc2 , 
                             "HK2 TBM 4":tbmhk42 , 
                             "HK2 TBCTL":tbctl2 , 
                             "HK2 XL":xl2 , 
                             "HK3 TC":tchk3 , 
                             "HK3 TBM 10":tbmhk3, 
-                            "HK3 TBM CHỮ":tbmhkc3 , 
                             "HK3 TBM 4":tbmhk43 , 
                             "HK3 TBCTL":tbctl3 , 
                             "HK3 XL":xl3 , 
                             "HK4 TC":tchk4 , 
                             "HK4 TBM 10":tbmhk4, 
-                            "HK4 TBM CHỮ":tbmhkc4 , 
                             "HK4 TBM 4":tbmhk44 , 
                             "HK4 TBCTL":tbctl4 , 
                             "HK4 XL":xl4 , 
