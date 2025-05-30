@@ -1,7 +1,7 @@
 ﻿from tkinter.ttk import LabeledScale
 from django import forms
 from .models import Ctdt, Diemdanh, Diemthanhphan, Hocphi, Hsgv, Lichhoc, Lop, TeacherInfo, CtdtMonhoc, Hssv, LopMonhoc
-from .models import LopHk, Monhoc, Hp81, Hs81, Ttgv, UploadedFile, Hsns
+from .models import LopHk, Monhoc, Hp81, Hs81, Ttgv, UploadedFile, Hsns, SvTn
 from django.core.exceptions import ValidationError
 
 class CreateTeacher(forms.ModelForm):
@@ -192,6 +192,20 @@ class CreateLopMonhoc(forms.ModelForm):
             'hsdt': forms.Textarea(attrs={'class': 'form-control'}),
        }
         
+class CreateSvTn(forms.ModelForm):
+    class Meta:
+        model = SvTn
+        #fields = "__all__"
+        fields = ('status','xltn','tctl','tbctl','ycbb','ghichu')
+        widgets = {
+            'xltn': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'tctl': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'tbctl': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ycbb': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control'}),
+       }
+
 class CreateDiemdanh(forms.ModelForm):
     class Meta:
         model = Diemdanh

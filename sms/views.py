@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop, GvLop, GvMonhoc, Hoclai, DiemTk
+from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop, GvLop, GvMonhoc, Hoclai, DiemTk, SvTn
 
 from django.urls import reverse
 from django.utils import timezone
@@ -36,7 +36,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
 from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns, LogDiem, GvLmh
 from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
-from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81, CreateLopHk
+from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81, CreateLopHk, CreateSvTn
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
@@ -2916,9 +2916,31 @@ def details_sv(request, sv_id, opt = None):
         hk.hs81 = Hs81.objects.get(sv_id = sv_id, hk_id = hk.id) if Hs81.objects.filter(sv_id = sv_id, hk_id = hk.id).exists() else None
         hk.hp81 = Hp81.objects.get(sv_id = sv_id, hk_id = hk.id) if Hp81.objects.filter(sv_id = sv_id, hk_id = hk.id).exists() else None
 
+    if SvTn.objects.filter(sv_id = sv_id).exists():
+        svtn = SvTn.objects.get(sv_id = sv_id)
+        edit_svtn = 1
+        forms = CreateSvTn(instance=svtn)
+    else:
+        edit_svtn = 0
+        forms = CreateSvTn()    
+
+    if request.method == "POST":
+        if edit_svtn:
+            forms = CreateSvTn(request.POST, request.FILES or None, instance=svtn)
+        else:
+            forms = CreateSvTn(request.POST, request.FILES or None)
+        if forms.is_valid():
+            svtn = forms.save(commit=False)
+            svtn.sv_id = sv_id
+            svtn.save()
+            messages.success(request, "Cập nhật xét tốt nghiệp học viên thành công!")
+            return redirect("sv_list")
+
+
     context = {
         "opt": opt,
         "hks": hks,
+        "forms": forms,
         "hps": hps,
         "sv": sv
     }

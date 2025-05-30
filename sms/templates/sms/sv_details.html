@@ -203,20 +203,20 @@
             <div class="card-body">
                 <h2 class="h5 mb-4">Xét điều kiện tốt nghiệp</h2>
             <div class="col-12">
-                        <form action="" method="post">
-                            {% csrf_token %}
-                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-success">
-                                    <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Đủ
-                                </label>
-            
-                                <label class="btn btn-danger">
-                                    <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Không đủ
-                                </label>
-                            </div>
-                            <br>
-                            <input class="btn btn-primary" type="submit" value="Xác nhận">
-                        </form>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            {% for field in forms %}
+                                <div class="col-md-6 mb-3">
+                                    <div>{{ field.label_tag }}{{ field }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Xác nhận</button>
+                        </div>
+                    </form>
                     </div>
                 </div>
         </div>

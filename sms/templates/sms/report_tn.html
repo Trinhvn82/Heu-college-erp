@@ -30,7 +30,7 @@
             <div class="btn-toolbar mb-2 mb-md-0">
                 <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                     <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Báo cáo Tiến độ</li>
+                    <li class="breadcrumb-item active" aria-current="page">Báo cáo Tốt nghiệp</li>
                 </ol>
             </div>
         </div>
@@ -42,15 +42,8 @@
                         {% csrf_token %}
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <div>
-                                    <label for="id_sogio">Lớp:</label>
-                                    <select name="lop" class="form-control" required id="id_monhoc">
-                                        <option value="" selected>----</option>
-                                        {% for ct in lh %}
-                                        <option value="{{ct.id}}" {% if ct.id == l.id %} selected {% endif %}>{{ct.ma}}-{{ct.ten}}</option>
-                                        {% endfor%}
-                                    </select>
-                    
+                                <div><label for="id_ma">Tên lớp:</label>
+                                    <input type="text" name="ten" class="form-control" maxlength="100" value="{{query_name}}">
                                 </div>
                             </div>
                         
@@ -67,37 +60,48 @@
                 </div>
             </div>
         </div>
-        {% if l %}
-        <div class="row item-row">
-            <div class="col-12">
-                <div class="card card-body bg-white border-light shadow-sm mb-4">
+
+        {% for tt in dsl %}
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
                     <h6>
-                        <a href="{% url 'lop_monhoc' l.id  %}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-kanban" viewBox="0 0 16 16">
-                            <path d="M13.5 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm-11-1a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
-                            <path d="M6.5 3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm-4 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1zm8 0a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1z"/>
-                            </svg>
-                            <span></span>{{l.ten}}
-                        </a>
+                            <span></span>{{tt.ten}}
                     </h6>
-                    <div class="row">
-                            <div class="col-md-12 mb-2">
-                                {{plot_div|safe}}
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                {{bar_div|safe}}
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                {{bar81_div|safe}}
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                {{barhp81_div|safe}}
-                            </div>
-                        </div>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Mã</th>
+                                <th>Tên</th>
+                                <th>Đủ ĐKTN?</th>
+                                <th>Xếp loại TN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tn in tt.tns %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <a class="dropdown-item edit_item"
+                                            href="{% url 'details_sv' tn.sv.id 2%}">{{ tn.sv.msv }}
+                                        </a>
+                                    </td>
+                                    <td>{{ tn.sv.hoten }}</td>
+                                    <td>{{ tn.status }}</td>
+                                    {% if tn.xltn %}<td>{{ tn.xltn }} </td> {% else %}<td></td> {% endif %}
+                                </tr>
+                            {% empty %}
+                            <p>Không có thông tin Học viên tốt nghiệp</p>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        {% endif %}
+        {% empty %}
+        <p>No data found, Please enter report filter</p>
+        {% endfor%}
     </main>
 
 {% endblock content %}

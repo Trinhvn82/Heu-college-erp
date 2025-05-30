@@ -748,6 +748,8 @@ class DiemTk(models.Model):
     mhdk = models.BooleanField(default= False)
     monhoc_id = models.IntegerField(default= 0, verbose_name="Mã môn học")
     monhoc = models.CharField(default= "", max_length=100, verbose_name="Tên môn học")
+    status = models.BooleanField(default= True)
+    thilai = models.BooleanField(default= False)
     tc = models.IntegerField(default= 0, verbose_name="Số tín chỉ")
     tbm = models.DecimalField(default= 0, max_digits=5, decimal_places=1, verbose_name="Điểm trung bình môn")
     tbmc = models.CharField(default= "", max_length=5)
@@ -779,6 +781,33 @@ class DiemTk(models.Model):
 
     def __str__(self):
         return str(self.ten)
+
+class SvTn(models.Model):
+    #ghichu = models.CharField(max_length=300)
+    xltn_choice = (
+        ("Xuất sắc", "Xuất sắc"),
+        ("Giỏi", "Giỏi"),
+        ("Khá", "Khá"),
+        ("Trung bình", "Trung bình"),
+        ("Yếu", "Yếu"),
+    )
+    sv = models.ForeignKey(Hssv, on_delete=models.RESTRICT,blank= True, null=True)
+    status = models.CharField(choices=yn_choice, max_length=50, blank=True, null = True, verbose_name="Đủ điều kiện tốt nghiệp?")
+    xltn = models.CharField(choices=xltn_choice, max_length=50, blank=True, null = True, verbose_name="Xếp loại tốt nghiệp")
+    tctl = models.BooleanField(default= False, verbose_name="Tích lũy đủ số mô-đun, tín chỉ")
+    tbctl = models.BooleanField(default= False, verbose_name="Điểm TBC TL đạt từ 2,0 trở lên")
+    ycbb = models.BooleanField(default= False, verbose_name="Hoàn thành các yêu cầu bắt buộc khác")
+    ghichu = models.TextField(default= "", max_length=500,blank= True, null=True, verbose_name="Ghi chú")
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Sinh viên tốt nghiệp"
+        verbose_name_plural = "Sinh viên tốt nghiệp"
+        ordering = ["id",]
+        unique_together = ('sv',)
+
+    def __str__(self):
+        return str(self.sv.hoten)
 
 class LopHk(models.Model):
     start_hk = models.DateField(default= None,blank= True, null=True, verbose_name="Ngày bắt đầu")

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from .models import Lop, Ctdt, Hssv, Hsgv, Hsns, SvStatus, HocphiStatus, LopMonhoc, Trungtam, LogDiem
-from .models import NsLop, LopHk, Hoclai, DiemTk
+from .models import NsLop, LopHk, Hoclai, DiemTk, SvTn
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required, permission_required
@@ -19,6 +19,10 @@ from django.http import HttpResponse, Http404
 from guardian.decorators import permission_required_or_403
 from notifications.signals import notify
 
+#from django.shortcuts import render
+import pandas as pd
+from plotly.offline import plot
+import plotly.express as px
 
 
 User = get_user_model()
@@ -311,6 +315,128 @@ def report_td(request, opt=None):
         lh = None
 #    lh = Lop.objects.all()
     #query_tt = None
+    l= None
+    lmhs = None
+    query_name, dsl = "", None
+    gantt_plot, bar_plot,bar81_plot,barhp81_plot = None,None,None,None
+    #from datetime import date
+    #today = str(date.today())
+    if request.method == "POST":
+        lop_id = request.POST.get('lop', None)
+
+        l = Lop.objects.get(id=lop_id)
+
+        #lop_id = request.POST.get('lop', None)
+        svs = Hssv.objects.filter(lop_id=lop_id)
+        #lop = Lop.objects.get(id=lop_id)
+        lmh0, lmh1,pt = None, None,0
+        td="Không có dữ liệu!"
+        lhks = LopHk.objects.filter(lop = l).select_related('hk').order_by('hk_id')
+        if lhks.exists() and lhks.count() == 4:
+            if lhks[0].start_hk and lhks[3].end_hk:
+                start_lop = lhks[0].start_hk
+                end_lop = lhks[3].end_hk
+                if date.today() > end_lop:
+                    td="Lớp đã kết thúc!"
+                elif date.today() < start_lop: 
+                    td="Lớp chưa bắt đầu!"
+                else:
+                    sn1 = end_lop - start_lop
+                    sn2 = date.today() - start_lop
+                    pt = round((sn2.days/sn1.days)*100,0)
+                    td= str(pt) + "%"
+
+
+            projects_data = [
+                    {
+                        'Học kỳ': x.hk.ma,
+                        'Start': x.start_hk,
+                        'Finish': x.end_hk,    
+                        'Responsible': x.hk.ma
+                    } for x in lhks
+                ]
+            print("printing projects_data" + l.ten)
+            print(projects_data)
+            df = pd.DataFrame(projects_data)
+            fig = px.timeline(
+                df, x_start="Start", x_end="Finish", y="Học kỳ", color="Học kỳ", title="Tiến độ lớp theo thời gian"
+            )
+            fig.update_yaxes(autorange="reversed")
+            gantt_plot = plot(fig, output_type="div")
+        #lmh = LopMonhoc.objects.get(id = lmh_id)
+        l.td = td
+        l.pt = pt
+        hks = Hocky.objects.all()
+        for hk in hks:
+            hk.lmh0 = LopMonhoc.objects.filter(lop = l, hk=hk, status = "Lập kế hoạch").count()
+            hk.lmh1 = LopMonhoc.objects.filter(lop = l, hk=hk, status = "Đã hoàn thành").count()
+
+
+        l.hks = hks
+
+        lmh_data = [
+                {
+                    'Học kỳ': x.ma,
+                    'Hoàn thành': LopMonhoc.objects.filter(lop = l, hk=x, status = "Đã hoàn thành").count(),
+                    'Chưa hoàn thành': LopMonhoc.objects.filter(lop = l, hk=x, status = "Lập kế hoạch").count()
+                } for x in hks
+            ]
+        wide_df = pd.DataFrame(lmh_data)
+        fig = px.bar(wide_df, x="Học kỳ", y=["Hoàn thành", "Chưa hoàn thành"], title="Tiến độ môn học theo học kỳ")
+#                fig.show()
+        bar_plot = plot(fig, output_type="div")
+
+        hs81_data = []
+        for x in hks:
+            du = Hs81.objects.filter(sv__in = svs, hk=x, status = "Đủ").count()
+            thieu = Hs81.objects.filter(sv__in = svs, hk=x, status = "Thiếu").count()
+            kott = svs.count() - du - thieu
+            hs81_data.append({'Học kỳ': x.ma,'Đủ': du,'Thiếu':thieu, 'Không có dữ liệu': kott})
+
+        wide_df = pd.DataFrame(hs81_data)
+        fig = px.bar(wide_df, x="Học kỳ", y=["Đủ", "Thiếu", "Không có dữ liệu"], title="Trạng thái Hồ sơ 81 theo học kỳ")
+#                fig.show()
+        bar81_plot = plot(fig, output_type="div")
+
+        hp81_data = []
+        for x in hks:
+            st1 = Hp81.objects.filter(sv__in = svs, hk=x, status_id = 1).count()
+            st2 = Hp81.objects.filter(sv__in = svs, hk=x, status_id = 2).count()
+            st3 = Hp81.objects.filter(sv__in = svs, hk=x, status_id = 3).count()
+            kott = svs.count() - st1-st2-st3
+            hp81_data.append({'Học kỳ': x.ma,'Hv chưa nhận tiền': st1,'Hv đã nhận tiền':st2,'HEU đã nhận tiền':st3, 'Không có dữ liệu': kott})
+
+        wide_df = pd.DataFrame(hp81_data)
+        fig = px.bar(wide_df, x="Học kỳ", y=["Hv chưa nhận tiền", "Hv đã nhận tiền","HEU đã nhận tiền" ,"Không có dữ liệu"], title="Trạng thái Học phí 81 theo học kỳ")
+#                fig.show()
+        barhp81_plot = plot(fig, output_type="div")
+
+
+        messages.success(request, "Tìm kiếm thành công!")
+
+    context = {
+        "l": l,
+        "lh": lh,
+        'plot_div': gantt_plot,    
+        'bar81_div': bar81_plot,    
+        'barhp81_div': barhp81_plot,    
+        'bar_div': bar_plot    
+        }
+    return render(request, "sms/report_td.html", context)
+
+@login_required
+@permission_required('dashboard.view_report',raise_exception=True)
+def report_tn(request):
+    if request.user.is_superuser:
+        lh = Lop.objects.all()
+    elif request.user.is_internalstaff:
+        ns = Hsns.objects.get(user = request.user)
+        nsl = NsLop.objects.filter(ns = ns, status =1)
+        lh = Lop.objects.filter(id__in = nsl.values_list('lop_id', flat=True))
+    else:
+        lh = None
+#    lh = Lop.objects.all()
+    #query_tt = None
     lop= None
     lmhs = None
     query_name, dsl = "", None
@@ -328,36 +454,16 @@ def report_td(request, opt=None):
             for l in dsl:
                 lmh0, lmh1,pt = None, None,0
                 td="Không có dữ liệu!"
-                lhks = LopHk.objects.filter(lop = l).select_related('hk').order_by('hk_id')
-                if lhks.exists() and lhks.count() == 4:
-                    if lhks[0].start_hk and lhks[3].end_hk:
-                        start_lop = lhks[0].start_hk
-                        end_lop = lhks[3].end_hk
-                        if date.today() > end_lop:
-                            td="Lớp đã kết thúc!"
-                        elif date.today() < start_lop: 
-                            td="Lớp chưa bắt đầu!"
-                        else:
-                            sn1 = end_lop - start_lop
-                            sn2 = date.today() - start_lop
-                            pt = round((sn2.days/sn1.days)*100,0)
-                            td= str(pt) + "%"
+                svs = Hssv.objects.filter(lop = l)
+                l.tns = SvTn.objects.filter(sv__in = svs).select_related('sv').order_by('sv__msv')
 
-                #lmh = LopMonhoc.objects.get(id = lmh_id)
-                l.td = td
-                l.pt = pt
-                hks = Hocky.objects.all()
-                for hk in hks:
-                    hk.lmh0 = LopMonhoc.objects.filter(lop = l, hk=hk, status = "Lập kế hoạch").count()
-                    hk.lmh1 = LopMonhoc.objects.filter(lop = l, hk=hk, status = "Đã hoàn thành").count()
-                l.hks = hks
         messages.success(request, "Tìm kiếm thành công!")
 
     context = {
         "dsl": dsl,
         "query_name": query_name
     }
-    return render(request, "sms/report_td.html", context)
+    return render(request, "sms/report_tn.html", context)
 
 @login_required
 @permission_required('dashboard.view_report',raise_exception=True)
