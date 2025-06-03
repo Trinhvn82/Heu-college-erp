@@ -3223,6 +3223,53 @@ def download_temp(request, opt):
     raise Http404
 
 @login_required
+def download_temp_data(request, lop_id, opt):
+    if opt == 1:
+        temp_path = "uploads/tpl_hs81.xlsx"
+        out_path = "uploads/tpl_" + str(lop_id) + "_hs81.xlsx"
+        sheet_name = 'hs81'
+    elif opt == 2:
+        temp_path = "uploads/tpl_hp81.xlsx"
+        out_path = "uploads/tpl_" + str(lop_id) + "_hp81.xlsx"
+        sheet_name = 'hp81'
+    else:
+        temp_path = "uploads/tpl_hs81.xlsx"
+        out_path = "uploads/tpl_" + str(lop_id) + "_hs81.xlsx"
+        sheet_name = 'hs81'
+
+
+    temp_file_path = os.path.join(settings.MEDIA_ROOT, temp_path)
+    out_file_path = os.path.join(settings.MEDIA_ROOT, out_path)
+
+    shutil.copy(temp_file_path, out_file_path)
+    #svs = sorted(svs, key=lambda svs: svs.ten, reverse=False)
+
+    locale.setlocale(locale.LC_ALL, 'vi_VN')
+    svs = sorted(Hssv.objects.filter(lop_id = lop_id), key=lambda svs: locale.strxfrm(svs.ten), reverse=False)
+
+    #export to excel
+    exp=[]
+    for sv in svs:
+        exp.append({"Mã học tên": sv.msv,
+                    "Họ tên": sv.hoten, 
+                    })
+
+    # Convert the QuerySet to a DataFrame
+    df = pd.DataFrame(list(exp))
+    with pd.ExcelWriter(out_file_path, mode="a",engine="openpyxl", if_sheet_exists="overlay",) as writer:
+        df.to_excel(writer, sheet_name=sheet_name, index=False, header=False, startrow=1, startcol=0)
+
+    #if os.path.exists(out_file_path):
+    with open(out_file_path, 'rb') as fh:
+        response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(out_file_path)
+    
+    os.remove(out_file_path)
+
+    return response
+    #raise Http404
+
+@login_required
 @permission_required('sms.add_uploadedfile',raise_exception=True)
 def upload_file(request):
     if request.method == 'POST':

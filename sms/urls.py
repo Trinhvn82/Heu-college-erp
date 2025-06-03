@@ -166,7 +166,7 @@ urlpatterns = [
 
     path('download-temp-diem/<int:lmh_id>/', views.download_temp_diem, name='download_temp_diem'),
     path('download-template/<int:opt>/', views.download_temp, name='download_temp'),
-
+    path('download-tpl-data/<int:lop_id>/<int:opt>/', views.download_temp_data, name='download_temp_data'),
 
     path('add-ns/<int:id>/', add_nsuser, name='add_ns'),
     path('resetpwd/<int:ns_id>/', reset_pwd, name='reset_pwd'),
