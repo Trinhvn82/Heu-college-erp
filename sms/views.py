@@ -156,6 +156,7 @@ def ns_list(request):
 @login_required
 @permission_required('sms.view_hssv',raise_exception=True)
 def sv_list(request):
+    from django.db.models import Q
     if request.user.is_hv:
         students = Hssv.objects.filter(user = request.user).order_by('msv')
     else:
@@ -163,8 +164,10 @@ def sv_list(request):
     if request.method == "POST":
             query_name = request.POST.get('ten', None)
             if query_name:
-                students = Hssv.objects.filter(hoten__contains=query_name)
-                messages.success(request, "Ket qua tim kiem voi ten co chua: " + query_name)
+                query_name = query_name.strip()
+                #students = students.filter(hoten__contains=query_name)
+                students = students.filter(Q(msv__icontains=query_name) | Q(hoten__icontains=query_name) | Q(lop__ten__icontains=query_name))
+                messages.success(request, "Ket qua tim kiem voi: " + query_name)
 #                return render(request, 'product-search.html', {"results":results})
 
     paginator = Paginator(students, 20)
@@ -3186,6 +3189,31 @@ def react(request):
 @login_required
 def download_file1(request):
     path = "uploads/monhoc.xlsx"
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404
+
+@login_required
+def download_temp(request, opt):
+    if opt == 1:
+        path = "uploads/tpl_monhoc.xlsx"
+    elif opt == 2:
+        path = "uploads/tpl_hssv.xlsx"
+    elif opt == 3:
+        path = "uploads/tpl_hs81.xlsx"
+    elif opt == 4:
+        path = "uploads/tpl_hp81.xlsx"
+    elif opt == 5:
+        path = "uploads/tpl_hsgv.xlsx"
+    elif opt == 6:
+        path = "uploads/tpl_hsns.xlsx"
+    else:
+        path = "uploads/monhoc.xlsx"
+
     file_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:

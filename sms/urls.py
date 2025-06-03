@@ -165,6 +165,7 @@ urlpatterns = [
     path('download-temp2/', views.download_file2, name='download_file2'),
 
     path('download-temp-diem/<int:lmh_id>/', views.download_temp_diem, name='download_temp_diem'),
+    path('download-template/<int:opt>/', views.download_temp, name='download_temp'),
 
 
     path('add-ns/<int:id>/', add_nsuser, name='add_ns'),
