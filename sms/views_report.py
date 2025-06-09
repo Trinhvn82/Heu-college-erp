@@ -1160,23 +1160,28 @@ def import_hs81(request, lop_id):
                     status = "Thiếu"
                 if type(v5) is not datetime:
                     v5 = None
-                if Hs81.objects.filter(sv=sv, hk_id = v3).exists():
-                    hs81 = Hs81.objects.filter(sv=sv, hk_id = v3)[0]
-                    hs81.status = status
-                    hs81.thoigian = v5
-                else:
-                    hs81 = Hs81(sv=sv, hk_id = v3, status=status, thoigian=v5)
-                
-                hs81.ddn = True if v6 == 1 else False
-                hs81.cntn = True if v7 == 1 else False
-                hs81.btn = True if v8 == 1 else False
-                hs81.xnct = True if v9 == 1 else False
-                hs81.cccd = True if v10 == 1 else False
-                hs81.cccdbo = True if v11 == 1 else False
-                hs81.cccdme = True if v12 == 1 else False
-                hs81.gks = True if v13 == 1 else False
-                hs81.ghichu = v14
-                hs81.save()
+                try:
+                    if Hs81.objects.filter(sv=sv, hk_id = v3).exists():
+                        hs81 = Hs81.objects.filter(sv=sv, hk_id = v3)[0]
+                        hs81.status = status
+                        hs81.thoigian = v5
+                    else:
+                        hs81 = Hs81(sv=sv, hk_id = v3, status=status, thoigian=v5)
+                    
+                    hs81.ddn = True if v6 == 1 else False
+                    hs81.cntn = True if v7 == 1 else False
+                    hs81.btn = True if v8 == 1 else False
+                    hs81.xnct = True if v9 == 1 else False
+                    hs81.cccd = True if v10 == 1 else False
+                    hs81.cccdbo = True if v11 == 1 else False
+                    hs81.cccdme = True if v12 == 1 else False
+                    hs81.gks = True if v13 == 1 else False
+                    hs81.ghichu = v14
+                    hs81.save()
+
+                except Exception as e:
+                    messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
+
 
         messages.success(request, "Import thông tin hồ sơ 81 thành công!")
         return redirect("hv_hs81_hk_list", lop_id)
@@ -1226,14 +1231,19 @@ def import_hp81(request, lop_id):
                 else:
                     hp81 = Hp81(sv=sv, hk_id = v3)
                 
-                hp81.status_id = status
-                hp81.thoigian = v5
-                hp81.sotien1 = "{:,}".format(v6) if v6 else ""
-                hp81.sotien2 = "{:,}".format(v7) if v7 else ""
-                chu = "{:,}".format(v6)
-                print(chu)
-                print(type(chu))
                 try:
+                    hp81.status_id = status
+                    hp81.thoigian = v5
+                    if v6:
+                        hp81.sotien1 = "{:,}".format(v6)
+                    else:
+                        hp81.sotien1 = ""
+
+                    if v7:
+                        hp81.sotien2 = "{:,}".format(v7)
+                    else:
+                        hp81.sotien2 = ""
+
                     hp81.save()
                 except Exception as e:
                     messages.error(request, 'Dòng: '+str(r)+' có lỗi:' + str(e))
