@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'ctdt_list' %}"><span class="fas fa-home"></span>Chương trình đào tạo</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Môn học</li>
+                    </ol>
+                </nav>
+                <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <i></i> Chương trình đào tạo: {{ten}}
+                </div>
+                <div class="card-body">
+                    <table class="table table-responsive-sm table-bordered table-striped table-sm">
+                        <tbody>
+                            <tr>
+                                    <a href="{% url 'create_ctdtmonhoc' %}">
+                                        <button type="button" class="btn btn-info">Thêm môn học</button>
+                                    </a>
+                            </tr>
+    
+                        </tbody>
+                    </table>
+    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>HK</th>
+                                <th>Môn học</th>
+                                <th>Số tín chi</th>
+                                <th>So gio ly thuyet</th>
+                                <th>So gio thuc hanh</th>
+                                <th>So gio kiem tra</th>
+                                <th>Tác nghiệp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ct in ctdt %}
+                            <tr>
+                                <td>{{ ct.hocky }}</td>
+                                <td>{{ ct.monhoc.chuongtrinh }}: {{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                                <td>{{ ct.monhoc.sotinchi }}</td>
+                                <td>{{ ct.monhoc.sogio_lt }}</td>
+                                <td>{{ ct.monhoc.sogio_th }}</td>
+                                <td>{{ ct.monhoc.sogio_kt }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item edit_item"
+                                               href="#">
+                                                <span class="fas fa-edit mr-2"></span>Cập nhật
+                                            </a>
+                                            <a class="dropdown-item text-danger delete_item"
+                                            data-href="#">
+                                             <span class="fas fa-trash-alt mr-2"></span>Remove
+                                         </a>
+                                             </div>
+                                    </div>
+                               </td>
+                            </tr>
+                            {% empty %}
+                            <p>Chua co danh sach mon hoc cho CTDT da chon</p>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </div>
+            
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

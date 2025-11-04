@@ -8,9 +8,19 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib import messages
-from sms.models import Hsns, Hsgv, Hssv
+from sms.models import Hsns, Hsgv, Hssv, Renter
 from django.http import HttpResponseForbidden,HttpResponse
 
+from django.core.mail import EmailMessage, send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth import authenticate, login, logout
+from . tokens import EmailVerificationTokenGenerator as generate_token
+from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
+
+from CollegeERP import settings
 
 
 User = get_user_model()
@@ -529,6 +539,19 @@ def reset_pwd_hv(request, hv_id):
     return redirect("sv_list")
 
 @login_required()
+def reset_pwd_renter(request, renter_id):
+    # if not request.user.is_superuser:
+    #     return redirect("/")
+    renter = Renter.objects.get(id = renter_id)
+    # Check if username already exists
+    if renter.user:
+        renter.user.set_password(renter.ma + '@123654')
+        renter.user.save()    
+        messages.success(request, "Reset password thành công!")
+        return redirect('renter_list')    
+    return redirect("renter_list")
+
+@login_required()
 @permission_required('info.add_user',raise_exception=True)
 def add_nsuser(request, id):
     # if not request.user.is_superuser:
@@ -550,6 +573,24 @@ def add_nsuser(request, id):
     messages.success(request, "Tạo tài khoản cho " + ns.hoten + " thành công")
     return redirect("ns_list")
 
+@login_required()
+def add_renteruser(request, id):
+    # if not request.user.is_superuser:
+    #     return redirect("/")
+    renter = Renter.objects.get(id = id)
+    # Check if username already exists
+    
+    user = User.objects.create_user(
+        username=renter.ma,
+        first_name = renter.hoten,
+        password=renter.ma + '@123654'
+    )
+    user.save()
+    renter.user = user
+    renter.save()
+    messages.success(request, "Tạo tài khoản cho " + renter.hoten + " thành công")
+    return redirect("renter_list")
+
 @login_required
 def user_changepwd(request):
 
@@ -561,6 +602,95 @@ def user_changepwd(request):
         return redirect("lop_list")
     return render(request, "sms/changepwd.html")
 
+def signup(request):
+    if request.method == "POST":
+        username = request.POST["username"]
+        fname = request.POST["fname"]
+        lname = request.POST["lname"]
+        email = request.POST["email"]
+        pass1 = request.POST["pass1"]
+        pass2 = request.POST["pass2"]
+
+        if User.objects.filter(username=username):
+            messages.error(request, "Username already exist! Please try some other username.")
+            return redirect('signup')
+        
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email Already Registered!!")
+            return redirect('signup')
+        
+        if len(username)>20:
+            messages.error(request, "Username must be under 20 charcters!!")
+            return redirect('signup')
+        
+        if pass1 != pass2:
+            messages.error(request, "Passwords didn't matched!!")
+            return redirect('signup')
+        
+        if not username.isalnum():
+            messages.error(request, "Username must be Alpha-Numeric!!")
+            return redirect('signup')
+        
+        myuser = User.objects.create_user(username, email, pass1)
+        myuser.fname = fname
+        myuser.lname = lname
+        # myuser.is_active = False
+        myuser.is_active = False
+        myuser.save()
+        messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
+        
+        # Welcome Email
+        subject = "Welcome to fiftybit Django Login!!"
+        message = "Hello " + myuser.first_name + "!! \n" + "Welcome to fiftybit!! \nThank you for visiting our website\n. We have also sent you a confirmation email, please confirm your email address. \n\nThanking You\nShovit Nepal"        
+        from_email = settings.EMAIL_HOST_USER
+        to_list = [myuser.email]
+        send_mail(subject, message, from_email, to_list, fail_silently=True)
+        
+        # Email Address Confirmation Email
+        current_site = get_current_site(request)
+        email_subject = "Confirm your Email @ FiftyBit - Django Login!!"
+        message2 = render_to_string('sms/email_confirmation.html',{
+            
+            'name': myuser.first_name,
+            'domain': "http://127.0.0.1:8000",
+            'uid': urlsafe_base64_encode(force_bytes(myuser.pk)),
+            'token': generate_token.make_token(myuser)
+        })
+        email = EmailMessage(
+        email_subject,
+        message2,
+        settings.EMAIL_HOST_USER,
+        [myuser.email],
+        )
+        send_mail(email_subject, message2, from_email, to_list, fail_silently=True)
+        
+        return redirect('signup')
+        
+        
+    return render(request, "sms/signup.html")
+
+
+def activate(request,uidb64,token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        email = generate_token.check_token(token)
+        myuser = User.objects.get(id=uid, email=email)
+        print("user & email")
+        print(myuser.username + " " + myuser.email)
+    except (TypeError,ValueError,OverflowError,User.DoesNotExist):
+        myuser = None
+
+    if myuser:
+        myuser.is_active = True
+        myuser.save()
+        messages.success(request, "Your Account has been activated!!")
+        return redirect('index')
+    else:
+        messages.error(request, "Your Account has not been activated!!")
+        return redirect('signup')
+
+
+    
 @login_required()
 @permission_required('info.add_user',raise_exception=True)
 def ns_quyen(request, ns_id):

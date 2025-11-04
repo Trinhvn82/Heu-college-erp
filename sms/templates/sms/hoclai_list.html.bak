@@ -1,0 +1,168 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script>
+    $(document).ready(function() {
+        $('#id_monhoc').select2();
+    });    
+</script>
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Học viên học lại</li>
+                </ol>
+            </div>
+        </div>
+
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <form action="{% url 'hoclai_list' lmh.id%}" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div>
+                                    <label for="id_sogio">Học viên:</label>
+                                    <select name="sv" class="form-control" required id="id_monhoc">
+                                        <option value="" selected>----</option>
+                                        {% for sv in svs %}
+                                        <option value="{{sv.id}}">{{sv.msv}}-{{sv.hoten}}</option>
+                                        {% endfor%}
+                                    </select>
+                    
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                    </svg>                                    
+                                    Thêm học viên
+                                </button>
+                            </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Danh sách học viên học lại</h2>
+                <div class="table-responsive">
+                            <table class="table table-centered mb-0 rounded">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Mã</th>
+                                        <th>Tên</th>
+                                        <th>CCCD</th>
+                                        <th>Năm sinh</th>
+                                        <th>Tác vụ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sv in svl %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ sv.msv }}</td>
+                                        <td>{{ sv.hoten }}</td>
+                                        <td>{{ sv.cccd }}</td>
+                                        <td>{{ sv.namsinh | date:"d/m/Y" }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <span class="icon icon-sm">
+                                                        <span class="fas fa-ellipsis-h icon-dark"></span>
+                                                    </span>
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item edit_item"
+                                                       href="{% url 'delete_hoclai' lmh.id sv.id %}">
+                                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-x" viewBox="0 0 16 16">
+                                                        <path d="M6.146 6.146a.5.5 0 0 1 .708 0L8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 0 1 0-.708"/>
+                                                        <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1"/>
+                                                      </svg>
+                                                        <span></span>Remove
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                {% if students.has_other_pages %}
+                    <ul class="pagination">
+                        {% if students.has_previous %}
+                            <li class="page-item">
+                                <a href="?page={{teachers.previous_page_number}}" class="page-link">Prev</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">Prev</a>
+                            </li>
+                        {% endif %}
+                        {% for i in students.paginator.page_range %}
+                            {% if students.number == i %}
+                                <li class="page-item active">
+                                    <a class="page-link">{{ i }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if students.has_next %}
+                            <li class="page-item">
+                                <a href="?page={{teachers.next_page_number}}" class="page-link">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

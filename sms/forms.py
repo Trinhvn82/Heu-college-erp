@@ -1,7 +1,7 @@
 ﻿from tkinter.ttk import LabeledScale
 from django import forms
-from .models import Ctdt, Diemdanh, Diemthanhphan, Hocphi, Hsgv, Lichhoc, Lop, TeacherInfo, CtdtMonhoc, Hssv, LopMonhoc
-from .models import LopHk, Monhoc, Hp81, Hs81, Ttgv, UploadedFile, Hsns, SvTn
+from .models import *
+import decimal
 from django.core.exceptions import ValidationError
 
 class CreateTeacher(forms.ModelForm):
@@ -110,6 +110,36 @@ class CreateNs(forms.ModelForm):
             'hs_status': forms.Select(attrs={'class': 'form-control'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú'}),
 
+        }
+
+class CreateRenter(forms.ModelForm):
+    class Meta:
+        model = Renter
+        fields = "__all__"
+        exclude = ['user','chu_id','ma']
+
+        widgets = {
+            'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên'}), 
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+            'sdt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số điện thoại'}),
+            'cccd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CCCD'}),
+            'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'noicap': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nơi cấp'}),
+            'mst': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã số thuế'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú'}),
+        }
+
+class CreateHouseRenter(forms.ModelForm):
+    class Meta:
+        model = HouseRenter
+        fields = "__all__"
+        exclude = ['house']
+        widgets = {
+            'renter': forms.Select(attrs={'class': 'form-control'}),
+            'rent_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'rent_to': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'active' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú'}),
         }
 
 class CreateCtdtMonhoc(forms.ModelForm):
@@ -278,6 +308,20 @@ class CreateLop(forms.ModelForm):
             #'trungtam': forms.TextInput(attrs={'class': 'form-control'}),
             'trungtam': forms.Select(attrs={'class': 'form-control'}),
             'ctdt': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+class CreateLoc(forms.ModelForm):
+
+    class Meta:
+        model = Location
+        fields = "__all__"
+        exclude = ['chu',]
+        #fields = ('user','diachi','xp')
+        #fields_required = ('lop','trungtam','thoigian','monhoc')
+        widgets = {
+          #  'user': forms.Select(attrs={'class': 'form-control'}),
+            'diachi': forms.TextInput(attrs={'class': 'form-control'}),
+            'xp': forms.Select(attrs={'class': 'form-control'}),
         }
 
 class CreateHp81(forms.ModelForm):
@@ -485,6 +529,71 @@ class CreateGv(forms.ModelForm):
             'ghichu' : forms.Textarea(attrs={'class': 'form-control'}),
         }
 
+class CreateHouse(forms.ModelForm):
+
+    permonth = forms.CharField(
+        label="Tiền thuê/tháng (VNĐ)",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeydown': 'preventNonNumeric(event)',
+            'oninput': 'formatThousands(this)' # <-- ĐÃ THÊM ONINPUT
+        })
+    )
+    deposit = forms.CharField(
+        label="Tiền đặt cọc (VNĐ)",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeydown': 'preventNonNumeric(event)',
+            'oninput': 'formatThousands(this)' # <-- ĐÃ THÊM ONINPUT
+        })
+    )    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Lấy giá trị chuỗi (có dấu chấm) từ Form
+        raw_permonth = self.cleaned_data.get('permonth')
+        raw_deposit = self.cleaned_data.get('deposit')
+        
+        # --- 2. LÀM SẠCH permonth ---
+        if raw_permonth:
+            cleaned_permonth = raw_permonth.replace(',', '')
+            if not cleaned_permonth.isdigit():
+                 self.add_error('permonth', "Vui lòng nhập số nguyên.")
+            else:
+                # Ghi đè giá trị đã làm sạch vào cleaned_data
+                cleaned_data['permonth'] = int(cleaned_permonth)
+        
+        # --- 3. LÀM SẠCH deposit ---
+        if raw_deposit:
+            cleaned_deposit = raw_deposit.replace(',', '')
+            if not cleaned_deposit.isdigit():
+                 self.add_error('deposit', "Vui lòng nhập số nguyên.")
+            else:
+                # Ghi đè giá trị đã làm sạch vào cleaned_data
+                cleaned_data['deposit'] = int(cleaned_deposit)
+                
+        # ... (các validation khác nếu có)
+        return cleaned_data
+
+    class Meta:
+        model = House
+        fields = "__all__"
+        exclude = ['loc',]
+        widgets = {
+            'ten': forms.TextInput(attrs={'class': 'form-control'}),
+            'loainha': forms.Select(attrs={'class': 'form-control'}),
+            'sophong': forms.NumberInput(attrs={'class': 'form-control'}),
+            'dientich': forms.NumberInput(attrs={'class': 'form-control'}),
+
+            'interval': forms.Select(attrs={'class': 'form-control'}),
+            'kitchen' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'wc' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'aircondition' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'wifi' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'washingmachine' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'ghichu' : forms.Textarea(attrs={'class': 'form-control'}),
+        }
+
 class CreateHocphi(forms.ModelForm):
     class Meta:
         model = Hocphi
@@ -508,3 +617,127 @@ class CreateDiem(forms.ModelForm):
             'sv': forms.Select(attrs={'class': 'form-control'}),
         }
 
+
+# ==========================================================
+# FORM TẠO/CẬP NHẬT HÓA ĐƠN MỚI
+# ==========================================================
+class CreateHoaDonForm(forms.ModelForm):
+    # Định nghĩa lại các trường số cần format JS là CharField
+    tienthuenha = forms.CharField(
+        label="Tiền thuê nhà(VNĐ)",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeydown': 'preventNonNumeric(event)',
+            'oninput': 'formatThousands(this)' # <-- ĐÃ THÊM ONINPUT
+        })
+    )
+    tiendien = forms.CharField(
+        label="Tiền điện (VNĐ)",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeydown': 'preventNonNumeric(event)',
+            'oninput': 'formatThousands(this)' # <-- ĐÃ THÊM ONINPUT
+        })
+    )    
+
+    tiennuoc = forms.CharField(
+        label="Tiền nước (VNĐ)",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeydown': 'preventNonNumeric(event)',
+            'oninput': 'formatThousands(this)' # <-- ĐÃ THÊM ONINPUT
+        })
+    )    
+    tienkhac = forms.CharField(
+        label="Tiền khác (VNĐ)",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'onkeydown': 'preventNonNumeric(event)',
+            'oninput': 'formatThousands(this)' # <-- ĐÃ THÊM ONINPUT
+        })
+    )    
+    
+    class Meta:
+        model = Hoadon
+        # Chỉ hiển thị các trường cần người dùng nhập hoặc chọn
+        fields = "__all__"
+        exclude = ['house','ngay_tao','status','ngay_cap_nhat', 'TONG_CONG','SO_TIEN_DA_TRA','CONG_NO']
+        
+        widgets = {
+            'house': forms.Select(attrs={'class': 'form-control'}),
+            'ten': forms.TextInput(attrs={'class': 'form-control'}),
+            'duedate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        }
+        
+    # Validation và làm sạch dữ liệu (loại bỏ dấu chấm)
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Danh sách các trường cần làm sạch
+        fields_to_clean = {
+            'tienthuenha': 'Tiền thuê nhà(VNĐ)',
+            'tiendien': 'Tiền điện (VNĐ)',
+            'tiennuoc': 'Tiền nước (VNĐ)',
+            'tienkhac': 'Tiền khác (VNĐ)',
+        }
+        
+        for field_name, label in fields_to_clean.items():
+            value_str = self.cleaned_data.get(field_name)
+            
+            if not value_str:
+                # Nếu chuỗi rỗng, gán về Decimal(0) và tiếp tục vòng lặp
+                cleaned_data[field_name] = int(0)
+                continue # Chuyển sang trường tiếp theo
+            # --- KẾT THÚC LOGIC KHẮC PHỤC ---
+
+            # Nếu có giá trị (không phải chuỗi rỗng), tiến hành làm sạch dấu chấm
+            cleaned_value = value_str.replace(',', '')
+                
+            # Kiểm tra phải là số
+            if not cleaned_value.isdigit():
+                    self.add_error(field_name, f"Vui lòng nhập số nguyên cho {label}.")
+                    
+            # Chuyển thành Decimal để khớp với Model và logic tính toán
+            cleaned_data[field_name] = int(cleaned_value)
+            
+                
+        return cleaned_data
+    
+class CreateThanhToanForm(forms.ModelForm):
+    # Dùng CharField để xử lý định dạng dấu chấm của JS
+    tientt = forms.CharField(label="Số tiền Thanh toán (VND)", 
+                             required=True, 
+                             widget=forms.TextInput(attrs={
+                                 'class': 'form-control', 
+                                 'onkeyup': 'formatThousands(this)', 
+                                 'onkeypress': 'preventNonNumeric(event)' 
+                             }))
+
+    class Meta:
+        model = Thanhtoan
+        # ĐÃ BỎ TRƯỜNG 'phuong_thuc'
+        fields = ['tientt', 'ghichu'] 
+        
+        widgets = {
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'required': False}),
+        }
+
+    # Hàm clean giữ nguyên logic làm sạch tientt
+    def clean_tientt(self):
+        tientt_str = self.cleaned_data.get('tientt')
+        
+        if not tientt_str:
+            raise ValidationError("Vui lòng nhập số tiền thanh toán.")
+
+        cleaned_value = tientt_str.replace(',', '')
+
+        if not cleaned_value.isdigit() or decimal.Decimal(cleaned_value) <= 0:
+            raise ValidationError("Số tiền phải là số nguyên dương hợp lệ.")
+            
+        return decimal.Decimal(cleaned_value)    

@@ -1,0 +1,105 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'svlop_list' sv.lop_id %}">Học viên</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Học phí 81</li>
+                </ol>
+    </div>
+        </div>
+
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h6>Mã: {{sv.msv}}</h6>
+                <h6>Học viên: {{sv.hoten}}</h6>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Học kỳ</th>
+                                <th>Trạng thái</th>
+                                <th>Số tiền dự kiến</th>
+                                <th>Số tiền thực nhận</th>
+                                <th>Tác nghiệp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ct in hp81s %}
+                            <tr>
+                                <td>{{ ct.hk }}</td>
+                                <td>{{ ct.status }}</td>
+                                <td>{{ ct.sotien1 }}</td>
+                                <td>{{ ct.sotien2 }}</td>
+                                <td>
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                        </button>
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.change_hp81 or perms.sms.view_hp81  %}
+                                            <a class="dropdown-item edit_item"
+                                               href="{% url 'edit_hp81' ct.id %}">
+                                                <span class="fas fa-edit mr-2"></span>Cập nhật
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.sms.view_hp81 %}
+                                            <a class="dropdown-item edit_item"
+                                               href="">
+                                                <span class="fas fa-edit mr-2"></span>Lịch sử thay đổi
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.sms.delete_hp81 %}
+                                            <a class="dropdown-item text-danger delete_item"
+                                               data-href="">
+                                                <span class="fas fa-trash-alt mr-2"></span>Remove
+                                            </a>
+                                            {% endif %}    
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if perms.sms.add_hp81 %}
+            <div class="card-body">
+                <a href="{% url 'create_hp81' sv.id %}">
+                    <button type="button" class="btn btn-primary">Thêm mới</button>
+                </a>
+            </div>
+            {% endif %}
+    </div>
+
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

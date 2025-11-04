@@ -1,0 +1,106 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="#">Quản lý đào tạo</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Hồ sơ 81 & học phí</li>
+                    </ol>
+                </nav>
+                <!-- <p class="mb-0">Your web analytics dashboard template.</p> -->
+            </div>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">Share</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary">Export</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-body border-light shadow-sm table-wrapper table-responsive pt-0">
+            <!-- <table class="table table-responsive-sm table-bordered table-striped table-sm"> -->
+            <table class="table table-centered mb-0 rounded">
+                <thead class="thead-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Hoc ky</th>
+                        <th>Tinh trang Ho so 81</th>
+                        <th>Tinh trang Hoc phi</th>
+                        <th>Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hk in lol %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ hk.ten }}</td>
+                        <td>
+                        {% if hk.st1 == 1%}
+                            <span class="font-weight-bold text-success">Đã có thông tin</span>
+                        {%else%}
+                            <span class="font-weight-bold">Chưa có thông tin</span>
+                        {%endif%}
+                        </td>
+                        <td>
+                        {% if hk.st2 == 1%}
+                            <span class="font-weight-bold text-success">Đã có thông tin</span>
+                        {%else%}
+                            <span class="font-weight-bold">Chưa có thông tin</span>
+                        {%endif%}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-dark"></span>
+                                    </span>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'lop81-hk' lop_id hk.ma  %}">
+                                        <span class="fas fa-edit mr-2"></span>Thông tin HS 81
+                                    </a>
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'lophp-hk' lop_id hk.ma  %}">
+                                        <span class="fas fa-edit mr-2"></span>Thông tin học phí
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {{ transactions.pagination }}
+
+        </div>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

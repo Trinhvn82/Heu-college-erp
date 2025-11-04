@@ -1,0 +1,123 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                    <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                        <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_list' %}">Lớp</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Lịch học</li>
+                    </ol>
+            </div>
+        </div>
+
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h6>Lớp: {{lmh.lop.ma}}</h6>
+                <h6>Môn học: {{lmh.monhoc.ten}}</h6>
+                    <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>STT</th>
+                                <th>Thời gian</th>
+                                <th>Địa điểm</th>
+                                <th>Số tiết</th>
+                                <th>Tình trạng</th>
+                                <th>Tác nghiệp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ct in lh %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ ct.thoigian | date:"d/m/Y H:i" }}</td>
+                                <td class="text-wrap">{{ ct.diadiem }}</td>
+                                <td>{{ ct.sotiet }}</td>
+                                <td>{{ ct.status }}</td>
+                                <td>
+                                    <!-- <a href="{% url 'diemdanh_list' ct.id %}">
+                                        <button type="button" class="btn btn-primary">Diem danh</button>
+                                    </a>
+                                    <a href="#">
+                                        <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                    </a>
+                                    <a href="#">
+                                        <button type="button" class="btn btn-danger">X</button>
+                                    </a> -->
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                        </button>
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            {% if perms.sms.view_lichhoc or  perms.sms.change_lichhoc %}
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'edit_lichhoc' ct.id %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
+                                                    <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/>
+                                                  </svg>
+                                                            <span></span>Cập nhật
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.sms.view_diemdanh %}
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'diemdanh_list' ct.id %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-check" viewBox="0 0 16 16">
+                                                    <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m1.679-4.493-1.335 2.226a.75.75 0 0 1-1.174.144l-.774-.773a.5.5 0 0 1 .708-.708l.547.548 1.17-1.951a.5.5 0 1 1 .858.514M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+                                                    <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+                                                  </svg>
+                                                <span></span>Điểm danh
+                                            </a>
+                                            {% endif %}
+                                            {% if perms.sms.delete_diemdanh %}
+                                            <a class="dropdown-item text-danger delete_item"
+                                               data-href="">
+                                                <span class="fas fa-trash-alt mr-2"></span>Remove
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                </table>
+        
+                </div>
+            </div>
+            {% if perms.sms.add_lopmonhoc %}
+            <div class="card-body">
+                <a href="{% url 'create_lichhoclm' lmh.id%}">
+                    <button type="button" class="btn btn-primary">Thêm mới</button>
+                </a>
+            </div>
+            {% endif %}
+         </div>
+    </main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

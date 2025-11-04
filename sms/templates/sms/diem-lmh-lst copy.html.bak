@@ -1,0 +1,106 @@
+{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Kết quả điểm của lớp: {{tenlop}} mon hoc: {{tenmh}}
+            </div>
+            <div class="card-body">
+                    <table class="table table-responsive-sm table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Điểm thành phần</th>
+                                <th>Tình trạng</th>
+                                <th>Tác nghiệp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ld in lol %}
+                            {% if ld.st >= 1 %}
+                            <tr class="table-success">
+                            {% else %}
+                            <tr>
+                            {% endif %}
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ ld.ten }}</td>
+                                {% if ld.st >= 1 %}
+                                <td>Đã có điểm</td>
+                                {% else %}
+                                <td>Chưa có điểm</td>
+                                {% endif %}
+                                <td>
+                                    <!-- <a href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}">
+                                        <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                    </a>
+                                    <a class="btn btn-primary" href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}" role="button">Cap nhat diem</a> -->
+                                    <div class="btn-group">
+                                        <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm">
+                                                <span class="fas fa-ellipsis-h icon-dark"></span>
+                                            </span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item edit_item"
+                                               href="{% url 'diem-lmh-dtp' lmh_id ld.ma  %}">
+                                                <span class="fas fa-edit mr-2"></span>Vào điểm
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if diems.has_other_pages %}
+        <ul class="pagination">
+            {% if students.has_previous %}
+            <li class="page-item">
+                <a href="?page={{diems.previous_page_number}}" class="page-link">Prev</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Prev</a>
+            </li>
+            {% endif %}
+            {% for i in diems.paginator.page_range %}
+            {% if diems.number == i %}
+            <li class="page-item active">
+                <a class="page-link">{{ i }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if diems.has_next %}
+            <li class="page-item">
+                <a href="?page={{diems.next_page_number}}" class="page-link">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

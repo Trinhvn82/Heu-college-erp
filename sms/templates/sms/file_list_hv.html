@@ -98,7 +98,7 @@
 
                                 <td>
                                     <div>
-                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="icon icon-sm">
                                                 <span class="fas fa-ellipsis-h icon-dark"></span>
                                             </span>
@@ -140,7 +140,44 @@
                 </div>
             </div>
         </div>
-       
+
+
+    <section data-bs-version="5.1" class="slider2 cid-t2vM9ENTP3" id="slider2-1b">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10">
+                    <div class="carousel slide carousel-fade" id="t2w4Np1kqh" data-ride="carousel" data-bs-ride="carousel" data-interval="3000" data-bs-interval="3000">
+
+                        <ol class="carousel-indicators">
+                            {% for file in files %}
+                            <li data-slide-to="{{ forloop.counter }}" data-bs-slide-to="{{ forloop.counter }}" {% if forloop.first %} class="active"{% endif %} data-target="#t2w4Np1kqh" data-bs-target="#t2w4Np1kqh"></li>
+                            {% endfor %}
+                        </ol>
+                        <div class="carousel-inner">
+                            {% for file in files %}
+                            <div class="carousel-item slider-image item {% if forloop.first %}active{% endif %}">
+                                <div class="item-wrapper">
+                                    <img style="height:500px; width:1000px;" class="d-block w-100" src="{{file.file.url}}" alt="Mobirise Website Builder" data-slide-to="{{ forloop.counter }}" data-bs-slide-to="{{ forloop.counter }}">
+
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <a class="carousel-control carousel-control-prev" role="button" data-slide="prev" data-bs-slide="prev" href="#t2w4Np1kqh">
+                            <span class="mobi-mbri mobi-mbri-arrow-prev" aria-hidden="true"></span>
+                            <span class="sr-only visually-hidden">Previous</span>
+                        </a>
+                        <a class="carousel-control carousel-control-next" role="button" data-slide="next" data-bs-slide="next" href="#t2w4Np1kqh">
+                            <span class="mobi-mbri mobi-mbri-arrow-next" aria-hidden="true"></span>
+                            <span class="sr-only visually-hidden">Next</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
         
     </main>
 

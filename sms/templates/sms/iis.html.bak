@@ -1,0 +1,431 @@
+
+<!--
+
+=========================================================
+* Volt - Bootstrap 5 Admin Dashboard
+=========================================================
+
+* Product Page: https://themesberg.com/product/admin-dashboard/volt-bootstrap-5-dashboard
+* Copyright 2020 Themesberg (https://www.themesberg.com)
+
+* Designed and coded by https://themesberg.com
+
+=========================================================
+
+* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. Please contact us to request a removal.
+
+-->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <!-- Primary Meta Tags -->
+    <title>
+        HEU College
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="title" content="Volt - Free Bootstrap 5 Dashboard">
+    <meta name="author" content="Themesberg">
+    <meta name="description"
+          content="Volt is a free and open source Bootstrap 5 Admin Dashboard featuring 11 example pages, 100 components and 3 plugins with Vanilla JS.">
+    <meta name="keywords"
+          content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, free bootstrap 5 dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, themesberg, themesberg dashboard, themesberg admin dashboard"/>
+    <link rel="canonical" href="https://themesberg.com/product/admin-dashboard/volt-bootstrap-5-dashboard">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://demo.themesberg.com/volt">
+    <meta property="og:title" content="Volt - Free Bootstrap 5 Dashboard">
+    <meta property="og:description"
+          content="Volt is a free and open source Bootstrap 5 Admin Dashboard featuring 11 example pages, 100 components and 3 plugins with Vanilla JS.">
+    <meta property="og:image"
+          content="https://themesberg.s3.us-east-2.amazonaws.com/public/products/volt-bootstrap-5-dashboard/volt-bootstrap-5-dashboard-preview.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://demo.themesberg.com/volt">
+    <meta property="twitter:title" content="Volt - Free Bootstrap 5 Dashboard">
+    <meta property="twitter:description"
+          content="Volt is a free and open source Bootstrap 5 Admin Dashboard featuring 11 example pages, 100 components and 3 plugins with Vanilla JS.">
+    <meta property="twitter:image"
+          content="https://themesberg.s3.us-east-2.amazonaws.com/public/products/volt-bootstrap-5-dashboard/volt-bootstrap-5-dashboard-preview.jpg">
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/assets/img/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/assets/img/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/assets/img/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/static/assets/img/favicon/site.webmanifest">
+    <link rel="mask-icon" href="/static/assets/img/favicon/safari-pinned-tab.svg" color="#ffffff">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Fontawesome -->
+    <link rel="stylesheet" type="text/css" href="/static/assets/vendor/%40fortawesome/fontawesome-free/css/all.min.css">
+
+    <!-- Notyf -->
+    <link rel="stylesheet" type="text/css" href="/static/assets/vendor/notyf/notyf.min.css">
+
+    <!-- Volt CSS updated -->
+    <link rel="stylesheet" type="text/css" href="/static/assets/css/volt.css">
+
+    <link type="text/css" href="/static/app_assets/jquery/css/jquery-confirm.min.css" rel="stylesheet">
+
+    <!-- Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+            integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+            crossorigin="anonymous"></script>
+
+
+    <!-- Specific Page CSS goes HERE  -->
+    
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-md-none">
+    <a class="navbar-brand mr-lg-5" href="/">
+        <img class="navbar-brand-dark" src="/static/assets/img/brand/light.svg" alt="Volt logo"/> <img
+            class="navbar-brand-light" src="/static/assets/img/brand/dark.svg" alt="Volt logo"/>
+    </a>
+    <div class="d-flex align-items-center">
+        <button class="navbar-toggler d-md-none collapsed" type="button" data-toggle="collapse" data-bs-toggle="collapse"
+                data-target="#sidebarMenu" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
+
+<div class="container-fluid bg-soft">
+    <div class="row">
+        <div class="col-12">
+
+            
+<nav id="sidebarMenu" class="sidebar d-md-block bg-primary text-white collapse px-4">
+    <div class="sidebar-sticky pt-3 mx-auto">
+        <div class="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar lg-avatar mr-4">
+            <img src="/static/assets/img/team/profile-picture-2.jpg" class="card-img-top rounded-circle border-white" alt="Bonnie Green">
+            </div>
+        </div>
+        <div class="collapse-close d-md-none">
+            <a href="#sidebarMenu" class="fas fa-tim data-bs-toggle="collapse"es" data-toggle="collapse"
+             data-bs-target="#sidebarMenu"    data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="true"
+                aria-label="Toggle navigation"></a>
+        </div>
+        </div>
+        <ul class="nav flex-column">
+        <li class="nav-item  ">
+            <a href="/shop/statistics/" class="nav-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                </svg>
+                <span class="sidebar-icon"></span> 
+                Trang chủ
+            </a>
+        </li>
+        <li class="nav-item">
+            <span class="nav-link  collapsed  d-flex justify-conten data-bs-toggle="collapse"t-between align-items-cent data-bs-target="#submenu-components"er" data-toggle="collapse" data-target="#submenu-components">
+            <span>
+                <span class="sidebar-icon"><span class="fas fa-edit"></span></span> 
+                Quản lý học tập
+            </span>
+            <span class="link-arrow"><span class="fas fa-chevron-right"></span></span> 
+            </span>
+            <div class="multi-level collapse " role="list" id="submenu-components" aria-expanded="false">
+                <ul class="flex-column nav">
+                    <li class="nav-item "><a class="nav-link" href="/sms/alllop/"><span>Lớp học</span></a></li>
+                    <li class="nav-item "><a class="nav-link" href="/sms/allctdt/"><span>Chương trình ĐT</span></a></li>
+                    <li class="nav-item "><a class="nav-link" href="/sms/alllichhoc/"><span>Lịch học</span></a></li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
+            <span class="nav-link  collap data-bs-toggle="collapse"sed  d-fle data-bs-target="#submenu-pages"x justify-content-between align-items-center" data-toggle="collapse" data-target="#submenu-pages">
+            <span>
+                <span class="sidebar-icon"><span class="far fa-file-alt"></span></span> 
+                Thông tin
+            </span>
+            <span class="link-arrow"><span class="fas fa-chevron-right"></span></span> 
+            </span>
+            <div class="multi-level collapse " role="list" id="submenu-pages" aria-expanded="false">
+                <ul class="flex-column nav">
+                    <li class="nav-item"><a class="nav-link" href="/sms/allsv/"><span>Học viên</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="/sms/allgv/"><span>Giáo viên</span></a></li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item">
+            <sp data-bs-toggle="collapse"an cla data-bs-target="#submenu-testing"ss="nav-link  collapsed  d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#submenu-testing">
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                  </svg>
+                  <span class="sidebar-icon"></span> 
+                  <span>Testing</span>
+            </span>
+            <span class="link-arrow"><span class="fas fa-chevron-right"></span></span> 
+            </span>
+            <div class="multi-level collapse " role="list" id="submenu-testing" aria-expanded="false">
+                <ul class="flex-column nav">
+                    <li class="nav-item"><a class="nav-link" href="/sms/react"><span>Test with React</span></a></li>
+                </ul>
+            </div>
+        </li>
+        <li class="nav-item  ">
+            <a href="\admin" class="nav-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                  </svg>
+                  <span class="sidebar-icon"></span> 
+                  Admin
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/accounts/logout/" class="nav-link">
+                <span class="sidebar-icon"><span class="fas fa-sign-out-alt text-danger"></span></span>
+                <span>Logout</span>
+            </a>
+        </li>            
+        </ul>
+    </div>
+</nav>
+
+
+
+            
+                
+    <main class="content">
+
+        
+        <nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark pl-0 pr-2 pb-0">
+            <div class="container-fluid px-0">
+              <div class="d-flex justify-content-between w-100" id="navbarSupportedContent">
+                <div class="d-flex">
+                  <!-- Search form -->
+                  <form class="navbar-search form-inline" id="navbar-search-main">
+                    <div class="input-group input-group-merge search-bar">
+                        <span class="input-group-text" id="topbar-addon"><span class="fas fa-search"></span></span>
+                        <input type="text" class="form-control" id="topbarInputIconLeft" placeholder="Search" aria-label="Search" aria-describedby="topbar-addon">
+                    </div>
+                  </form>
+                </div>
+                <!-- Navbar links -->
+                <ul class="navbar-nav align-items-center">
+
+               data-bs-toggle="dropdown"    <li class="nav-item dropdown">
+                    <a class="nav-link pt-1 px-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <div class="media d-flex align-items-center">
+                        <img class="user-avatar md-avatar rounded-circle" alt="Image placeholder" src="/static/assets/img/team/profile-picture-2.jpg">
+                        <div class="media-body ml-2 text-dark align-items-center d-none d-lg-block">
+                          <span class="mb-0 font-small font-weight-bold">
+                            Xin chào: 
+                          </span>
+                        </div>
+                      </div>
+                    </a>
+                    <div class="dropdown-menu dashboard-dropdown dropdown-menu-right mt-2">
+                      <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-cog"></span>Settings</a>
+                      <div role="separator" class="dropdown-divider"></div>
+                      <a class="dropdown-item font-weight-bold" href="/accounts/logout/">
+                          <span class="fas fa-sign-out-alt text-danger"></span>Logout</a>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+        </nav>
+
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox" src="/static/assets/img/brand/light.svg" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-m data-bs-toggle="dropdown"d-nowrap align-items-center py-4">
+            <div>
+                <button class="btn btn-secondary text-dark mr-2 dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fas fa-plus mr-2"></span>Xem Dashboard
+                </button>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-file-alt mr-2"></span>Lớp học</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="far fa-comment-dots mr-2"></span>Môn học</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa data-bs-toggle="dropdown"-box-open mr-2"></span>Lịch học</a>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fas fa-clipboard mr-2"></span>Báo cáo
+                    <span class="icon icon-small ml-1"><span class="fas fa-chevron-down"></span></span>
+                </button>
+                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-box-open mr-2"></span>Học viên</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-store mr-2"></span>Kết quả học tập</a>
+                    <a class="dropdown-item font-weight-bold" href="#"><span class="fas fa-cart-arrow-down mr-2"></span>Học phí</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Học viên theo CTĐT</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="ctdtChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="h6 font-weight-normal text-gray mb-2">Học viên theo Lớp</div>
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <canvas id="lopsvChart"></canvas>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+        <!-- Page Content -->
+    <script>
+        $(document).ready(function () {
+            loadAllCharts();
+        });
+
+        function loadChart(chart, endpoint) {
+            $.ajax({
+                url: endpoint,
+                type: "GET",
+                dataType: "json",
+                success: (jsonResponse) => {
+                    // Extract data from the response
+                    const title = jsonResponse.title;
+                    const labels = jsonResponse.data.labels;
+                    const datasets = jsonResponse.data.datasets;
+
+                    // Reset the current chart
+                    chart.data.datasets = [];
+                    chart.data.labels = [];
+
+                    // Load new data into the chart
+                    chart.options.title.text = title;
+                    chart.options.title.display = true;
+                    chart.data.labels = labels;
+                    datasets.forEach(dataset => {
+                        chart.data.datasets.push(dataset);
+                    });
+                    chart.update();
+                },
+                error: () => console.log("Failed to fetch chart data from " + endpoint + "!")
+            });
+        }
+
+        function loadAllCharts() {
+            loadChart(ctdtChart, `/shop/chart/ctdt/`);
+            loadChart(lopsvChart, `/shop/chart/lopsv/`);
+        }
+    </script>
+    <script>
+        let ctdtCtx = document.getElementById("ctdtChart").getContext("2d");
+        let ctdtChart = new Chart(ctdtCtx, {
+            type: "pie",
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1,
+                title: {
+                    display: false,
+                    text: ""
+                },
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 25
+                    }
+                }
+            }
+        });
+        let lopsvCtx = document.getElementById("lopsvChart").getContext("2d");
+        let lopsvChart = new Chart(lopsvCtx, {
+            type: "bar",
+            options: {
+                responsive: true,
+                title: {
+                    display: false,
+                    text: ""
+                }
+            }
+        });
+    </script>
+    </main>
+    
+
+
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Core -->
+<script src="/static/assets/vendor/popper.js/dist/umd/popper.min.js"></script>
+<script src="/static/assets/vendor/bootstrap/dist/js/bootstrap.min.js"></script>
+
+<!-- Vendor JS -->
+<script src="/static/assets/vendor/onscreen/dist/on-screen.umd.min.js"></script>
+
+<!-- Slider -->
+<script src="/static/assets/vendor/nouislider/distribute/nouislider.min.js"></script>
+
+<!-- Jarallax -->
+<script src="/static/assets/vendor/jarallax/dist/jarallax.min.js"></script>
+
+<!-- Smooth scroll -->
+<script src="/static/assets/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
+
+<!-- Count up -->
+<script src="/static/assets/vendor/countup.js/dist/countUp.umd.js"></script>
+
+<!-- Notyf -->
+<script src="/static/assets/vendor/notyf/notyf.min.js"></script>
+
+<!-- Charts -->
+<script src="/static/assets/vendor/chartist/dist/chartist.min.js"></script>
+<script src="/static/assets/vendor/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+
+<!-- Datepicker -->
+<script src="/static/assets/vendor/vanillajs-datepicker/dist/js/datepicker.min.js"></script>
+
+<!-- Volt JS -->
+<script src="/static/assets/js/volt.js"></script>
+
+<!-- Custom app script -->
+<script type="application/javascript" src="/static/app_assets/jquery/js/jquery-3.3.1.min.js"></script>
+<script type="application/javascript" src="/static/app_assets/jquery/js/jquery-confirm.min.js"></script>
+<script type="text/javascript" src="/static/app_assets/jquery/cookie/jquery.cookie.js"></script>
+<script type="application/javascript" src="/static/app_assets/js/notify.js"></script>
+<script type="application/javascript" src="/static/app_assets/js/app_js.js"></script>
+<script>
+    
+</script>
+
+
+<!-- Specific Page JS goes HERE  -->
+
+
+</body>
+</html>

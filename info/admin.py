@@ -134,7 +134,7 @@ class AttendanceClassAdmin(admin.ModelAdmin):
 
 class UserProfileAdmin(UserAdmin):
     def has_delete_permission(self, request, obj=None): # note the obj=None
-        return False
+        return True
     
 class GroupProfileAdmin(GroupAdmin):
 #   readonly_fields = ["name"]

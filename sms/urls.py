@@ -1,7 +1,7 @@
 from django.urls import path, include
 from . import views, views_report, views_htmx
 from django.contrib import admin
-from info.views import add_hvuser, add_nsuser, reset_pwd, user_changepwd, ns_quyen,add_gvuser, reset_pwd_gv,reset_pwd_hv
+from info.views import *
 
 from htmx_patterns.views.restarts import view_restart, view_search
 from htmx_patterns.views.thongbao import view_tb, view_tb_search 
@@ -70,7 +70,10 @@ urlpatterns = [
  
     path('allctdt/', views.ctdt_list, name='ctdt_list'),
 #    path('alllop/', views.lop_list, name='lop_list'),
+    path('index/', views.index1, name='index1'),
     path('alllop/', views.lop_list_guardian, name='lop_list'),
+
+
     path('allxlop/', views.xlop_list_guardian, name='xlop_list'),
     path('alllichhoc/', views.lichhoc_list, name='lichhoc_list'),
     path('registration/', views.create_lichhoc, name='create_lichhoc'),
@@ -115,6 +118,22 @@ urlpatterns = [
     path('EditLop-new/<int:lop_id>/', views.edit_lop_new, name='edit_lop_new'),
     path('Lophk-list/<int:lop_id>/<int:lhk_id>/', views.lophk_list, name='lophk_list'),
 
+    path('allloc/', views.loc_list, name='loc_list'),
+    path('CreateLoc/', views.create_loc, name='create_loc'),
+    path('EditLoc/<int:loc_id>/', views.edit_loc, name='edit_loc'),
+
+    path('allhouse/<int:loc_id>/', views.house_list, name='house_list'),
+    path('CreateHouse/<int:loc_id>/', views.create_house, name='create_house'),
+    path('EditHouse/<int:loc_id>/<int:house_id>/', views.edit_house, name='edit_house'),
+
+    path('CreateRenter/', views.create_renter, name='create_renter'),
+    path('EditRenter/<int:renter_id>/', views.edit_renter, name='edit_renter'),
+    path('allRenter/', views.renter_list, name='renter_list'),
+
+    #path('allhouserenter/<int:loc_id>/', views.houserenter_list, name='houserenter_list'),
+    #path('CreateHouseRenter/<int:loc_id>/', views.create_houserenter, name='create_houserenter'),
+    #path('EditHouseRenter/<int:id>/', views.edit_houserenter, name='edit_houserenter '),
+
     path('CreateSinhvien/', views.create_sv, name='create_sv'),
     path('EditSinhvien/<int:sv_id>/', views.edit_sv, name='edit_sv'),
     path('detailsSinhvien/<int:sv_id>/<int:opt>/', views.details_sv, name='details_sv'),
@@ -152,6 +171,12 @@ urlpatterns = [
     path('upload-sv/<int:hv_id>/', views.upload_file_hv, name='upload_file_hv'),
     path('upload-lmh/<int:lmh_id>/', views.upload_file_lmh, name='upload_file_lmh'),
 
+    path('upload-loc/<int:loc_id>/', views.upload_file_loc, name='upload_file_loc'),
+    path('view-loc/<int:loc_id>/', views.view_loc, name='view_loc'),
+    path('create-hr/<int:id>/', views.create_hr, name='create_hr'),
+    path('hr-list/<int:id>/', views.hr_list, name='hr_list'),
+  #  path('upload-house/<int:house_id>/', views.upload_file_house, name='upload_file_house'),
+
     path('hoclai-lmh/<int:lmh_id>/', views.hoclai_list, name='hoclai_list'),
     path('delete-hoclai/<int:lmh_id>/<int:sv_id>/', views.delete_hoclai, name='delete_hoclai'),
 
@@ -161,6 +186,7 @@ urlpatterns = [
     path('delete-file-gv/<int:gv_id>/<int:file_id>/', views.delete_file_gv, name='delete_file_gv'),
     path('delete-file-hv/<int:hv_id>/<int:file_id>/', views.delete_file_hv, name='delete_file_hv'),
     path('delete-file-lmh/<int:lmh_id>/<int:file_id>/', views.delete_file_lmh, name='delete_file_lmh'),
+     path('delete-file-loc/<int:loc_id>/<int:file_id>/', views.delete_file_loc, name='delete_file_loc'),
     path('download-temp1/', views.download_file1, name='download_file1'),
     path('download-temp2/', views.download_file2, name='download_file2'),
 
@@ -177,8 +203,13 @@ urlpatterns = [
     path('add-hv/<int:id>/', add_hvuser, name='add_hv'),
     path('resetpwd-hv/<int:hv_id>/', reset_pwd_hv, name='reset_pwd_hv'),
 
+    path('add-renter/<int:id>/', add_renteruser, name='add_renter'),
+    path('resetpwd-renter/<int:renter_id>/', reset_pwd_renter, name='reset_pwd_renter'),
+
     path('changepwd/', user_changepwd, name='changepwd'),
  
+    path('signup/', signup, name='signup'),
+
     path('create_tbs/', create_tbs, name='create_tbs'),
 
     #HTMX
@@ -186,6 +217,23 @@ urlpatterns = [
     path("search-lh/", views_htmx.search_lh, name='search-lh'),
     path('get-lichhoc/', views_htmx.get_lichhoc, name='get-lichhoc'),
 
+    #bill
+    path('location/<int:loc_id>/bills/', views.bill_list_view, name='bill_list'),
+    path('house/<int:house_id>/create-bill/', views.create_bill_view, name='create_bill'),
+    path('bill/<int:bill_id>/detail/', views.bill_detail_view, name='bill_detail'),
+    path('bill/<int:bill_id>/update/', views.update_bill_view, name='update_bill'),
+    # bill payment
+    path('bill/<int:bill_id>/add-payment/', views.add_payment, name='add_payment'),
+    # path('payment/<int:payment_id>/update/', views.update_payment_view, name='update_payment'),
+
+    # 3. Xác nhận Thanh toán
+    path('payment/confirm/<int:payment_id>/', views.confirm_payment_view, name='confirm_payment'),
+    
+    # 4. Xóa Thanh toán
+    path('payment/delete/<int:payment_id>/', views.delete_payment_view, name='delete_payment'),
+    path('bill/<int:bill_id>/upload-file/', views.upload_bill_file, name='upload_bill_file'),
+    #path('bill/<int:bill_id>/excel/', views.generate_bill_excel, name='generate_bill_excel'),
+    path('bill/<int:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

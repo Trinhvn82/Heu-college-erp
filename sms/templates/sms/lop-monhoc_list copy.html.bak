@@ -1,0 +1,135 @@
+﻿{% extends 'sms/base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'sms/alerts.html' %}
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fa fa-align-justify"></i> Các môn học của lớp {{ten}}
+            </div>
+            <div class="card-body">
+                <table class="table table-responsive-xl">
+                    <tbody>
+                        <tr>
+                                <a href="{% url 'create_lopmonhoc' lop_id %}">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit">Thêm môn học</i></button>
+                                </a>
+                        </tr>
+
+                    </tbody>
+                </table>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Môn học</th>
+                            <th>Số tín chỉ</th>
+                            <th>Tgian bắt đầu</th>
+                            <th>Tgian kết thúc</th>
+                            <th>Tình trạng</th>
+                            <th>Tác nghiệp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ct in lm %}
+                        {% if ct.status == 'Da hoan thanh'%}
+                        <tr class="table-success">
+                        {%else%}
+                        <tr>
+                        {%endif%}
+                            <td>{{ ct.monhoc.chuongtrinh }}: {{ ct.monhoc.ma }}-{{ ct.monhoc.ten }}</td>
+                            <td>{{ ct.monhoc.sotinchi }}</td>
+                            <td>{{ ct.ngaystart }}</td>
+                            <td>{{ ct.ngayend }}</td>
+                            <td>{{ ct.status }}</td>
+                            <td>
+                                <!-- <a class="btn btn-primary" href="{% url 'lichhoclopmh_list' ct.id  %}" role="button">Lich hoc</a>
+                                <a class="btn btn-warning" href="{% url 'diem-lmh-lst' ct.id %}">KQ Học tập</a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
+                                </a>
+                                <a href="#">
+                                    <button type="button" class="btn btn-danger">X</button>
+                                </a> -->
+                                <div class="btn-group">
+                                    <button class="btn btn-link text-dark dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="icon icon-sm">
+                                            <span class="fas fa-ellipsis-h icon-dark"></span>
+                                        </span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item edit_item"
+                                           href="{% url 'lichhoclopmh_list' ct.id  %}">
+                                            <span class="fas fa-edit mr-2"></span>Lich hoc
+                                        </a>
+                                        <a class="dropdown-item edit_item"
+                                           href="{% url 'diem-lmh-lst' ct.id %}">
+                                            <span class="fas fa-edit mr-2"></span>KQ Học tập
+                                        </a>
+                                        <a class="dropdown-item edit_item"
+                                           href="">
+                                            <span class="fas fa-edit mr-2"></span>Edit
+                                        </a>
+                                        <a class="dropdown-item text-danger delete_item"
+                                           data-href="">
+                                            <span class="fas fa-trash-alt mr-2"></span>Remove
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <p>Chua co danh sach mon hoc cho CTDT da chon</p>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        {% if ctdt.has_other_pages %}
+            <ul class="pagination">
+                {% if ctdt.has_previous %}
+                    <li class="page-item">
+                        <a href="?page={{ctdt.previous_page_number}}" class="page-link">Prev</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Prev</a>
+                    </li>
+                {% endif %}
+                {% for i in ctdt.paginator.page_range %}
+                    {% if ctdt.number == i %}
+                        <li class="page-item active">
+                            <a class="page-link">{{ i }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                {% if ctdt.has_next %}
+                    <li class="page-item">
+                        <a href="?page={{ctdt.next_page_number}}" class="page-link">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

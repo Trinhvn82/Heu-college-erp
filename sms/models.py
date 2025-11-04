@@ -2,6 +2,8 @@
 from cProfile import label
 from xml.etree.ElementTree import tostring
 from django.db import models
+from django.db.models import Sum
+from django.utils import timezone
 from simple_history.models import HistoricalRecords
 from info.models import User
 from django.db.models.functions import StrIndex, Reverse, Right, Concat, Substr
@@ -158,6 +160,207 @@ class Monhoc(models.Model):
         unique_together = ('ma','ten','chuongtrinh')
         ordering = ["-id"]
 
+    def __str__(self):
+        return self.ten
+
+class XaPhuong(models.Model):
+    ma = models.CharField(max_length=100)
+    ten = models.CharField(max_length=100)
+    tp = models.CharField(max_length=100)
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Xã/Phường"
+        verbose_name_plural = "Danh mục Xã/Phường"
+        unique_together = ('ma','ten','tp')
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.ten + ", " + self.tp
+
+class Location(models.Model):
+    chu = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
+    diachi = models.CharField(max_length=100,verbose_name = "Địa chỉ")
+    xp = models.OneToOneField(XaPhuong, on_delete=models.RESTRICT, verbose_name = "Xã/Phường - Tỉnh/Thành phố")
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Vị trí"
+        verbose_name_plural = "Vị trí"
+        #unique_together = ('us','ten','tp')
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.xp.ten + ", " + self.xp.tp
+
+class House(models.Model):
+    ln_choice = (
+        ("Nguyên căn", "Nguyên căn"),
+        ("Căn hộ", "Căn hộ"),
+        ("Khác", "Khác"),
+    )
+    interval_choice = (
+        ("1 tháng", "1 tháng"),
+        ("3 tháng", "3 tháng"),
+        ("6 tháng", "6 tháng"),
+        ("12 tháng", "12 tháng"),
+        ("Khác", "Khác"),
+    )
+
+    loc = models.OneToOneField(Location, on_delete=models.RESTRICT, null=True)
+    ten = models.CharField(max_length=100, verbose_name = "Tên nhà trọ")
+    loainha = models.CharField(choices=ln_choice, verbose_name = "Loại nhà")
+    sophong= models.IntegerField(default= 1, verbose_name = "Số phòng")
+    dientich = models.IntegerField(verbose_name = "Diện tích")
+    permonth = models.IntegerField(verbose_name = "Tiền thuê/tháng (VNĐ)")
+    interval = models.CharField(choices=interval_choice, max_length=100, verbose_name = "Số tháng/kỳ thanh toán")
+    deposit = models.IntegerField(verbose_name = "Tiền đặt cọc (VNĐ)")
+    kitchen = models.BooleanField(default= True, verbose_name = "Bếp")
+    wc = models.BooleanField(default= True, verbose_name = "Nhà vệ sinh")
+    aircondition = models.BooleanField(default= True, verbose_name = "Điều hòa")
+    wifi = models.BooleanField(default= True, verbose_name = "Wifi")
+    washingmachine = models.BooleanField(default= True, verbose_name = "Máy giặt")
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú"   )
+
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Nhà trọ"
+        verbose_name_plural = "Danh mục Nhà trọ"
+        #unique_together = ('us','ten','tp')
+        ordering = ["-id"]
+
+    def __str__(self):
+        return self.ten
+
+class Hoadon(models.Model):
+    st_choice = (
+        ('ChuaTT', 'Chưa thanh toán'),
+        ('DangTT', 'Đang thanh toán (Công nợ)'), 
+        ('DaTT', 'Đã thanh toán'),
+        ('QuaHan', 'Quá hạn'),
+    )
+    house = models.ForeignKey(House, on_delete=models.RESTRICT, null=True)
+    ten = models.CharField(max_length=100, verbose_name = "Mô tả hóa đơn")
+   
+    ngay_tao = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo hóa đơn")
+    ngay_cap_nhat = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật hóa đơn")
+    duedate = models.DateField(verbose_name = "Ngày đến hạn")
+    tienthuenha = models.IntegerField(blank=True, null=True, verbose_name = "Tiền thuê/tháng (VNĐ)")
+    tiendien = models.IntegerField(blank=True, null=True, verbose_name = "Tiền điện (VNĐ)")
+    tiennuoc = models.IntegerField(blank=True, null=True, verbose_name = "Tiền nước (VNĐ)")
+    tienkhac = models.IntegerField(blank=True, null=True, verbose_name = "Tiền khác (VNĐ)")
+
+    TONG_CONG = models.IntegerField(blank=True, null=True,  verbose_name="TỔNG CỘNG PHẢI THU")
+    SO_TIEN_DA_TRA = models.IntegerField(blank=True, null=True, default=0, verbose_name="Số tiền đã trả")
+    CONG_NO = models.IntegerField(blank=True, null=True, default=0, verbose_name="Công nợ")
+    status = models.CharField(max_length=10, choices=st_choice, default='ChuaTT', verbose_name="Trạng thái")
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú"   )
+
+    history = HistoricalRecords()
+ 
+# ----------------------------------------------------
+    # IV. LOGIC TỰ ĐỘNG CẬP NHẬT
+    # ----------------------------------------------------
+    def is_overdue(self):
+        # Kiểm tra quá hạn: Công nợ > 0 và đã qua ngày hết hạn
+        return self.CONG_NO > 0 and self.duedate < timezone.now().date()
+        
+    def save(self, *args, **kwargs):
+        from decimal import Decimal
+        
+        # 1. TÍNH TOÁN LẠI TỔNG CỘNG VÀ CÔNG NỢ (Đảm bảo giá trị là Decimal và không phải None)
+        t_nha = int(self.tienthuenha or 0)
+        t_dien = int(self.tiendien or 0)
+        t_nuoc = int(self.tiennuoc or 0)
+        t_khac = int(self.tienkhac or 0)
+
+        self.TONG_CONG = t_nha + t_dien + t_nuoc + t_khac
+
+        self.SO_TIEN_DA_TRA = int(self.SO_TIEN_DA_TRA or 0) # Đảm bảo giá trị an toàn
+        self.CONG_NO = self.TONG_CONG - self.SO_TIEN_DA_TRA
+        
+        # 2. CẬP NHẬT TRẠNG THÁI (Đã sửa logic)
+        
+        if self.CONG_NO <= 0:
+            # ƯU TIÊN 1: Nếu Công nợ bằng 0 hoặc âm (trả thừa), coi là Đã Thanh toán
+            self.status = 'DaTT'
+        elif self.is_overdue():
+            # ƯU TIÊN 2: Nếu chưa trả đủ và đã Quá hạn (is_overdue() phải được định nghĩa)
+            self.status = 'QuaHan'
+        elif self.SO_TIEN_DA_TRA > 0:
+            # ƯU TIÊN 3: Nếu đã trả một phần (nhưng chưa hết và chưa quá hạn)
+            self.status = 'DangTT'
+        else:
+            # CÒN LẠI: Chưa trả đồng nào (Công nợ > 0 và SO_TIEN_DA_TRA = 0)
+            self.status = 'ChuaTT'
+
+        super().save(*args, **kwargs)
+
+        class Meta:
+            verbose_name = "Hóa đơn"
+            verbose_name_plural = "Danh mục Hóa đơn"
+            #unique_together = ('us','ten','tp')
+            ordering = ["-id"]
+
+        def __str__(self):
+            return self.ten
+
+class Thanhtoan(models.Model):
+    TT_CHOICES = (
+        ('Choxn', 'Chờ xác nhận'),
+        ('Daxn', 'Đã xác nhận'),
+        ('Huy', 'Đã hủy'),
+    )
+    # Bổ sung: Người tạo thanh toán
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Người tạo")
+    hoadon = models.ForeignKey(Hoadon, on_delete=models.RESTRICT, null=True)
+    ten = models.CharField(max_length=100, verbose_name = "Mô tả thanh toán")
+    ngay_tao = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo thanh toán")
+    ngay_cap_nhat = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật thanh toán")
+    tientt = models.IntegerField(blank=True, null=True, verbose_name = "Số tiền (VNĐ)")
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú"   )
+    status = models.CharField(max_length=10, choices=TT_CHOICES, default='Choxn', verbose_name="Trạng thái TT")
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Thanh toán"
+        verbose_name_plural = "Danh mục Thanh toán"
+        #unique_together = ('us','ten','tp')
+        ordering = ["-id"]
+
+# CHỈNH SỬA LOGIC SAVE (Thay thế logic save() hiện tại)
+    def save(self, *args, **kwargs):
+        from decimal import Decimal
+        
+        # 1. Lưu bản ghi ThanhToan hiện tại
+        super().save(*args, **kwargs)
+        
+        # 2. CHỈ CẬP NHẬT HÓA ĐƠN GỐC KHI TRẠNG THÁI LÀ 'Daxn'
+        if self.status == 'Daxn':
+            if self.hoadon:
+                hoa_don_goc = self.hoadon
+                
+                # Tính tổng số tiền đã thanh toán đã được xác nhận
+                tong_da_tra = Thanhtoan.objects.filter(hoadon=hoa_don_goc, status='Daxn').aggregate(Sum('tientt'))['tientt__sum'] or int(0)
+
+                # Cập nhật SO_TIEN_DA_TRA và kích hoạt Hoadon.save()
+                hoa_don_goc.SO_TIEN_DA_TRA = tong_da_tra
+                hoa_don_goc.save() 
+        
+    # LOGIC DELETE (Đảm bảo cập nhật khi xóa bản ghi ĐÃ XÁC NHẬN)
+    def delete(self, *args, **kwargs):
+        if self.hoadon and self.status == 'Daxn':
+            hoa_don_goc = self.hoadon
+            super().delete(*args, **kwargs) # Xóa trước
+            
+            # Tính lại tổng chỉ các mục đã xác nhận
+            tong_da_tra = Thanhtoan.objects.filter(hoadon=hoa_don_goc, status='Daxn').aggregate(Sum('tientt'))['tientt__sum'] or int(0)
+            
+            hoa_don_goc.SO_TIEN_DA_TRA = tong_da_tra
+            hoa_don_goc.save()
+        else:
+            super().delete(*args, **kwargs)
     def __str__(self):
         return self.ten
 
@@ -473,7 +676,49 @@ class Hsns(models.Model):
     def __str__(self):
         return self.hoten
     
+class Renter(models.Model):
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
+    chu_id = models.BigIntegerField(null=True)
+    ma = models.CharField(null=True, verbose_name = "Mã")
+    hoten = models.CharField(max_length=100, verbose_name = "Họ tên")
+    email = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Email")
+    #namsinh = models.DateField()
+    sdt = models.CharField(max_length=100, verbose_name = "Số điện thoại",blank=True, null=True)
+    cccd = models.CharField(max_length=100, verbose_name = "CCCD", blank=True, null=True)
+    ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    noicap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    mst = models.CharField(max_length=100, blank=True, null=True, verbose_name = "MS Thuế cá nhân")
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
+    #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Người thuê"
+        verbose_name_plural = "Danh sách Người thuê"
+        ordering = ["ma",]
+        unique_together = ('ma',)
+
+    def __str__(self):
+        return self.hoten + " - " + self.cccd
     
+class HouseRenter(models.Model):
+
+    house = models.ForeignKey(House, on_delete=models.RESTRICT, null=True)
+    renter = models.ForeignKey(Renter, on_delete=models.RESTRICT, null=True, verbose_name = "Người thuê")
+    rent_from = models.DateField(blank=True, null=True, verbose_name = "Thuê từ ngày")
+    rent_to = models.DateField(blank=True, null=True, verbose_name = "Thuê đến ngày")
+    active = models.BooleanField(default= False, verbose_name = "Hợp đồng đang có hiệu lực?")
+    ghichu = models.TextField(max_length=200, blank=True, null=True, verbose_name = "Ghi chú")
+    #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Người thuê - Nhà trọ"
+        verbose_name_plural = "Người thuê - Nhà trọ"
+        ordering = ["-id",]
+    def __str__(self):
+        return self.renter.hoten + " - " + self.house.loc.diachi
+
 class CtdtMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
     #hocky = models.IntegerField()
@@ -888,6 +1133,12 @@ class UploadedFile(models.Model):
     mota = models.CharField(max_length=100)
     lopmh = models.ForeignKey(LopMonhoc, on_delete=models.RESTRICT, blank=True, null = True)
     user = models.ForeignKey(User, on_delete=models.RESTRICT, blank=True, null = True)
+    loc = models.ForeignKey(Location, on_delete=models.RESTRICT, blank=True, null = True)
+    house = models.ForeignKey(House, on_delete=models.RESTRICT, blank=True, null = True)
+    
+    type = models.IntegerField(default= 1)
+    link_id = models.BigIntegerField(default= 0)
+
     history = HistoricalRecords()
     def __str__(self):
         return self.file.name

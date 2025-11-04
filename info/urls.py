@@ -61,6 +61,8 @@ urlpatterns = [
 
     path('add-groups/', views.add_groups, name='add_groups'),
 
+    path('activate/<uidb64>/<token>', views.activate, name='activate'),
+
 
 ]
 admin.site.site_url = None

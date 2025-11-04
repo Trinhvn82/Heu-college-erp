@@ -11,8 +11,8 @@
             </div>
         </div>
         <div class="collapse-close d-md-none">
-            <a href="#sidebarMenu" class="fas fa-times" data-toggle="collapse"
-                data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="true"
+            <a href="#sidebarMenu" class="fas fa-times" data-toggle="collapse" data-bs-toggle="collapse"
+                data-target="#sidebarMenu" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="true"
                 aria-label="Toggle navigation"></a>
         </div>
         </div>
@@ -109,7 +109,7 @@
         </li>
         {% if perms.dashboard.view_report%}
         <li class="nav-item">
-            <span class="nav-link  collapsed  d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#submenu-report">
+            <span class="nav-link  collapsed  d-flex justify-content-between align-items-cent data-bs-toggle="collapse"er" data-toggle="collapse" data-bs-target="#submenu-report" data-target="#submenu-report">
             <span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building-gear" viewBox="0 0 16 16">
                     <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6.5a.5.5 0 0 1-1 0V1H3v14h3v-2.5a.5.5 0 0 1 .5-.5H8v4H3a1 1 0 0 1-1-1z"/>
@@ -144,7 +144,7 @@
         {% endif %}
         {% if debug %}
         <li class="nav-item">
-            <span class="nav-link  collapsed  d-flex justify-content-between align-items-center" data-toggle="collapse" data-target="#submenu-testing">
+            <span class="nav-link  collapsed  d-flex justify-conten data-bs-toggle="collapse"t-between align-item data-bs-target="#submenu-testing"s-center" data-toggle="collapse" data-target="#submenu-testing">
             <span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-building-gear" viewBox="0 0 16 16">
                     <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6.5a.5.5 0 0 1-1 0V1H3v14h3v-2.5a.5.5 0 0 1 .5-.5H8v4H3a1 1 0 0 1-1-1z"/>

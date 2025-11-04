@@ -3,7 +3,7 @@ import json
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
-from sms.models import LopMonhoc, Lichhoc, Ttgv, Hssv, Hsgv, Hsns, Diemthanhphan, Hp81, Hs81
+from sms.models import *
 
 from ..models import Monster
 from ..utils import for_htmx
@@ -69,6 +69,8 @@ def show_history(request: HttpRequest, obj_id, type_id):
         obj = Hs81.objects.get(id=obj_id)
     elif type_id == 9:
         obj = Hp81.objects.get(id=obj_id)
+    elif type_id == 10:
+        obj = Renter.objects.get(id=obj_id)
     
     #poll = Poll.objects.get(pk=poll_id)
     p = obj.history.all()

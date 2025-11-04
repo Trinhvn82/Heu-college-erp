@@ -1,0 +1,109 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %} Cập nhật môn học {% endblock %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_list'%}">Lớp</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lop_monhoc' lmh.lop_id%}">Môn học</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'lichhoclopmh_list' lmh.id%}">Lịch học</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Điểm danh</li>
+                </ol>
+            </div>
+        </div>
+
+        <form action="{% url 'diemdanh_list' ttlh.id%}" method="post" {% if perms.sms.add_diemdanh or perms.sms.change_diemdanh %} id ="id_enabled" {% else %} id ="id_disabled" {% endif %}>
+            {% csrf_token %}
+            <div class="card border-light shadow-sm mb-4">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+                    <div class="card-body">
+                        <h6>Môn học: {{mh.ten}}</h6>
+                        <h6>Lịch học: {{ttlh.thoigian | date:"d/m/Y h:i"}}</h6>
+                        <div class="table-responsive">
+                        <table class="table table-centered mb-0 rounded">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã</th>
+                                    <th>Tên học viên</th>
+                                    <th>Sdt</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                </thead>
+                    <tbody>
+                        {% for ct in dds %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ ct.sv.msv }}</td>
+                            <td>{{ ct.sv.hoten }}</td>
+                            <td>{{ ct.sv.sdths }}</td>
+                            <td>
+                                {% if perms.sms.add_diemdanh or perms.sms.change_diemdanh %}
+                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+
+                                        {% if ct.status == 1 %}
+                                        <label class="btn btn-success">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1" checked> Có mặt
+                                        </label>
+    
+                                        <label class="btn btn-danger">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0"> Vắng mặt
+                                        </label>
+                                        {% else %}
+                                        <label class="btn btn-outline-success">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option1" autocomplete="off" value="1"> Có mặt
+                                        </label>
+    
+                                        <label class="btn btn-outline-danger active">
+                                            <input type="radio" name="C{{ ct.sv.id }}" id="option2" autocomplete="off" value="0" checked>Vắng mặt
+                                        </label>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    {% if ct.status == 1 %}
+                                    <label class="btn btn-outline-success">
+                                        Có mặt
+                                    </label>
+                                    {% else %}
+                                    <label class="btn btn-outline-danger active">
+                                        Vắng mặt
+                                    </label>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+</tbody>
+                </table>
+
+                {{ transactions.pagination }}
+
+            </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+<script>
+    document.querySelectorAll('#id_disabled input, #id_disabled select, #id_disabled button, #id_disabled textarea').forEach(elem => elem.disabled = true);    
+    document.querySelectorAll('#id_disabled button').forEach(elem => elem.hidden = true);    
+</script>
+    
+{% endblock content %}

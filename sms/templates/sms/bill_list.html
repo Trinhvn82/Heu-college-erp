@@ -1,0 +1,118 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Danh sách Hóa đơn {% endblock %}
+
+{% block content %}
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+        
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Hóa đơn: {{ location.diachi }}</li>
+                </ol>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-success dropdown-toggle shadow-sm animate-up-2" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="fas fa-plus me-2"></span> Tạo Hóa đơn Mới
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for house in houses %}
+                        <a class="dropdown-item" href="{% url 'create_bill' house_id=house.id %}">
+                            <span class="fas fa-file-invoice me-2"></span> {{ house.ten|default:"[Nhà không tên]" }}
+                        </a>
+                    {% empty %}
+                        <a class="dropdown-item text-danger" href="#">Không có nhà trọ để tạo hóa đơn</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-light shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="h5 mb-4">Danh sách Hóa đơn tại {{ location.diachi }}</h2>
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>TT</th>
+                                <th>Nhà Trọ</th>
+                                <th>Mô tả</th>
+                                <th>Tổng cộng</th>
+                                <th>Đã trả</th>
+                                <th>Công nợ</th>
+                                <th>Đến hạn</th>
+                                <th>Trạng thái</th>
+                                <th>Tác vụ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in bills %}
+                            <tr class="{% if bill.trang_thai == 'QuaHan' %}table-danger{% elif bill.trang_thai == 'DaTT' %}table-success{% endif %}">
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-wrap">{{ bill.house.ten|default:"[Không tên]" }}</td>
+                                <td class="text-wrap">{{ bill.ten }}</td>
+                                <td>{{ bill.TONG_CONG|intcomma }}</td>
+                                <td>{{ bill.SO_TIEN_DA_TRA|intcomma }}</td>
+                                <td>{{ bill.CONG_NO|intcomma }}</td>
+                                <td>{{ bill.duedate|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if bill.status == 'DaTT' %}
+                                        <span class="badge bg-success">Đã Thanh toán</span>
+                                    {% elif bill.status == 'QuaHan' %}
+                                        <span class="badge bg-danger">QUÁ HẠN</span>
+                                    {% elif bill.status == 'DangTT' %}
+                                        <span class="badge bg-warning text-dark">Đang Thanh toán</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Chưa Thanh toán</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p data-bs-toggle="dropdown"-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <span class="icon icon-sm"><span class="fas fa-ellipsis-h icon-dark"></span></span>
+                                        </button>
+                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                            <a class="dropdown-item edit_item"
+                                            href="{% url 'bill_detail' bill_id=bill.id %}">
+                                                <span class="fas fa-eye me-2"></span>Xem chi tiết
+                                            </a>
+                                            <a class="dropdown-item edit_item"
+                                            href="{% url 'update_bill' bill_id=bill.id %}">
+                                                <span class="fas fa-pen me-2"></span>Cập nhật
+                                            </a>
+                                            <a class="dropdown-item text-danger"
+                                            href="#">
+                                                <span class="fas fa-trash-alt me-2"></span>Xóa
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center">Không có hóa đơn nào được tìm thấy.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+
+{% endblock content %}
+
+{% block javascripts %}{% endblock javascripts %}

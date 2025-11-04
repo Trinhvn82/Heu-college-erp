@@ -1,0 +1,99 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+{% load guardian_tags %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Quản lý vị trí</li>
+                </ol>
+            </div>
+        </div>
+
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                    <tr>
+                        <th>STT</th>
+                        <th>Địa chỉ</th>
+                        <th>Tỉnh xã</th>
+                        <th>Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ct in lop %}
+<!--                     {% get_obj_perms request.user for ct as "ct_perms" %}
+                    {% if "assign_lop" in ct_perms %}
+ -->                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td class="text-wrap">{{ ct.diachi }}</td>
+                        <td class="text-wrap">{{ ct.xp }}</td>
+                        <td>
+                            <div>
+                                <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-dark"></span>
+                                    </span>
+                                </button>
+                                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'edit_loc' ct.id  %}">
+                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
+                                        <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/>
+                                      </svg>
+                                        <span></span>Cập nhật
+                                    </a>
+                                </div>
+                            </div>
+                    <!-- <a class="btn btn-primary" href="{% url 'lop_monhoc' ct.id  %}" role="button">Quản lý học tập</a>
+                            <a class="btn btn-warning" href="{% url 'lop81-lst' ct.id %}">Hồ sơ 81 & Học phí</a>
+                            <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
+                        </td>
+                    </tr>
+                    <!-- {% endif %} -->
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <div class="card-body">
+        <a href="{% url 'create_loc' %}">
+            <button type="button" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                    </svg>
+                Tạo mới địa chỉ
+            </button>
+        </a>
+    </div>
+</div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

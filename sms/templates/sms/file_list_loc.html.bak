@@ -1,0 +1,164 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %} Ảnh & Bản đồ Vị trí {% endblock %}
+
+{% block stylesheets %}
+<style>
+/* CSS Tùy chỉnh cho Gallery và Map */
+.gallery-img {
+    object-fit: cover;
+    height: 180px;
+    width: 100%;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.gallery-img:hover {
+    transform: scale(1.05);
+}
+.map-container {
+    height: 450px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 8px; /* Bo tròn góc */
+}
+.map-container iframe {
+    border: none;
+}
+
+/* CSS cho khối House Link */
+.card-link-item .card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card-link-item:hover .card {
+    transform: translateY(-3px); /* Nhấc nhẹ lên */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Đổ bóng mạnh hơn */
+    cursor: pointer;
+}
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">File ảnh: {{ loc.diachi }}</li>
+                </ol>
+            </div>
+        </div>
+
+
+        <div class="row item-row mb-4">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm">
+                    <h2 class="h5 mb-4">Tải lên Ảnh / Tài liệu vị trí</h2>
+                    <form action="{% url 'upload_file_loc' loc.id %}" enctype="multipart/form-data" method="post">
+                        {% csrf_token %}
+                        <div class="row align-items-end">
+                            <div class="col-md-5 mb-3">
+                                <div>
+                                    <label for="id_file">Chọn File (Ảnh/PDF, max 5MB):</label>
+                                    {{ form.file }}
+                                    {% if form.file.errors %}
+                                        <div class="text-danger small">{{ form.file.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <div>
+                                    {{ form.mota.label_tag }}
+                                    {{ form.mota }}
+                                    {% if form.mota.errors %}
+                                        <div class="text-danger small">{{ form.mota.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <span class="fas fa-upload me-2"></span> Upload
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row item-row mb-4">
+
+            <div class="col-12">
+                <div class="card border-light shadow-sm mb-4">
+                    <div class="card-body">
+                        <h2 class="h5 mb-4 border-bottom pb-2">Danh sách Ảnh/Tài liệu/File</h2>
+                        <div class="table-responsive">
+                            <table class="table table-centered mb-0 rounded">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Tên file</th>
+                                        <th>Mô tả</th>
+                                        <th>Thời gian upload</th>
+                                        <th>Tác vụ</th>
+                                    </tr>
+                                </thead>
+                            <tbody>
+                                {% for file in files %}
+                                    {% with file_name=file.file.name|lower %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ file.ten }}</td>
+                                            <td>{{ file.mota }}</td>
+                                            <td>{{ file.uploaded_at | date:"d/m/Y H:i" }}</td>
+
+                                            <td>
+                                                <div>
+                                                    <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <span class="icon icon-sm">
+                                                            <span class="fas fa-ellipsis-h icon-dark"></span>
+                                                        </span>
+                                                    </button>
+                                                    <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                                                    <a class="dropdown-item" href="{% url 'view_file' file.id %}" target="_blank">
+                                                                        <span class="fas fa-eye me-2"></span>View file
+                                                                    </a>
+                                                                    <a class="dropdown-item" href="{% url 'download_file' file.id %}">
+                                                                        <span class="fas fa-download me-2"></span>Download
+                                                                    </a>
+                                                                    <a class="dropdown-item text-danger" href="{% url 'delete_file' file.id %}">
+                                                                        <span class="fas fa-trash-alt me-2"></span>Remove
+                                                                    </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                        </tr>
+                                    {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        
+    </main>
+
+{% endblock content %}
+
+{% block javascripts %}
+{% endblock javascripts %}

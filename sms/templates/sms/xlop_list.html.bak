@@ -1,0 +1,163 @@
+﻿{% extends "layouts/xbase.html" %}
+{% load static %}
+{% load guardian_tags %}
+
+{% block title %} Transactions {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+    <main class="content">
+
+        {% include 'includes/navigation.html' %}
+        {% include 'sms/alerts.html' %}
+
+        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
+            <img class="loader-element animate__animated animate__jackInTheBox"
+                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
+        </div>
+
+
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Quản lý học tập</li>
+                </ol>
+            </div>
+        </div>
+{% if perms.sms.view_lop%}
+        <div class="row item-row">
+            <div class="col-12">
+                <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-4">Thông tin tìm kiếm</h2>
+                    <form action="" method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div><label for="id_ma">Tên lớp:</label>
+                                    <input type="text" name="ten" class="form-control" maxlength="100">
+                                </div>
+                            </div>
+                        
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                    </svg>
+                                    Tìm kiếm                              
+                                </button>
+                            </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+<div class="card border-light shadow-sm mb-4">
+    <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-centered mb-0 rounded">
+                        <thead class="thead-light">
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã lớp</th>
+                        <th>Tên lớp</th>
+                        <th>Trung tâm</th>
+                        <th>Chương trình ĐT</th>
+                        <th>Tác nghiệp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ct in lop %}
+<!--                     {% get_obj_perms request.user for ct as "ct_perms" %}
+                    {% if "assign_lop" in ct_perms %}
+ -->                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        {% if perms.sms.view_lop or perms.sms.change_lop%}
+                        <td>
+                            <a href="{% url 'edit_lop_new' ct.id %}">
+                                <span class="fas fa-edit mr-2"></span>{{ ct.ma }}
+                            </a>
+                        </td>
+                        {% else %}
+                        <td>{{ ct.ma }}</td>
+                        {% endif %}
+                        <td>
+                            {{ ct.ten }}
+                        </td>
+                        <td>{{ ct.trungtam }}</td>
+                        <td>
+                            {{ ct.ctdt.ten }}
+                        </td>
+                        <td>
+                            <div>
+                                <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-dark"></span>
+                                    </span>
+                                </button>
+                                <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
+                                    {% if perms.sms.view_lopmonhoc %}
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'lop_monhoc' ct.id  %}">
+                                        <span class="fas fa-edit mr-2"></span>Lớp môn học
+                                    </a>
+                                    {% endif %}
+                                    {% if perms.sms.view_hssv or perms.sms.view_hs81 or perms.sms.view_hp81 %}
+                                    <a class="dropdown-item edit_item"
+                                       href="{% url 'svlop_list' ct.id %}">
+                                        <span class="fas fa-edit mr-2"></span>Học viên - Hồ sơ 81 - Học phí
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                    <!-- <a class="btn btn-primary" href="{% url 'lop_monhoc' ct.id  %}" role="button">Quản lý học tập</a>
+                            <a class="btn btn-warning" href="{% url 'lop81-lst' ct.id %}">Hồ sơ 81 & Học phí</a>
+                            <a class="btn btn-secondary" href="{% url 'svlop_list' ct.id %}">Sinh viên >></a> -->
+                        </td>
+                    </tr>
+                    <!-- {% endif %} -->
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {{ transactions.pagination }}
+
+        </div>
+    </div>
+    {% endif %}
+    {% if perms.sms.add_lop %}
+    <div class="card-body">
+        <button type="button" class="btn btn-primary" onclick="lop_modal.showModal()">Tạo mới lớp</button>
+    </div>
+    {% endif %}
+    <dialog id="lop_modal" class="model">
+        <div class ="modal-box">
+    
+            <form hx-post="{% url 'create_xlop'%}" method="post">
+                {% csrf_token %}
+                <div class="row">
+                    {% for field in forms %}
+                        <div class="col-md-6 mb-3">
+                            <div>{{ field.label_tag }}{{ field }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+    
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                </div>
+            </form>
+    
+        </div>
+    </dialog>
+</div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

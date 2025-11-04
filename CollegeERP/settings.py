@@ -12,8 +12,19 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CollegeERP.settings")
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+from .info import *
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+EMAIL_USE_TLS = EMAIL_USE_TLS 
+EMAIL_HOST = EMAIL_HOST
+EMAIL_HOST_USER = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
+EMAIL_PORT= EMAIL_PORT
+
 
 #FRONTEND_DIR = BASE_DIR + "/frontend"
 
@@ -151,7 +162,7 @@ Q_CLUSTER = {
 DATABASES = {
    'default': {
        'ENGINE': 'django.db.backends.postgresql',
-       'NAME': "temp2",
+       'NAME': "temp1",
        'USER': 'postgres',
        'PASSWORD': 'Hs123654',
        'HOST': 'localhost',
@@ -203,4 +214,5 @@ STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/'
 
-SITE_ID = 1
+SITE_ID = 2
+

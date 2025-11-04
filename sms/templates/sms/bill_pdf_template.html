@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Hóa đơn Thanh toán - {{ hoadon.ten }}</title>
+    <style>
+        /* CSS DÀNH RIÊNG CHO PDF */
+        body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 0; }
+        .container { width: 800px; margin: 20px auto; border: 1px solid #ccc; padding: 20px; }
+        h1 { font-size: 16pt; border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-bottom: 20px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .summary-table td { font-weight: bold; }
+        .right-align { text-align: right; }
+        .red { color: #d9534f; }
+        .green { color: #5cb85c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HÓA ĐƠN THUÊ NHÀ - {{ hoadon.ten }}</h1>
+        
+        <p><strong>Ngày tạo:</strong> {{ hoadon.ngaytao|date:"d/m/Y" }}</p>
+        <p><strong>Ngày hết hạn:</strong> {{ hoadon.duedate|date:"d/m/Y" }}</p>
+        <p><strong>Nhà trọ:</strong> {{ hoadon.house.ten|default:"N/A" }} - {{ hoadon.house.loc.diachi }}</p>
+        {% if nguoi_thue %}
+        <p><strong>Người thuê:</strong> {{ nguoi_thue.hoten }} - SĐT: {{ nguoi_thue.sdt }}</p>
+        {% endif %}
+
+        <h2>Chi tiết chi phí</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mục</th>
+                    <th class="right-align">Chỉ số Cũ</th>
+                    <th class="right-align">Chỉ số Mới</th>
+                    <th class="right-align">Đơn vị</th>
+                    <th class="right-align">Thành tiền (VNĐ)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Tiền Điện</td>
+                    <td class="right-align">{{ hoadon.chi_so_dien_cu|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.chi_so_dien_moi|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.chi_so_dien_moi|sub:hoadon.chi_so_dien_cu|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.tiendien|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Tiền Nước</td>
+                    <td class="right-align">{{ hoadon.chi_so_nuoc_cu|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.chi_so_nuoc_moi|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.chi_so_nuoc_moi|sub:hoadon.chi_so_nuoc_cu|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.tiennuoc|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Tiền thuê nhà</td>
+                    <td colspan="3"></td>
+                    <td class="right-align">{{ hoadon.tienthuenha|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Chi phí khác</td>
+                    <td colspan="3"></td>
+                    <td class="right-align">{{ hoadon.tienkhac|intcomma }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Tổng kết Thanh toán</h2>
+        <table class="summary-table">
+            <tr>
+                <td colspan="4">TỔNG CỘNG PHẢI THU</td>
+                <td class="right-align green">{{ hoadon.TONG_CONG|intcomma }} VNĐ</td>
+            </tr>
+            <tr>
+                <td colspan="4">Số tiền đã thanh toán</td>
+                <td class="right-align">{{ hoadon.SO_TIEN_DA_TRA|intcomma }} VNĐ</td>
+            </tr>
+            <tr>
+                <td colspan="4">CÔNG NỢ (Phải trả thêm)</td>
+                <td class="right-align red">{{ hoadon.CONG_NO|intcomma }} VNĐ</td>
+            </tr>
+        </table>
+        
+        <p style="margin-top: 50px;">Ký tên Chủ nhà: ..........................</p>
+        <p style="text-align: right;">Ký tên Người thuê: ..........................</p>
+        
+        {% if hoadon.ghichu %}
+        <p style="margin-top: 30px;">**Ghi chú:** {{ hoadon.ghichu }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

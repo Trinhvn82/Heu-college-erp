@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
-from .models import Lop, Ctdt, Hssv, Hsgv, SvStatus, HocphiStatus, LopMonhoc, Trungtam, NsLop, GvLop, GvMonhoc, Hoclai, DiemTk, SvTn
 
 from django.urls import reverse
 from django.utils import timezone
@@ -9,6 +8,10 @@ from django.views.decorators.http import require_http_methods
 from django.http import FileResponse
 from django.core.exceptions import ValidationError
 from notifications.signals import notify
+
+from django.template.loader import render_to_string
+from decimal import Decimal
+
 
 
 from django.contrib.auth import get_user_model
@@ -33,10 +36,9 @@ from django.http import HttpResponse
 User = get_user_model()
 
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Ctdt, Diemthanhphan, Hocky, HocphiStatus, Loaidiem, TeacherInfo, Hsgv, Hssv, CtdtMonhoc, Monhoc, Lop, Lichhoc, Hs81, Diemdanh, Diemthanhphan, Hocphi, LopMonhoc, DiemdanhAll
-from .models import LopHk, Hp81, Ttgv, UploadedFile, Phong, Hsns, LogDiem, GvLmh
-from .forms import CreateDiem, CreateLichhoc, CreateLopMonhoc, CreateTeacher, CreateCtdtMonhoc, CreateDiemdanh, CreateHocphi, CreateCtdt, CreateLop, CreateSv, CreateGv
-from .forms import CreateHp81, CreateTtgv,CreateUploadFile, CreateNs, CreateHs81, CreateLopHk, CreateSvTn
+from .models import *
+from .forms import *
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
@@ -51,8 +53,10 @@ from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
 
-@login_required
+#@login_required
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect("index1")
     if request.user.is_superuser:
         return redirect("shop-statistics")
     elif request.user.is_hv:
@@ -62,7 +66,7 @@ def index(request):
     elif request.user.is_internalstaff:
         return redirect("lop_list")
     else:
-        return redirect("lop_list")
+        return redirect("index1")
 
     #return render(request, 'info/logout.html')
 
@@ -152,6 +156,24 @@ def ns_list(request):
         "nss": paged_ns
     }
     return render(request, "sms/ns_list.html", context)
+
+@login_required
+def renter_list(request):
+    renters = Renter.objects.all().order_by('hoten')
+    if request.method == "POST":
+            query_name = request.POST.get('name', None)
+            if query_name:
+                renters = Renter.objects.filter(hoten__contains=query_name).order_by('hoten')
+                messages.success(request, "Ket qua tim kiem voi ten co chua: " + query_name)
+#                return render(request, 'product-search.html', {"results":results})
+
+    paginator = Paginator(renters, 20)
+    page = request.GET.get('page')
+    paged_renters = paginator.get_page(page)
+    context = {
+        "renters": paged_renters
+    }
+    return render(request, "sms/renter_list.html", context)
 
 @login_required
 @permission_required('sms.view_hssv',raise_exception=True)
@@ -1414,6 +1436,19 @@ def lop_list(request):
     }
     return render(request, "sms/lop_list.html", context)
 
+def index1(request):
+
+    lop = Lop.objects.all()
+
+#    lop = Lop.objects.all().select_related("ctdt").order_by('id')
+    paginator = Paginator(lop, 20)
+    page = request.GET.get('page')
+    paged_students = paginator.get_page(page)
+    context = {
+        "lop": paged_students
+    }
+    return render(request, "sms/index.html", context)
+
 @login_required
 @permission_required('sms.view_lop',raise_exception=True)
 def lop_list_guardian(request):
@@ -1435,6 +1470,31 @@ def lop_list_guardian(request):
         "lop": paged_students
     }
     return render(request, "sms/lop_list.html", context)
+
+@login_required
+def loc_list(request):
+
+    loca = Location.objects.filter(chu=request.user).order_by('id')
+    paginator = Paginator(loca, 20)
+    page = request.GET.get('page')
+    paged_students = paginator.get_page(page)
+    context = {
+        "loca": paged_students
+    }
+    return render(request, "sms/loca_list.html", context)
+
+@login_required
+def house_list(request, loc_id):
+
+    house = House.objects.filter(loc_id=loc_id).order_by('id')
+    paginator = Paginator(house, 20)
+    page = request.GET.get('page')
+    paged_students = paginator.get_page(page)
+    context = {
+        "house": paged_students,
+        "loc_id": loc_id
+    }
+    return render(request, "sms/house_list.html", context)
 
 @login_required
 @permission_required('sms.view_lop',raise_exception=True)
@@ -2209,6 +2269,57 @@ def create_lop(request):
     return render(request, "sms/create_lop.html", context)
 
 @login_required
+def create_loc(request):
+    if request.method == "POST":
+        forms = CreateLoc(request.POST, request.FILES or None)
+        if forms.is_valid():
+            loc = forms.save()
+            loc.chu_id = request.user.id
+            loc.save()
+            messages.success(request, "Tạo mới địa chỉ thành công!")
+        else:
+            for error in forms.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+        return redirect("loc_list")
+    else:
+        forms = CreateLoc()
+
+    context = {
+        "forms": forms,
+        "chu_id": request.user.id
+    }
+    return render(request, "sms/create_loc.html", context)
+
+@login_required
+def create_house(request,loc_id):
+    if request.method == "POST":
+        forms = CreateHouse(request.POST, request.FILES or None)
+
+        if forms.is_valid():
+                    
+            house = forms.save(commit=False)
+            house.loc_id = request.POST.get('loc', None)
+            
+            house.save()
+            messages.success(request, "Tạo mới nhà trọ thành công!")
+        else:
+            messages.error(request, "Lỗi Forms: " + str(forms.errors.as_text()))    
+            # print(error)
+            # messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+        return redirect("house_list", loc_id)
+    else:
+        forms = CreateHouse()
+
+    context = {
+        "forms": forms,
+        "loc_id": loc_id
+    }
+    return render(request, "sms/create_house.html", context)
+
+@login_required
 #@require_http_methods(['POST'])
 def create_xlop(request):
     if request.method == "POST":
@@ -2303,6 +2414,31 @@ def create_ns(request):
         "forms": forms
     }
     return render(request, "sms/create_ns.html", context)
+
+@login_required
+def create_renter(request):
+    if request.method == "POST":
+        forms = CreateRenter(request.POST, request.FILES or None)
+        # if Renter.objects.filter(ma = forms['ma'].value().strip()).first():
+        #     messages.error(request, "Mã người thuê đã tồn tại!")
+        #     return redirect("renter_list")
+        # if Renter.objects.filter(email = forms['email'].value().strip()).first():
+        #     messages.error(request, "Email người thuê đã tồn tại!")
+        #     return redirect("renter_list")
+        if forms.is_valid():
+            renter = forms.save()
+            renter.chu_id = request.user.id
+            renter.ma = "NT"+str(request.user.id)+str(renter.id).zfill(3)
+            renter.save()
+        messages.success(request, "Tạo mới người thuê thành công!")
+        return redirect("renter_list")
+    else:
+        forms = CreateRenter()
+
+    context = {
+        "forms": forms
+    }
+    return render(request, "sms/create_renter.html", context)
 
 @login_required
 def create_diemdanh(request, lh_id):
@@ -2434,6 +2570,67 @@ def edit_lopmonhoc(request, lmh_id):
         "lmh": lmh
     }
     return render(request, "sms/edit_lopmonhoc.html", context)
+
+@login_required
+def edit_loc(request, loc_id):
+    loc = Location.objects.filter(id=loc_id).select_related("xp")[0]
+    loc_forms = CreateLoc(instance=loc)
+
+    if request.method == "POST":
+        edit_forms = CreateLoc(request.POST, request.FILES or None, instance=loc)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Edit Location Info Successfully!")
+            return redirect("loc_list")
+
+    context = {
+        "forms": loc_forms,
+        "loc": loc
+    }
+    return render(request, "sms/edit_loc.html", context)
+
+@login_required
+def edit_house(request, loc_id, house_id):
+    house = House.objects.filter(id=house_id)[0]
+    #house_forms = CreateHouse(instance=house)
+
+    if request.method == "POST":
+        edit_forms = CreateHouse(request.POST, request.FILES or None, instance=house)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Edit House Info Successfully!")
+            return redirect("house_list", loc_id)
+        else:
+            messages.error(request, "Lỗi Forms: " + str(edit_forms.errors.as_text()))
+
+# --- GET REQUEST (HOẶC KHI FORM KHÔNG VALID) ---
+    # ĐỊNH DẠNG SỐ TIỀN TRƯỚC KHI HIỂN THỊ
+    
+    # 1. Định dạng permonth: Chuyển số nguyên thành chuỗi có dấu chấm
+    # Python định dạng hàng ngàn bằng dấu phẩy, sau đó chúng ta thay thế phẩy thành chấm (chuẩn VN).
+    formatted_permonth = f"{house.permonth:,}"
+    
+    # 2. Định dạng deposit
+    formatted_deposit = f"{house.deposit:,}"
+
+    # 3. Khởi tạo Form với dữ liệu đã định dạng (Initial Data)
+    # Tham số 'initial' ghi đè giá trị mặc định của trường (permonth và deposit) bằng chuỗi đã định dạng.
+    house_forms = CreateHouse(
+        instance=house, 
+        initial={
+            'permonth': formatted_permonth,
+            'deposit': formatted_deposit,
+        }
+    )
+
+    context = {
+        "forms": house_forms,
+        "loc_id": loc_id,
+        "house": house
+    }
+    return render(request, "sms/edit_house.html", context)
 
 @login_required
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
@@ -3082,6 +3279,25 @@ def edit_ns(request, ns_id):
     return render(request, "sms/edit_ns.html", context)
 
 @login_required
+def edit_renter(request, renter_id):
+    renter = Renter.objects.get(id=renter_id)
+    #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
+    renter_forms = CreateRenter(instance=renter)
+
+    if request.method == "POST":
+        edit_forms = CreateRenter(request.POST, request.FILES or None, instance=renter)
+
+        if edit_forms.is_valid():
+            edit_forms.save()
+            messages.success(request, "Edit Info Successfully!")
+            return redirect("renter_list")
+
+    context = {
+        "forms": renter_forms,
+        "renter": renter
+    }
+    return render(request, "sms/edit_renter.html", context)
+@login_required
 def edit_lop(request, lop_id):
     lop = Lop.objects.get(id=lop_id)
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
@@ -3466,6 +3682,277 @@ def upload_file_hv(request, hv_id):
 
 @login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
+def view_loc(request, loc_id):
+
+    loc = Location.objects.get(id = loc_id)
+
+# ----------------------------------------------------
+    # BỔ SUNG LOGIC LẤY DỮ LIỆU NHÀ VÀ NGƯỜI THUÊ
+    # ----------------------------------------------------
+    
+    # 1. Lấy tất cả các House thuộc Location này
+    houses = House.objects.filter(loc_id=loc_id) 
+
+    # 2. Lấy thông tin người thuê hiện tại (Active Renter) cho từng nhà
+    for house in houses:
+        # Lấy hợp đồng đang active cho căn nhà này (chỉ 1 bản ghi)
+        active_renter_record = HouseRenter.objects.filter(
+            house=house, 
+            active=True
+        ).select_related('renter').first() # Tối ưu hóa truy vấn
+        
+        # Gán bản ghi active và thông tin người thuê vào đối tượng house
+        house.active_contract = active_renter_record
+        house.current_renter = active_renter_record.renter if active_renter_record else None
+
+    # ----------------------------------------------------
+
+
+    files = UploadedFile.objects.filter(link_id = loc_id, type=1)
+    for file in files:
+        file.ten = file.file.name.split("/")[-1]
+
+    context = {
+    'loc': loc,
+    'files': files,
+    'houses': houses, # <--- BIẾN MỚI
+    }
+    return render(request, "sms/view_loc.html", context)
+
+@login_required
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
+def upload_file_loc(request, loc_id):
+
+    loc = Location.objects.get(id = loc_id)
+    if request.method == 'POST':
+#        if not(sv.user == request.user):
+ #           return HttpResponseForbidden()
+        #test if file upload is image        
+        image = request.FILES['file']
+
+        pre, ext = os.path.splitext(image.name)
+        print(ext)
+        if ext =='.pdf':
+            try:
+                PdfReader(image)
+            except PdfReadError:
+                #print("invalid PDF file")
+                messages.error(request, "invalid PDF file")
+                return redirect('upload_file_loc', loc_id)
+        # check file ảnh
+        else:
+            try:
+                img = Image.open(image)
+                img = img.convert('RGB')
+            except Exception as e:
+                messages.error(request, 'Chỉ chấp nhận file ảnh')
+                return redirect('upload_file_loc', loc_id)
+        #img.save("uploads/temp.pdf", format="PDF")
+
+        limit = 5 * 1024 * 1024
+        if image.size > limit:
+            #raise ValidationError('File too large. Size should not exceed 2 MiB.')
+            messages.error(request, 'File too large. Size should not exceed 5 MiB.')
+            return redirect('upload_file_loc', loc_id)
+
+        form = CreateUploadFile(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.save()
+            file.user = request.user
+            file.uploaded_by = request.user.username
+            file.type = 1
+            file.link_id = loc_id
+            file.save()
+            messages.success(request, "File được tải thành công!")
+            return redirect('upload_file_loc', loc_id)
+        else:
+            for error in form.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+    else:
+        form = CreateUploadFile()
+
+
+    files = UploadedFile.objects.filter(link_id = loc_id, type=1)
+    for file in files:
+        file.ten = file.file.name.split("/")[-1]
+
+    context = {
+    'form': form,
+    'loc': loc,
+    'files': files,
+    }
+    return render(request, "sms/file_list_loc.html", context)
+
+@login_required
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
+def upload_bill_file(request, bill_id):
+
+    bill = Hoadon.objects.get(id=bill_id)
+    if request.method == 'POST':
+#        if not(sv.user == request.user):
+ #           return HttpResponseForbidden()
+        #test if file upload is image        
+        image = request.FILES['file']
+
+        pre, ext = os.path.splitext(image.name)
+        print(ext)
+        if ext =='.pdf':
+            try:
+                PdfReader(image)
+            except PdfReadError:
+                #print("invalid PDF file")
+                messages.error(request, "invalid PDF file")
+                return redirect('bill_detail', bill_id)
+        # check file ảnh
+        else:
+            try:
+                img = Image.open(image)
+                img = img.convert('RGB')
+            except Exception as e:
+                messages.error(request, 'Chỉ chấp nhận file ảnh')
+                return redirect('bill_detail', bill_id)
+        #img.save("uploads/temp.pdf", format="PDF")
+
+        limit = 5 * 1024 * 1024
+        if image.size > limit:
+            #raise ValidationError('File too large. Size should not exceed 2 MiB.')
+            messages.error(request, 'File too large. Size should not exceed 5 MiB.')
+            return redirect('bill_detail', bill_id)
+
+        form = CreateUploadFile(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.save()
+            file.user = request.user
+            file.uploaded_by = request.user.username
+            file.type = 2
+            file.link_id = bill_id
+            file.save()
+            messages.success(request, "File được tải thành công!")
+            return redirect('bill_detail', bill_id)
+        else:
+            for error in form.errors:
+                print(error)
+                messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
+
+    else:
+        form = CreateUploadFile()
+
+
+    files = UploadedFile.objects.filter(link_id = bill_id, type=2)
+    for file in files:
+        file.ten = file.file.name.split("/")[-1]
+
+    context = {
+    'form': form,
+    'bill': bill,
+    'files': files,
+    }
+    return redirect('bill_detail', bill_id)
+
+@login_required
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
+def create_hr(request, id):
+
+
+    if request.method == 'POST':
+        # Sử dụng HouseRenterForm bạn đã tạo
+        forms = CreateHouseRenter(request.POST) 
+        
+        if forms.is_valid():
+            new_renter_contract = forms.save(commit=False)
+            
+            # --- Logic nghiệp vụ: Cập nhật trạng thái active của các hợp đồng cũ ---
+            if new_renter_contract.active:
+                # Tìm và đặt tất cả các hợp đồng cũ, đang active của nhà trọ này về active=False
+                HouseRenter.objects.filter(house=new_renter_contract.house, active=True).update(active=False)
+            
+            # Lưu hợp đồng mới
+            new_renter_contract.house_id = id
+            new_renter_contract.save()
+            
+            messages.success(request, 'Thêm hợp đồng thuê mới thành công!')
+            # Chuyển hướng về trang hiện tại với tên URL là 'create_houserenter'
+            return redirect('hr_list', id)
+        else:
+            # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
+            messages.error(request, 'Lỗi: Dữ liệu nhập không hợp lệ. Vui lòng kiểm tra lại Form.')
+            # Tiếp tục logic bên dưới để render lại trang
+
+    # -----------------------------------
+    # Logic Xử lý Form GET (Hiển thị)
+    # -----------------------------------
+    else:
+        # Nếu là GET request, tạo một Form trống để hiển thị
+        forms = CreateHouseRenter() 
+    #hrs = HouseRenter.objects.filter(house_id = id).order_by('-id')
+    hrs = HouseRenter.objects.filter(house_id = id).order_by('-rent_from','-id')
+
+    context = {
+    'forms': forms,
+    'id': id,
+    'hrs': hrs
+    }
+    return render(request, "sms/create_hr.html", context)
+
+# app_quanly/views.py (Thay thế hàm cũ bằng hàm này)
+
+# Đảm bảo bạn đã import các thư viện cần thiết ở đầu file:
+# from .forms import * # from django.shortcuts import render, redirect 
+# from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+# from .models import HouseRenter 
+
+@login_required
+def hr_list(request, id):
+    # Lấy danh sách lịch sử thuê nhà (để hiển thị Timeline)
+    hrs = HouseRenter.objects.all().order_by('id')
+    
+    # -----------------------------------
+    # Logic Xử lý Form POST (Thêm mới)
+    # -----------------------------------
+    if request.method == 'POST':
+        # Sử dụng HouseRenterForm bạn đã tạo
+        forms = CreateHouseRenter(request.POST) 
+        
+        if forms.is_valid():
+            new_renter_contract = forms.save(commit=False)
+            
+            # --- Logic nghiệp vụ: Cập nhật trạng thái active của các hợp đồng cũ ---
+            if new_renter_contract.active:
+                # Tìm và đặt tất cả các hợp đồng cũ, đang active của nhà trọ này về active=False
+                HouseRenter.objects.filter(house=new_renter_contract.house, active=True).update(active=False)
+            
+            # Lưu hợp đồng mới
+            new_renter_contract.save()
+            
+            messages.success(request, 'Thêm hợp đồng thuê mới thành công!')
+            # Chuyển hướng về trang hiện tại với tên URL là 'create_houserenter'
+            return redirect('create_houserenter', 1)
+        else:
+            # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
+            messages.error(request, 'Lỗi: Dữ liệu nhập không hợp lệ. Vui lòng kiểm tra lại Form.')
+            # Tiếp tục logic bên dưới để render lại trang
+
+    # -----------------------------------
+    # Logic Xử lý Form GET (Hiển thị)
+    # -----------------------------------
+    else:
+        # Nếu là GET request, tạo một Form trống để hiển thị
+        forms = CreateHouseRenter() 
+    
+    # Chuẩn bị Context để render template
+    context = {
+        'segment': 'createhouserenter',
+        'forms': forms, # Form để hiển thị (có thể chứa lỗi nếu POST thất bại)
+        'hrs': hrs,     # Dữ liệu để hiển thị Timeline
+        'id': id
+    }
+    return render(request, 'sms/house_renter_list_gemini.html', context)
+
+@login_required
+#@permission_required('sms.add_uploadedfile',raise_exception=True)
 def lophk_list(request, lop_id, lhk_id):
     if lhk_id > 0:
         lhk = LopHk.objects.filter(id = lhk_id).select_related('lop',"hk").order_by('hk__ma')[0]
@@ -3676,6 +4163,32 @@ def delete_file(request, file_id):
         messages.success(request, "File được xóa thành công!")
     return redirect('upload_file')
 
+
+@login_required
+def delete_file_loc(request, loc_id, file_id):
+
+    uploaded_file = UploadedFile.objects.get(pk=file_id)
+
+    # ensure the file belongs to this location
+    try:
+        if int(uploaded_file.link_id) != int(loc_id):
+            return HttpResponseForbidden()
+    except Exception:
+        return HttpResponseForbidden()
+
+    # allow owner or users with delete permission
+    if hasattr(uploaded_file, 'user') and uploaded_file.user == request.user:
+        pass
+    elif not request.user.has_perm('sms.delete_uploadedfile'):
+        return HttpResponseForbidden()
+
+    uploaded_file.delete()
+    file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.file.name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        messages.success(request, "File được xóa thành công!")
+    return redirect('view_loc', loc_id)
+
 @login_required
 def delete_hoclai(request, lmh_id, sv_id):
 
@@ -3857,3 +4370,542 @@ def user_changepwd(request):
         messages.success(request, "Thay doi password thanh cong!")
         return redirect("lop_list")
     return render(request, "sms/changepwd.html")
+
+@login_required
+def bill_list_view(request, loc_id):
+    houses_in_loc = House.objects.filter(loc_id=loc_id)
+    bills = Hoadon.objects.filter(house__in=houses_in_loc).select_related('house').order_by('-duedate', '-id')
+    
+    location = get_object_or_404(Location, pk=loc_id)
+    
+    paginator = Paginator(bills, 20)
+    page = request.GET.get('page')
+    paged_bills = paginator.get_page(page)
+    
+    context = {
+        'bills': paged_bills,
+        'location': location,
+        'loc_id': loc_id,
+        # Nếu muốn hiển thị danh sách các House để tạo hóa đơn mới
+        'houses': House.objects.filter(loc_id=loc_id).order_by('ten')
+    }
+    return render(request, 'sms/bill_list.html', context)
+
+@login_required
+def create_bill_view(request, house_id):
+    house = get_object_or_404(House, pk=house_id)
+    loc_id = house.loc.id 
+    
+    # Lấy hóa đơn ngay trước hóa đơn đang tạo (Lấy Max ID)
+    last_bill = Hoadon.objects.filter(house=house).order_by('-id').first()
+    
+    
+
+    if request.method == 'POST':
+        form = CreateHoaDonForm(request.POST)
+        if form.is_valid():
+            
+            # LƯU HÓA ĐƠN
+            new_bill = form.save(commit=False)
+            new_bill.house = house
+            
+            
+            new_bill.save() # Kích hoạt logic tự động tính TONG_CONG, CONG_NO
+            
+            messages.success(request, f"Đã tạo Hóa đơn mới cho {house.ten} thành công!")
+            
+            return redirect('bill_list', loc_id=loc_id) 
+        else:
+            # Nếu Form không hợp lệ, giữ nguyên form để hiển thị lỗi
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Lỗi ở trường '{field}': {error}")
+
+    else:
+        # GET request (Điền sẵn chi số cũ)
+        form = CreateHoaDonForm(initial={
+            'house': house.id,
+            'ten': f"Hóa đơn {house.ten} - {timezone.now().strftime('%m/%Y')}",
+        })
+
+    context = {
+        'forms': form,
+        'house': house,
+        'loc_id': loc_id,
+    }
+    return render(request, 'sms/create_bill.html', context)
+
+@login_required
+def update_bill_view(request, bill_id):
+    bill = get_object_or_404(Hoadon, pk=bill_id)
+    house = bill.house
+    loc_id = house.loc.id 
+
+    # TÌM CHỈ SỐ CŨ (Lấy hóa đơn ngay trước hóa đơn đang sửa)
+    # Lấy hóa đơn có ID nhỏ hơn hóa đơn hiện tại gần nhất (hóa đơn kỳ trước)
+    last_bill = Hoadon.objects.filter(house=house, id__lt=bill_id).order_by('-id').first()
+    
+    # Chỉ số cũ là của hóa đơn trước đó
+    chi_so_dien_cu = last_bill.chi_so_dien_moi if last_bill else Decimal(0)
+    chi_so_nuoc_cu = last_bill.chi_so_nuoc_moi if last_bill else Decimal(0)
+    
+    tien_thue_co_dinh = Decimal(house.permonth) 
+
+    if request.method == 'POST':
+        form = CreateHoaDonForm(request.POST, instance=bill) 
+        if form.is_valid():
+            
+            # LẤY DỮ LIỆU SẠCH TỪ FORM
+            dien_moi = form.cleaned_data['chi_so_dien_moi']
+            nuoc_moi = form.cleaned_data['chi_so_nuoc_moi']
+            tien_khac_input = form.cleaned_data['tien_khac']
+            
+            # --- LOGIC TÍNH TOÁN (Lặp lại để cập nhật) ---
+            so_dien = dien_moi - chi_so_dien_cu
+            so_nuoc = nuoc_moi - chi_so_nuoc_cu
+            
+            tien_dien = so_dien * DON_GIA_DIEN
+            tien_nuoc = so_nuoc * DON_GIA_NUOC
+            
+            # LƯU HÓA ĐƠN
+            updated_bill = form.save(commit=False)
+            
+            # Cập nhật các giá trị đã tính toán
+            updated_bill.tienthuenha = tien_thue_co_dinh 
+            updated_bill.chi_so_dien_cu = chi_so_dien_cu 
+            updated_bill.chi_so_nuoc_cu = chi_so_nuoc_cu 
+            updated_bill.chi_so_dien_moi = dien_moi
+            updated_bill.chi_so_nuoc_moi = nuoc_moi
+            updated_bill.tiendien = tien_dien
+            updated_bill.tiennuoc = tien_nuoc
+            updated_bill.tienkhac = tien_khac_input
+            
+            updated_bill.save() # Kích hoạt logic tự động tính TONG_CONG, CONG_NO
+            
+            messages.success(request, f"Đã cập nhật Hóa đơn {bill.ten} thành công! Tổng tiền mới: {updated_bill.TONG_CONG:,} VNĐ.")
+            
+            return redirect('bill_list', loc_id=loc_id) 
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"Lỗi ở trường '{field}': {error}")
+            
+    else:
+        # GET request: LOAD DỮ LIỆU TỪ HÓA ĐƠN
+        # Form sẽ điền sẵn dữ liệu cũ từ instance=bill
+        form = CreateHoaDonForm(instance=bill)
+        
+    context = {
+        'forms': form,
+        'house': house,
+        'loc_id': loc_id,
+        'bill': bill, # Đặt biến 'bill' để template biết đang ở chế độ update
+        'dien_cu': chi_so_dien_cu,
+        'nuoc_cu': chi_so_nuoc_cu,
+        'tien_thue': tien_thue_co_dinh
+    }
+    return render(request, 'sms/create_bill.html', context)
+
+@login_required
+def bill_detail_view(request, bill_id):
+    hoadon = get_object_or_404(Hoadon, pk=bill_id)
+    loc_id = hoadon.house.loc.id
+    
+    # Lấy lịch sử thanh toán (Chưa có form ThanhToan, nên tạm thời dùng None)
+    lich_su_thanh_toan = Thanhtoan.objects.filter(hoadon=hoadon).order_by('-id')
+    lich_su_file = UploadedFile.objects.filter(link_id=bill_id, type=2).order_by('-id')
+    
+    context = {
+        'hoadon': hoadon,
+        'loc_id': loc_id,
+        'lich_su_thanh_toan': lich_su_thanh_toan,
+        'lich_su_file': lich_su_file,
+        'payment_form': CreateThanhToanForm(),
+        'bill_file_form': CreateUploadFile()
+    }
+    return render(request, 'sms/bill_detail.html', context)
+
+@login_required
+def add_payment(request, bill_id):
+    hoadon = get_object_or_404(Hoadon, id=bill_id)
+
+    if hoadon.status == 'DaTT':
+        messages.warning(request, "Hóa đơn này đã thanh toán đủ, không thể thêm thanh toán mới.")
+        return redirect('bill_detail', bill_id=hoadon.id)
+
+    payment_form = CreateThanhToanForm(request.POST)
+    
+    if payment_form.is_valid():
+        
+        # LẤY GIÁ TRỊ TIỀN THANH TOÁN (DECIMAL AN TOÀN) TỪ cleaned_data
+        tientt = payment_form.cleaned_data['tientt'] 
+        
+        try:
+            # --- LOGIC XÁC ĐỊNH VAI TRÒ VÀ TRẠNG THÁI BAN ĐẦU ---
+            is_house_owner = False
+            
+            if is_house_owner:
+                initial_status = 'Daxn' 
+                success_msg = f"Đã ghi nhận & XÁC NHẬN thanh toán {tientt:,} VNĐ."
+            else:
+                initial_status = 'Choxn' 
+                success_msg = f"Đã ghi nhận thanh toán {tientt:,} VNĐ. CHỜ CHỦ NHÀ XÁC NHẬN." 
+            # --- HẾT LOGIC XÁC ĐỊNH VAI TRÒ ---
+
+            # 1. Kiểm tra logic nghiệp vụ: Công nợ
+            if initial_status == 'Daxn' and tientt > hoadon.CONG_NO:
+                messages.error(request, f"Số tiền thanh toán ({tientt:,} VNĐ) vượt quá Công nợ còn lại ({hoadon.CONG_NO:,} VNĐ).")
+                return redirect('bill_detail', bill_id=hoadon.id)
+
+            # 2. LƯU THANHTOAN VÀ GÁN hoadon
+            payment = payment_form.save(commit=False)
+            payment.hoadon = hoadon
+            payment.user = request.user 
+            payment.status = initial_status 
+
+            payment.save() # Kích hoạt logic tự động cập nhật Hoadon
+            
+            # 3. Thông báo thành công (SỬ DỤNG tientt AN TOÀN)
+            messages.success(request, success_msg)
+            
+            if hoadon.status == 'DaTT':
+                messages.info(request, "Hóa đơn đã được thanh toán đủ.")
+                
+            return redirect('bill_detail', bill_id=hoadon.id)
+            
+        except Exception as e:
+            # Xử lý lỗi trong quá trình lưu/tính toán
+            messages.error(request, f"Lỗi xảy ra khi xử lý thanh toán: {e}")
+            return redirect('bill_detail', bill_id=hoadon.id)
+    else:
+        # Nếu Form không hợp lệ, chuyển hướng về trang chi tiết và hiển thị lỗi
+        for field, errors in payment_form.errors.items():
+            for error in errors:
+                label = payment_form.fields[field].label
+                messages.error(request, f"Lỗi trường **{label}**: {error}")
+                
+        return redirect('bill_detail', bill_id=hoadon.id)        
+
+# app_quanly/views.py (Thêm vào cuối file)
+
+@login_required
+def confirm_payment_view(request, payment_id):
+    payment = get_object_or_404(Thanhtoan, id=payment_id)
+    hoadon = payment.hoadon
+    
+    # Kiểm tra quyền: Chỉ chủ nhà mới được xác nhận (Giả định: user là chu của Location)
+    if payment.status == 'Choxn':
+        payment.status = 'Daxn'
+        payment.save() # Kích hoạt Thanhtoan.save() -> cập nhật Hoadon
+        messages.success(request, f"Đã XÁC NHẬN thanh toán {payment.tientt:,} VNĐ.")
+    elif payment.status == 'Daxn':
+        messages.info(request, "Thanh toán này đã được xác nhận trước đó.")
+    else:
+        messages.error(request, "Bạn không có quyền hoặc thanh toán không hợp lệ để xác nhận.")
+        
+    return redirect('bill_detail', bill_id=hoadon.id)
+
+@login_required
+def delete_payment_view(request, payment_id):
+    payment = get_object_or_404(Thanhtoan, id=payment_id)
+    hoadon = payment.hoadon
+    
+    # Kiểm tra quyền: Chỉ chủ nhà hoặc người tạo mới được xóa (hoặc dùng permission)
+    is_owner = True
+    
+    if is_owner:
+        payment.delete() # Kích hoạt Thanhtoan.delete() -> cập nhật Hoadon
+        messages.success(request, f"Đã xóa bản ghi thanh toán {payment.tientt:,} VNĐ.")
+    else:
+        messages.error(request, "Bạn không có quyền xóa bản ghi thanh toán này.")
+
+    return redirect('bill_detail', bill_id=hoadon.id)
+    
+# app_quanly/views.py (Thêm vào cuối file)
+
+
+# app_quanly/views.py (Thêm hoặc thay thế hàm generate_bill_pdf)
+# app_quanly/views.py (Chỉnh sửa hàm generate_bill_pdf)
+
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont 
+from decimal import Decimal
+import os
+from django.conf import settings 
+# Đảm bảo đã import các Models cần thiết
+from .models import Hoadon, HouseRenter 
+
+
+@login_required
+def generate_bill_pdf(request, bill_id):
+
+    from reportlab.pdfbase.pdfmetrics import registerFont
+    from reportlab.pdfbase.ttfonts import TTFont
+    registerFont(TTFont('Arial','ARIAL.ttf'))
+
+    VIETNAMESE_FONT = 'Arial'
+
+    hoadon = get_object_or_404(Hoadon, pk=bill_id)
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, 
+                            leftMargin=1.5*cm, rightMargin=1.5*cm, 
+                            topMargin=2*cm, bottomMargin=2*cm)
+    Story = []
+
+    # --- TÌM NGƯỜI THUÊ HIỆN TẠI ---
+    active_contract = HouseRenter.objects.filter(
+        house=hoadon.house, 
+        active=True
+    ).select_related('renter').first()
+    renter = active_contract.renter if active_contract else None
+    
+    # --- ĐỊNH DẠNG SỐ VÀ CHUẨN BỊ DỮ LIỆU ---
+    def f(number):
+        return "{:,.0f}".format(Decimal(number or 0)).replace(",", ",")
+
+    # --- ÁP DỤNG FONT CHO STYLES ---
+    styles = getSampleStyleSheet()
+    
+    # Style thường
+    styles.add(ParagraphStyle(name='Arial', fontName=VIETNAMESE_FONT, fontSize=10, leading=12))
+    
+    # Style Heading
+ #   styles.add(ParagraphStyle(name='Arial', fontName=VIETNAMESE_FONT, fontSize=16, alignment=1, spaceAfter=12))
+    
+    normal_style = styles['Arial']
+#    heading_style = styles['Arial']
+
+
+    # --- 1. TIÊU ĐỀ (ĐÃ XÓA THẺ B) ---
+    p_title = Paragraph(f'<font name="{VIETNAMESE_FONT}">HÓA ĐƠN THUÊ NHÀ - KỲ {hoadon.duedate.strftime("%m/%Y")}</font>', normal_style)
+    Story.append(p_title)
+    Story.append(Spacer(0, 0.5*cm))
+
+    # --- 2. THÔNG TIN CHUNG (ĐÃ XÓA THẺ B) ---
+    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Nhà trọ: {hoadon.house.ten} - {hoadon.house.loc.diachi}</font>', normal_style))
+    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Người thuê: {renter.hoten if renter else "Đang trống"}</font>', normal_style))
+    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Ngày tạo: {hoadon.ngay_tao.strftime("%d/%m/%Y")}</font>', normal_style))
+    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Ngày hết hạn: {hoadon.duedate.strftime("%d/%m/%Y")}</font>', normal_style))
+    Story.append(Spacer(0, 1*cm))
+
+    # --- 3. BẢNG CHI TIẾT DỊCH VỤ ---
+    
+    # Hàm bọc text trong font (chỉ font thường)
+    def vn_text(text):
+        return Paragraph(f'<font name="{VIETNAMESE_FONT}">{text}</font>', normal_style)
+
+    table_data = [
+        # ĐÃ XÓA THẺ B (Bold)
+        [vn_text('STT'), vn_text('Mục'), vn_text('Đơn vị'), vn_text('Số lượng'), vn_text('Đơn giá'), vn_text('Thành tiền (VNĐ)')],
+        
+        [1, vn_text('Tiền thuê nhà'), 'Tháng', 1, f(hoadon.house.permonth), f(hoadon.tienthuenha)],
+        
+        [2, vn_text('Tiền Điện'), 'kWh', 
+         '', 
+         '', 
+         f(hoadon.tiendien)],
+         
+        [3, vn_text('Tiền Nước'), 'm³', 
+         '', 
+         '', 
+         f(hoadon.tiennuoc)],
+         
+        [4, vn_text('Chi phí khác'), 'Lần', 1, f(hoadon.tienkhac), f(hoadon.tienkhac)],
+        
+        # Dòng tổng cộng 
+        ['', '', '', '', vn_text('TỔNG CỘNG'), f(hoadon.TONG_CONG)]
+    ]
+    
+    table_style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.9, 0.9, 0.9)),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        
+        # ÁP DỤNG FONT CHO TOÀN BỘ BẢNG
+        ('FONTNAME', (0, 0), (-1, -1), VIETNAMESE_FONT), 
+        
+        ('ALIGN', (3, 1), (-1, -1), 'RIGHT'), 
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('ALIGN', (4, -1), (-1, -1), 'RIGHT'),
+        ('BACKGROUND', (4, -1), (-1, -1), colors.yellow),
+    ])
+    
+    t = Table(table_data, colWidths=[0.8*cm, 4*cm, 1.5*cm, 2*cm, 2*cm, 3*cm])
+    t.setStyle(table_style)
+    Story.append(t)
+    Story.append(Spacer(0, 0.5*cm))
+
+    # --- 4. TỔNG KẾT VÀ CÔNG NỢ ---
+    summary_data = [
+        [vn_text('TỔNG CỘNG PHẢI THU'), f(hoadon.TONG_CONG)],
+        [vn_text('Số tiền đã thanh toán'), f(hoadon.SO_TIEN_DA_TRA)],
+        [vn_text('CÔNG NỢ CÒN LẠI'), f(hoadon.CONG_NO)],
+    ]
+    summary_table = Table(summary_data, colWidths=[5*cm, 4*cm])
+    summary_table.setStyle(TableStyle([
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, -1), VIETNAMESE_FONT),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.8, 0.9, 1)),
+        ('TEXTCOLOR', (1, -1), (1, -1), colors.red if hoadon.CONG_NO > 0 else colors.green),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+    ]))
+    Story.append(summary_table)
+
+    # --- Chữ ký và Ghi chú ---
+    Story.append(Spacer(0, 1*cm))
+    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}"><i>Hóa đơn được tạo tự động bởi hệ thống.</i></font>', normal_style))
+    
+    # --- Xây dựng PDF ---
+    doc.build(Story)
+    
+    pdf = buffer.getvalue()
+    buffer.close()
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="HoaDon_{hoadon.house.ten}_{hoadon.duedate.strftime("%Y%m")}.pdf"'
+    response.write(pdf)
+    return response
+
+# Đảm bảo các thư viện này đã được import
+import pandas as pd # Cần thiết cho việc xử lý dữ liệu
+import xlsxwriter # Cần thiết cho việc định dạng chuyên sâu
+from io import BytesIO # Cần thiết để tạo file trong bộ nhớ
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from decimal import Decimal # Cần thiết cho việc định dạng số
+# ... các models Hoadon, HouseRenter
+
+@login_required
+def generate_bill_excel(request, bill_id):
+    hoadon = get_object_or_404(Hoadon, pk=bill_id)
+    
+    # --- 1. Chuẩn bị dữ liệu ---
+    # TÌM NGƯỜI THUÊ HIỆN TẠI (Lấy logic từ hàm cũ)
+    active_contract = HouseRenter.objects.filter(
+        house=hoadon.house, 
+        active=True
+    ).select_related('renter').first()
+    renter = active_contract.renter if active_contract else None
+
+    # Dữ liệu chi tiết bảng dịch vụ
+    detail_data = [
+        [1, 'Tiền thuê nhà', 'Tháng', 1, hoadon.house.permonth, hoadon.tienthuenha],
+        [2, 'Tiền Điện', 'kWh', '', '', hoadon.tiendien], # Cần đảm bảo DON_GIA_DIEN đã được định nghĩa
+        [3, 'Tiền Nước', 'm³', '', '', hoadon.tiennuoc], # Cần đảm bảo DON_GIA_NUOC đã được định nghĩa
+        [4, 'Chi phí khác', 'Lần', 1, hoadon.tienkhac, hoadon.tienkhac],
+    ]
+    
+    # --- 2. Tạo Workbook và Worksheet ---
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet(f'HoaDon_{hoadon.duedate.strftime("%m-%Y")}')
+
+    # --- 3. Định dạng Styles trong Excel (Giao diện đẹp) ---
+    currency_format = workbook.add_format({'num_format': '#,##0', 'align': 'right', 'font_name': 'Arial'})
+    bold_format = workbook.add_format({'bold': True, 'font_name': 'Arial'})
+    center_bold_format = workbook.add_format({'bold': True, 'align': 'center', 'valign': 'vcenter', 'font_name': 'Arial'})
+    header_format = workbook.add_format({
+        'bold': True, 
+        'font_size': 16, 
+        'align': 'center', 
+        'valign': 'vcenter', 
+        'font_name': 'Arial'
+    })
+    table_header_format = workbook.add_format({
+        'bold': True, 
+        'bg_color': '#D9E1F2', 
+        'border': 1, 
+        'align': 'center', 
+        'valign': 'vcenter', 
+        'font_name': 'Arial'
+    })
+    table_cell_format = workbook.add_format({'border': 1, 'font_name': 'Arial'})
+    table_currency_format = workbook.add_format({'border': 1, 'num_format': '#,##0', 'align': 'right', 'font_name': 'Arial'})
+    summary_label_format = workbook.add_format({'bold': True, 'bg_color': '#FCE4D6', 'border': 1, 'font_name': 'Arial'})
+    summary_value_format = workbook.add_format({'bold': True, 'bg_color': '#FCE4D6', 'num_format': '#,##0', 'align': 'right', 'border': 1, 'font_name': 'Arial'})
+    debt_format = workbook.add_format({'bold': True, 'bg_color': '#FCE4D6', 'num_format': '#,##0', 'align': 'right', 'border': 1, 'font_color': 'red', 'font_name': 'Arial'})
+    
+    # --- 4. Thiết lập Cột và Kích thước ---
+    worksheet.set_column('A:A', 15) # STT
+    worksheet.set_column('B:B', 25) # Mục
+    worksheet.set_column('C:D', 10) # Đơn vị, Số lượng
+    worksheet.set_column('E:G', 15) # Đơn giá, Thành tiền, Tóm tắt
+
+    # --- 5. Viết Tiêu đề Hóa đơn (Gộp ô) ---
+    worksheet.merge_range('A1:F1', f'HÓA ĐƠN THUÊ NHÀ - KỲ {hoadon.duedate.strftime("%m/%Y")}', header_format)
+    worksheet.merge_range('A2:F2', 'CHI TIẾT THANH TOÁN', center_bold_format)
+
+    # --- 6. Viết Thông tin Chung ---
+    ROW_START = 4
+    worksheet.write(ROW_START, 0, 'Nhà trọ:', bold_format)
+    worksheet.write(ROW_START, 1, f'{hoadon.house.ten} - {hoadon.house.loc.diachi}')
+    worksheet.write(ROW_START + 1, 0, 'Người thuê:', bold_format)
+    worksheet.write(ROW_START + 1, 1, renter.hoten if renter else "Đang trống")
+    worksheet.write(ROW_START + 2, 0, 'Ngày tạo:', bold_format)
+    worksheet.write(ROW_START + 2, 1, hoadon.ngay_tao.strftime("%d/%m/%Y"))
+    worksheet.write(ROW_START + 3, 0, 'Ngày hết hạn:', bold_format)
+    worksheet.write(ROW_START + 3, 1, hoadon.duedate.strftime("%d/%m/%Y"))
+
+    # --- 7. Viết Bảng Chi tiết Dịch vụ ---
+    TABLE_ROW_START = ROW_START + 5 # Bắt đầu từ dòng 9
+
+    # Viết Header Bảng
+    headers = ['STT', 'Mục', 'Đơn vị', 'Số lượng', 'Đơn giá (VNĐ)', 'Thành tiền (VNĐ)']
+    worksheet.write_row(TABLE_ROW_START, 0, headers, table_header_format)
+    
+    # Viết Dữ liệu chi tiết
+    row_num = TABLE_ROW_START + 1
+    for row in detail_data:
+        # Cột STT, Mục, Đơn vị
+        worksheet.write(row_num, 0, row[0], table_cell_format)
+        worksheet.write(row_num, 1, row[1], table_cell_format)
+        worksheet.write(row_num, 2, row[2], table_cell_format)
+        # Cột Số lượng (Số)
+        worksheet.write(row_num, 3, row[3], table_currency_format)
+        # Cột Đơn giá (Tiền)
+        worksheet.write(row_num, 4, row[4], table_currency_format)
+        # Cột Thành tiền (Tiền)
+        worksheet.write(row_num, 5, row[5], table_currency_format)
+        row_num += 1
+
+    # Dòng Tổng cộng bảng
+    total_row_num = row_num
+    worksheet.merge_range(total_row_num, 0, total_row_num, 4, 'TỔNG CỘNG PHẢI THU', summary_label_format)
+    worksheet.write(total_row_num, 5, hoadon.TONG_CONG, summary_value_format)
+    
+    # --- 8. Viết Tóm tắt Công nợ ---
+    
+    # Dòng Đã thanh toán
+    paid_row_num = total_row_num + 1
+    worksheet.merge_range(paid_row_num, 0, paid_row_num, 4, 'Số tiền đã thanh toán', summary_label_format)
+    worksheet.write(paid_row_num, 5, hoadon.SO_TIEN_DA_TRA, summary_value_format)
+
+    # Dòng Công nợ còn lại (Định dạng màu Đỏ nếu > 0)
+    debt_row_num = total_row_num + 2
+    debt_style = debt_format if hoadon.CONG_NO > 0 else summary_value_format
+    worksheet.merge_range(debt_row_num, 0, debt_row_num, 4, 'CÔNG NỢ CÒN LẠI', summary_label_format)
+    worksheet.write(debt_row_num, 5, hoadon.CONG_NO, debt_style)
+    
+    # --- 9. Kết thúc và Trả về Response ---
+    
+    workbook.close()
+    output.seek(0)
+    
+    response = HttpResponse(
+        output.read(), 
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={
+            'Content-Disposition': f'attachment; filename="HoaDon_{hoadon.house.ten}_{hoadon.duedate.strftime("%Y%m")}.xlsx"'
+        },
+    )
+    return response
