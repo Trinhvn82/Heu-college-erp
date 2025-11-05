@@ -1,0 +1,179 @@
+{% extends "layouts/rental_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .user-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .password-cell {
+    position: relative;
+  }
+  .password-toggle {
+    position: absolute;
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #6B7280;
+  }
+  .copy-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #6B7280;
+  }
+  .tooltip {
+    position: absolute;
+    background: #000;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: none;
+  }
+  .copy-btn:hover .tooltip {
+    display: block;
+  }
+</style>
+{% endblock extra_css %}
+
+{% block title %} Users {% endblock title %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'index1' %}"><i class="fas fa-home"></i></a></li>
+    <li class="breadcrumb-item active" aria-current="page">Users</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+  {% include 'sms/alerts.html' %}
+
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-2">
+    <div></div>
+    <div class="btn-group ms-auto">
+      <a href="{% url 'admin:info_user_add' %}" class="btn btn-success animate-up-2">
+        <span class="fas fa-plus me-2"></span>Add User
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-body border-0 shadow table-wrapper table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th class="border-gray-200">Username</th>
+          <th class="border-gray-200">Password</th>
+          <th class="border-gray-200">Email</th>
+          <th class="border-gray-200">Status</th>
+          <th class="border-gray-200">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td class="position-relative">
+            <span>{{ user.username }}</span>
+            <button class="copy-btn" onclick="copyToClipboard('{{ user.username }}', this)" title="Copy username">
+              <i class="fas fa-copy"></i>
+            </button>
+          </td>
+          <td class="password-cell">
+            <span class="password-text" data-password="{{ user.password }}">••••••••</span>
+            <button class="password-toggle" onclick="togglePassword(this)">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="copy-btn" onclick="copyToClipboard('{{ user.password }}', this)" title="Copy password">
+              <i class="fas fa-copy"></i>
+            </button>
+          </td>
+          <td>{{ user.email|default:"-" }}</td>
+          <td>
+            {% if user.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="user-action">
+              <a href="{% url 'admin:info_user_change' user.id %}" class="text-info" title="Edit">
+                <i class="fas fa-edit"></i>
+              </a>
+              {% if perms.auth.change_user %}
+              <a href="{% url 'admin:info_user_delete' user.id %}" class="text-danger" title="Delete"
+                 onclick="return confirm('Are you sure you want to delete this user?')">
+                <i class="fas fa-trash"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center">No users found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+function togglePassword(button) {
+  const passwordCell = button.parentElement;
+  const passwordSpan = passwordCell.querySelector('.password-text');
+  const actualPassword = passwordSpan.getAttribute('data-password');
+  const icon = button.querySelector('i');
+
+  if (passwordSpan.textContent === '••••••••') {
+    passwordSpan.textContent = actualPassword;
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    passwordSpan.textContent = '••••••••';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
+
+async function copyToClipboard(text, button) {
+  try {
+    await navigator.clipboard.writeText(text);
+    
+    // Show feedback
+    const icon = button.querySelector('i');
+    const originalClass = icon.className;
+    icon.className = 'fas fa-check';
+    button.style.color = '#059669'; // Success green color
+    
+    // Reset after 2 seconds
+    setTimeout(() => {
+      icon.className = originalClass;
+      button.style.color = '#6B7280';
+    }, 2000);
+    
+  } catch (err) {
+    console.error('Failed to copy:', err);
+    alert('Failed to copy to clipboard');
+  }
+}
+</script>
+{% endblock extra_js %}

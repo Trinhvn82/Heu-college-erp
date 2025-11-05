@@ -179,9 +179,9 @@ class XaPhuong(models.Model):
         return self.ten + ", " + self.tp
 
 class Location(models.Model):
-    chu = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
+    chu = models.ForeignKey(User, on_delete=models.RESTRICT, null=True)
     diachi = models.CharField(max_length=100,verbose_name = "Địa chỉ")
-    xp = models.OneToOneField(XaPhuong, on_delete=models.RESTRICT, verbose_name = "Xã/Phường - Tỉnh/Thành phố")
+    xp = models.ForeignKey(XaPhuong, on_delete=models.RESTRICT, verbose_name = "Xã/Phường - Tỉnh/Thành phố")
     history = HistoricalRecords()
  
     class Meta:
@@ -207,7 +207,7 @@ class House(models.Model):
         ("Khác", "Khác"),
     )
 
-    loc = models.OneToOneField(Location, on_delete=models.RESTRICT, null=True)
+    loc = models.ForeignKey(Location, on_delete=models.RESTRICT, null=True)
     ten = models.CharField(max_length=100, verbose_name = "Tên nhà trọ")
     loainha = models.CharField(choices=ln_choice, verbose_name = "Loại nhà")
     sophong= models.IntegerField(default= 1, verbose_name = "Số phòng")
@@ -233,6 +233,33 @@ class House(models.Model):
     def __str__(self):
         return self.ten
 
+class Renter(models.Model):
+    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
+    chu_id = models.BigIntegerField(null=True)
+    ma = models.CharField(null=True, verbose_name = "Mã")
+    hoten = models.CharField(max_length=100, verbose_name = "Họ tên")
+    email = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Email")
+    #namsinh = models.DateField()
+    sdt = models.CharField(max_length=100, verbose_name = "Số điện thoại",blank=True, null=True)
+    cccd = models.CharField(max_length=100, verbose_name = "CCCD", blank=True, null=True)
+    ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    noicap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    mst = models.CharField(max_length=100, blank=True, null=True, verbose_name = "MS Thuế cá nhân")
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
+    init_pwd = models.CharField(max_length=100, blank=True, null=True, verbose_name="Mật khẩu khởi tạo") 
+    #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Người thuê"
+        verbose_name_plural = "Danh sách Người thuê"
+        ordering = ["ma",]
+        unique_together = ('ma',)
+
+    def __str__(self):
+        return self.hoten + " - " + self.cccd
+
+
 class Hoadon(models.Model):
     st_choice = (
         ('ChuaTT', 'Chưa thanh toán'),
@@ -241,6 +268,7 @@ class Hoadon(models.Model):
         ('QuaHan', 'Quá hạn'),
     )
     house = models.ForeignKey(House, on_delete=models.RESTRICT, null=True)
+    renter = models.ForeignKey(Renter, on_delete=models.RESTRICT, blank=True, null=True)
     ten = models.CharField(max_length=100, verbose_name = "Mô tả hóa đơn")
    
     ngay_tao = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo hóa đơn")
@@ -676,30 +704,6 @@ class Hsns(models.Model):
     def __str__(self):
         return self.hoten
     
-class Renter(models.Model):
-    user = models.OneToOneField(User, on_delete=models.RESTRICT, null=True)
-    chu_id = models.BigIntegerField(null=True)
-    ma = models.CharField(null=True, verbose_name = "Mã")
-    hoten = models.CharField(max_length=100, verbose_name = "Họ tên")
-    email = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Email")
-    #namsinh = models.DateField()
-    sdt = models.CharField(max_length=100, verbose_name = "Số điện thoại",blank=True, null=True)
-    cccd = models.CharField(max_length=100, verbose_name = "CCCD", blank=True, null=True)
-    ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
-    noicap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
-    mst = models.CharField(max_length=100, blank=True, null=True, verbose_name = "MS Thuế cá nhân")
-    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
-    #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
-    history = HistoricalRecords()
- 
-    class Meta:
-        verbose_name = "Người thuê"
-        verbose_name_plural = "Danh sách Người thuê"
-        ordering = ["ma",]
-        unique_together = ('ma',)
-
-    def __str__(self):
-        return self.hoten + " - " + self.cccd
     
 class HouseRenter(models.Model):
 

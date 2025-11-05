@@ -1,14 +1,12 @@
-{% extends "layouts/base-fullscreen.html" %}
+{% extends "layouts/landing.html" %}
 
-{% block title %} Login {% endblock %} 
+{% block title %} Đăng nhập {% endblock %} 
 
 <!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
-
-{% block body_class %} bg-soft {% endblock body_class %}
+{% block extra_css %}{% endblock extra_css %}
 
 {% block content %}
-{% include 'sms/alerts.html' %}
+    {% include 'sms/alerts.html' %}
     <main>
 
         <script type="text/javascript">
@@ -23,20 +21,21 @@
                 <!-- Section -->
         <section class="vh-lg-100 d-flex align-items-center">
             <div class="container">
-                <div class="row justify-content-center form-bg-image" data-background="/static/assets/img/illustrations/signin.svg">
+                <div class="row justify-content-center">
                     <div class="col-12 d-flex align-items-center justify-content-center">
                         <div class="signin-inner my-3 my-lg-0 bg-white shadow-soft border rounded border-light p-4 p-lg-5 w-100 fmxw-500">
                             <div class="text-center text-md-center mb-4 mt-md-0">
-                                <h1 class="mb-0 h3">Sign IN
-                                </h1>
+                                <h1 class="mb-0 h3">Đăng nhập</h1>
                                 <br />
                                     {% if form.errors %}
-                                        <p style = "color: red">
-                                            Your username and password didn't match. Please try again.
+                                        <p style="color: red">
+                                            {% for error in form.non_field_errors %}
+                                                {{ error }}
+                                            {% endfor %}
                                         </p>
                                     {% else %}
                                         <p>
-                                            Add your credentials                                   
+                                            Vui lòng nhập tên đăng nhập và mật khẩu                                   
                                         </p>
                                     {% endif %}                                     
                                 </p>    
@@ -48,7 +47,7 @@
 
                                 <!-- Form -->
                                 <div class="form-group mb-4">
-                                    <label for="email">Username</label>
+                                    <label for="email">Tên đăng nhập</label>
                                     <div class="input-group">
                                         <span class="input-group-text" id="basic-addon1"><span class="fas fa-user-circle"></span></span>
                                         {{ form.username }}
@@ -58,7 +57,7 @@
                                 <div class="form-group">
                                     <!-- Form -->
                                     <div class="form-group mb-4">
-                                        <label for="password">Your Password</label>
+                                        <label for="password">Mật khẩu</label>
                                         <div class="input-group">
                                             <span class="input-group-text" id="basic-addon2"><span class="fas fa-unlock-alt"></span></span>
                                             {{ form.password }}
@@ -70,15 +69,27 @@
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" value="" id="box"  onclick ="reveal()">
                                             <label class="form-check-label" for="defaultCheck5">
-                                              Show Password
+                                              Hiển thị mật khẩu
                                             </label>
                                         </div>
                                     </div>
 
                                 </div>
-                                <button type="submit" name="login" class="btn btn-block btn-primary">Sign IN</button>
-                                <a href="{% url 'password_reset' %}" class="btn btn-block btn-secondary">Forgot Password?</a>
+                                <button type="submit" name="login" class="btn btn-block btn-primary">Đăng nhập</button>
                             </form>
+                            
+                            <div class="d-flex justify-content-center align-items-center mt-4">
+                                <span class="fw-normal">
+                                    Chưa có tài khoản? 
+                                    <a href="{% url 'signup' %}" class="fw-bold">Đăng ký ngay</a>
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-center align-items-center mt-2">
+                                <span class="fw-normal">
+                                    <a href="{% url 'password_reset' %}" class="fw-bold">Quên mật khẩu?</a>
+                                </span>
+                            </div>
 
 <!--                             <div class="d-flex justify-content-center align-items-center mt-4">
                                 <span class="font-weight-normal">
@@ -98,4 +109,4 @@
 {% endblock content %}
 
 <!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+{% block extra_js %}{% endblock extra_js %}

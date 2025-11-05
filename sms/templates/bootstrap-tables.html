@@ -1,38 +1,20 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/rental_base.html" %}
 
 {% block title %} UI Tables {% endblock %} 
 
-<!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block extra_css %}{% endblock extra_css %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index1' %}"><i class="fas fa-home"></i></a></li>
+        <li class="breadcrumb-item">Tables</li>
+        <li class="breadcrumb-item active" aria-current="page">Bootstrap tables</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-                
-    <main class="content">
-
-        {% include 'includes/navigation.html' %}
-
-        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
-            <img class="loader-element animate__animated animate__jackInTheBox" src="/static/assets/img/brand/light.svg" height="60" alt="Volt logo">
-        </div>
-
-        <div class="py-4">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="#">Tables</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Bootstrap tables</li>
-                </ol>
-            </nav>
-            <div class="d-flex justify-content-between w-100 flex-wrap">
-                <div class="mb-3 mb-lg-0">
-                    <h1 class="h4">Bootstrap tables</h1>
-                    <p class="mb-0">Dozens of reusable components built to provide buttons, alerts, popovers, and more.</p>
-                </div>
-                <div>
-                    <a href="https://themesberg.com/docs/volt-bootstrap-5-dashboard/components/tables/" class="btn btn-outline-gray"><i class="far fa-question-circle mr-1"></i> Bootstrap Tables Docs</a>
-                </div>
-            </div>
-        </div>
 
         <div class="card border-light shadow-sm mb-4">
             <div class="card-body">
@@ -411,11 +393,8 @@
             </div>
         </div>
 
-        {% include 'includes/footer.html' %}
+    {% include 'includes/footer.html' %}
 
-    </main>
-                                    
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+{% block extra_js %}{% endblock extra_js %}

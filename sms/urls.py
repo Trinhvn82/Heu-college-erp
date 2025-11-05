@@ -204,6 +204,7 @@ urlpatterns = [
     path('resetpwd-hv/<int:hv_id>/', reset_pwd_hv, name='reset_pwd_hv'),
 
     path('add-renter/<int:id>/', add_renteruser, name='add_renter'),
+    path('toggle-renter/<int:renter_id>/', toggle_renter_status, name='toggle_renter_status'),
     path('resetpwd-renter/<int:renter_id>/', reset_pwd_renter, name='reset_pwd_renter'),
 
     path('changepwd/', user_changepwd, name='changepwd'),
@@ -232,6 +233,10 @@ urlpatterns = [
     # 4. Xóa Thanh toán
     path('payment/delete/<int:payment_id>/', views.delete_payment_view, name='delete_payment'),
     path('bill/<int:bill_id>/upload-file/', views.upload_bill_file, name='upload_bill_file'),
+     # invoice search
+     path('invoices/search/', views.invoice_search, name='invoice_search'),
+     path('invoices/export-excel/', views.invoice_export_excel, name='invoice_export_excel'),
+     path('api/locations/<int:loc_id>/houses/', views.api_houses_by_location, name='api_houses_by_location'),
     #path('bill/<int:bill_id>/excel/', views.generate_bill_excel, name='generate_bill_excel'),
     path('bill/<int:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf'),
 ]

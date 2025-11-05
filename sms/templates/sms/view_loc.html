@@ -1,4 +1,4 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load humanize %}
 
@@ -53,23 +53,17 @@
 </style>
 {% endblock stylesheets %}
 
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index1' %}"><i class="fas fa-home"></i></a></li>
+        <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ loc.diachi }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
-
-    <main class="content">
-
-        {% include 'includes/navigation.html' %}
-        {% include 'sms/alerts.html' %}
-
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Xem chi tiết</li>
-                </ol>
-            </div>
-        </div>
-
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card border-light shadow-sm bg-white">
@@ -161,8 +155,8 @@
                                     <input type="file" name="file" class="form-control" required />
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Mô tả (tùy chọn)</label>
-                                    <input type="text" name="mota" class="form-control" />
+                                    <label class="form-label">Mô tả (*)</label>
+                                    <input type="text" name="mota" class="form-control" required/>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -311,8 +305,6 @@
             </div>
 
         </div>
-        
-    </main>
 
 {% endblock content %}
 

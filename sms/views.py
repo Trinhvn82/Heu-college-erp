@@ -22,7 +22,7 @@ import openpyxl, xlsxwriter
 import shutil, os
 
 from django.conf import settings
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
@@ -1437,15 +1437,29 @@ def lop_list(request):
     return render(request, "sms/lop_list.html", context)
 
 def index1(request):
-
-    lop = Lop.objects.all()
-
-#    lop = Lop.objects.all().select_related("ctdt").order_by('id')
-    paginator = Paginator(lop, 20)
-    page = request.GET.get('page')
-    paged_students = paginator.get_page(page)
+    from django.db.models import Sum, Count
+    from django.db.models.functions import TruncMonth
+    from datetime import datetime
+    
+    # Thống kê cho landing page
+    stats = {
+        'total_locations': Location.objects.count(),
+        'total_houses': House.objects.count(),
+        'total_renters': HouseRenter.objects.filter(active=True).values('renter').distinct().count(),
+        'revenue_month': 0,
+    }
+    
+    # Doanh thu tháng hiện tại
+    current_month = datetime.now().month
+    current_year = datetime.now().year
+    revenue = Hoadon.objects.filter(
+        ngay_tao__month=current_month,
+        ngay_tao__year=current_year
+    ).aggregate(total=Sum('SO_TIEN_DA_TRA'))['total'] or 0
+    stats['revenue_month'] = revenue
+    
     context = {
-        "lop": paged_students
+        "stats": stats
     }
     return render(request, "sms/index.html", context)
 
@@ -4434,6 +4448,192 @@ def create_bill_view(request, house_id):
         'loc_id': loc_id,
     }
     return render(request, 'sms/create_bill.html', context)
+
+
+@login_required
+def invoice_search(request):
+    """Trang tìm kiếm Hóa đơn theo Location, House, ngày tạo, ngày đến hạn, trạng thái"""
+    from django.db.models import Sum
+    from django.utils.dateparse import parse_date
+
+    qs = Hoadon.objects.select_related('house', 'house__loc').all().order_by('-ngay_tao', '-id')
+
+    # --- Đọc tham số lọc ---
+    loc_id = request.GET.get('loc') or ''
+    house_id = request.GET.get('house') or ''
+    status = request.GET.get('status') or ''
+    created_from = request.GET.get('created_from') or ''
+    created_to = request.GET.get('created_to') or ''
+    due_from = request.GET.get('due_from') or ''
+    due_to = request.GET.get('due_to') or ''
+
+    # --- Áp dụng bộ lọc ---
+    if loc_id:
+        qs = qs.filter(house__loc_id=loc_id)
+    if house_id:
+        qs = qs.filter(house_id=house_id)
+    if status:
+        qs = qs.filter(status=status)
+
+    # Ngày tạo là DateTimeField -> dùng __date để so sánh theo ngày
+    if created_from:
+        d = parse_date(created_from)
+        if d:
+            qs = qs.filter(ngay_tao__date__gte=d)
+    if created_to:
+        d = parse_date(created_to)
+        if d:
+            qs = qs.filter(ngay_tao__date__lte=d)
+
+    # Ngày đến hạn là DateField
+    if due_from:
+        d = parse_date(due_from)
+        if d:
+            qs = qs.filter(duedate__gte=d)
+    if due_to:
+        d = parse_date(due_to)
+        if d:
+            qs = qs.filter(duedate__lte=d)
+
+    # --- Tổng hợp số liệu trên tập đã lọc ---
+    aggregates = qs.aggregate(
+        total_amount=Sum('TONG_CONG'),
+        total_paid=Sum('SO_TIEN_DA_TRA'),
+        total_debt=Sum('CONG_NO'),
+    )
+
+    # --- Phân trang ---
+    paginator = Paginator(qs, 20)
+    page = request.GET.get('page')
+    page_obj = paginator.get_page(page)
+
+    # --- Dữ liệu cho bộ lọc ---
+    locations = Location.objects.order_by('id')
+    houses = House.objects.filter(loc_id=loc_id).order_by('ten') if loc_id else House.objects.none()
+    status_choices = Hoadon._meta.get_field('status').choices
+
+    context = {
+        'page_obj': page_obj,
+        'aggregates': aggregates,
+        'locations': locations,
+        'houses': houses,
+        'status_choices': status_choices,
+        # giữ lại giá trị filter
+        'loc_id': str(loc_id),
+        'house_id': str(house_id),
+        'status_val': status,
+        'created_from': created_from,
+        'created_to': created_to,
+        'due_from': due_from,
+        'due_to': due_to,
+        'params': request.GET.urlencode(),
+    }
+
+    return render(request, 'sms/bill_search.html', context)
+
+
+@login_required
+def invoice_export_excel(request):
+    """Xuất Excel theo đúng bộ lọc hiện tại của trang tìm kiếm hóa đơn"""
+    from django.utils.dateparse import parse_date
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, numbers
+
+    qs = Hoadon.objects.select_related('house', 'house__loc').all().order_by('-ngay_tao', '-id')
+
+    # Đọc tham số lọc (giống invoice_search)
+    loc_id = request.GET.get('loc') or ''
+    house_id = request.GET.get('house') or ''
+    status = request.GET.get('status') or ''
+    created_from = request.GET.get('created_from') or ''
+    created_to = request.GET.get('created_to') or ''
+    due_from = request.GET.get('due_from') or ''
+    due_to = request.GET.get('due_to') or ''
+
+    if loc_id:
+        qs = qs.filter(house__loc_id=loc_id)
+    if house_id:
+        qs = qs.filter(house_id=house_id)
+    if status:
+        qs = qs.filter(status=status)
+
+    if created_from:
+        d = parse_date(created_from)
+        if d:
+            qs = qs.filter(ngay_tao__date__gte=d)
+    if created_to:
+        d = parse_date(created_to)
+        if d:
+            qs = qs.filter(ngay_tao__date__lte=d)
+
+    if due_from:
+        d = parse_date(due_from)
+        if d:
+            qs = qs.filter(duedate__gte=d)
+    if due_to:
+        d = parse_date(due_to)
+        if d:
+            qs = qs.filter(duedate__lte=d)
+
+    # Tạo workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'HoaDon'
+
+    # Header
+    headers = [
+        'STT', 'Vị trí', 'Nhà trọ', 'Mô tả', 'Tổng cộng', 'Đã trả', 'Công nợ', 'Ngày tạo', 'Đến hạn', 'Trạng thái'
+    ]
+    ws.append(headers)
+    for col in range(1, len(headers)+1):
+        cell = ws.cell(row=1, column=col)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+
+    # Dữ liệu
+    row_index = 2
+    for idx, bill in enumerate(qs, start=1):
+        ws.cell(row=row_index, column=1, value=idx)
+        ws.cell(row=row_index, column=2, value=getattr(getattr(bill.house, 'loc', None), 'diachi', ''))
+        ws.cell(row=row_index, column=3, value=getattr(bill.house, 'ten', ''))
+        ws.cell(row=row_index, column=4, value=bill.ten)
+
+        c5 = ws.cell(row=row_index, column=5, value=bill.TONG_CONG or 0)
+        c6 = ws.cell(row=row_index, column=6, value=bill.SO_TIEN_DA_TRA or 0)
+        c7 = ws.cell(row=row_index, column=7, value=bill.CONG_NO or 0)
+        for c in (c5, c6, c7):
+            c.number_format = numbers.FORMAT_NUMBER_COMMA_SEPARATED1
+
+        ws.cell(row=row_index, column=8, value=bill.ngay_tao.strftime('%d/%m/%Y %H:%M') if bill.ngay_tao else '')
+        ws.cell(row=row_index, column=9, value=bill.duedate.strftime('%d/%m/%Y') if bill.duedate else '')
+        ws.cell(row=row_index, column=10, value=dict(Hoadon._meta.get_field('status').choices).get(bill.status, bill.status))
+        row_index += 1
+
+    # Tự động căn chiều rộng đơn giản
+    for col in ws.columns:
+        max_len = 0
+        col_letter = col[0].column_letter
+        for cell in col:
+            try:
+                max_len = max(max_len, len(str(cell.value)) if cell.value is not None else 0)
+            except Exception:
+                pass
+        ws.column_dimensions[col_letter].width = min(max_len + 2, 50)
+
+    # Response
+    from datetime import datetime
+    filename = f"hoa_don_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    wb.save(response)
+    return response
+
+
+@login_required
+def api_houses_by_location(request, loc_id: int):
+    """Trả về danh sách houses theo location (JSON)"""
+    houses = House.objects.filter(loc_id=loc_id).order_by('ten').values('id', 'ten')
+    return JsonResponse({'results': list(houses)})
 
 @login_required
 def update_bill_view(request, bill_id):

@@ -4,6 +4,7 @@ from django.contrib import admin
 
 
 urlpatterns = [
+    path('users/', views.user_list_view, name='user_list'),
     path('', views.index, name='index'),
     path('student/<slug:stud_id>/attendance/',
          views.attendance, name='attendance'),

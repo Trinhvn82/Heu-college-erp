@@ -11,6 +11,8 @@ from django.contrib import messages
 from sms.models import Hsns, Hsgv, Hssv, Renter
 from django.http import HttpResponseForbidden,HttpResponse
 
+from .views_fragments.users import user_list_view  # Import the user list view
+
 from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -542,12 +544,23 @@ def reset_pwd_hv(request, hv_id):
 def reset_pwd_renter(request, renter_id):
     # if not request.user.is_superuser:
     #     return redirect("/")
+    import random
+    import string
+
     renter = Renter.objects.get(id = renter_id)
-    # Check if username already exists
+    # Check if username already exists 
     if renter.user:
-        renter.user.set_password(renter.ma + '@123654')
-        renter.user.save()    
-        messages.success(request, "Reset password thành công!")
+        # Generate random password
+        pwd_length = 8
+        characters = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(random.choice(characters) for i in range(pwd_length))
+
+        renter.user.set_password(password)
+        renter.user.save()
+        renter.init_pwd = password  # Save new password
+        renter.save()
+
+        messages.success(request, f"Reset password thành công! Username: {renter.ma}, New Password: {password}")
         return redirect('renter_list')    
     return redirect("renter_list")
 
@@ -574,21 +587,50 @@ def add_nsuser(request, id):
     return redirect("ns_list")
 
 @login_required()
+def toggle_renter_status(request, renter_id):
+    # Get the renter instance
+    renter = Renter.objects.get(id=renter_id)
+    if renter.user:
+        # Toggle the active status
+        renter.user.is_active = not renter.user.is_active
+        renter.user.save()
+        
+        action = "kích hoạt" if renter.user.is_active else "khóa"
+        messages.success(request, f"Đã {action} tài khoản của {renter.hoten}")
+    else:
+        messages.error(request, f"Người thuê {renter.hoten} chưa có tài khoản")
+    
+    return redirect('renter_list')
+
+@login_required()
 def add_renteruser(request, id):
     # if not request.user.is_superuser:
     #     return redirect("/")
+    import random
+    import string
+    
     renter = Renter.objects.get(id = id)
     # Check if username already exists
+    if User.objects.filter(username=renter.ma).exists():
+        messages.error(request, 'Username đã tồn tại')
+        return redirect('renter_list')
+
+    # Generate random password
+    pwd_length = 8
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(random.choice(characters) for i in range(pwd_length))
     
     user = User.objects.create_user(
         username=renter.ma,
         first_name = renter.hoten,
-        password=renter.ma + '@123654'
+        password=password
     )
     user.save()
     renter.user = user
+    renter.init_pwd = password  # Save initial password
     renter.save()
-    messages.success(request, "Tạo tài khoản cho " + renter.hoten + " thành công")
+    
+    messages.success(request, f"Tạo tài khoản cho {renter.hoten} thành công! Username: {renter.ma}, Password: {password}")
     return redirect("renter_list")
 
 @login_required

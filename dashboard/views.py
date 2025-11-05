@@ -9,13 +9,16 @@ from rest_framework.decorators import action
 
 from django.shortcuts import render
 from dashboard.models import DiemdanhRP, ChamcongRP, HocphiRP
-from sms.models import Hssv
+from sms.models import Hssv, Location, House, Renter, HouseRenter, Hoadon
 from django.core import serializers
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count, Q, Avg
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 
 def dashboard_with_pivot(request):
@@ -128,3 +131,95 @@ def api_hssv(request):
     #return JsonResponse(data=data, status=404)
     #return JsonResponse(data)
     #return Response(data)
+
+
+@login_required
+def rental_dashboard(request):
+    """Dashboard thống kê cho hệ thống cho thuê nhà"""
+    
+    # Thống kê tổng quan
+    total_locations = Location.objects.count()
+    total_houses = House.objects.count()
+    total_renters = Renter.objects.count()
+    active_contracts = HouseRenter.objects.filter(active=True).count()
+    
+    # Thống kê hóa đơn
+    total_hoadon = Hoadon.objects.count()
+    hoadon_chuatt = Hoadon.objects.filter(status='ChuaTT').count()
+    hoadon_dangtt = Hoadon.objects.filter(status='DangTT').count()
+    hoadon_datt = Hoadon.objects.filter(status='DaTT').count()
+    hoadon_quahan = Hoadon.objects.filter(status='QuaHan').count()
+    
+    # Thống kê doanh thu
+    total_revenue = Hoadon.objects.aggregate(
+        total=Sum('TONG_CONG')
+    )['total'] or 0
+    
+    total_paid = Hoadon.objects.aggregate(
+        paid=Sum('SO_TIEN_DA_TRA')
+    )['paid'] or 0
+    
+    total_debt = Hoadon.objects.aggregate(
+        debt=Sum('CONG_NO')
+    )['debt'] or 0
+    
+    # Thống kê theo tháng (6 tháng gần nhất)
+    today = timezone.now()
+    six_months_ago = today - timedelta(days=180)
+    
+    monthly_revenue = []
+    monthly_labels = []
+    for i in range(6):
+        month_date = today - timedelta(days=30*i)
+        month_start = month_date.replace(day=1)
+        if i == 0:
+            month_end = today
+        else:
+            next_month = month_start + timedelta(days=32)
+            month_end = next_month.replace(day=1) - timedelta(days=1)
+        
+        revenue = Hoadon.objects.filter(
+            ngay_tao__gte=month_start,
+            ngay_tao__lte=month_end
+        ).aggregate(total=Sum('TONG_CONG'))['total'] or 0
+        
+        monthly_revenue.insert(0, revenue)
+        monthly_labels.insert(0, f"{month_start.month}/{month_start.year}")
+    
+    # Thống kê nhà trọ theo loại
+    house_by_type = House.objects.values('loainha').annotate(count=Count('id'))
+    house_type_labels = [item['loainha'] for item in house_by_type]
+    house_type_data = [item['count'] for item in house_by_type]
+    
+    # Thống kê giá thuê trung bình
+    avg_rent = House.objects.aggregate(avg=Avg('permonth'))['avg'] or 0
+    
+    # Hóa đơn sắp đến hạn (trong 7 ngày tới)
+    upcoming_due = Hoadon.objects.filter(
+        duedate__lte=today.date() + timedelta(days=7),
+        duedate__gte=today.date(),
+        status__in=['ChuaTT', 'DangTT']
+    ).count()
+    
+    context = {
+        'total_locations': total_locations,
+        'total_houses': total_houses,
+        'total_renters': total_renters,
+        'active_contracts': active_contracts,
+        'total_hoadon': total_hoadon,
+        'hoadon_chuatt': hoadon_chuatt,
+        'hoadon_dangtt': hoadon_dangtt,
+        'hoadon_datt': hoadon_datt,
+        'hoadon_quahan': hoadon_quahan,
+        'total_revenue': total_revenue,
+        'total_paid': total_paid,
+        'total_debt': total_debt,
+        'monthly_revenue': monthly_revenue,
+        'monthly_labels': monthly_labels,
+        'house_type_labels': house_type_labels,
+        'house_type_data': house_type_data,
+        'avg_rent': avg_rent,
+        'upcoming_due': upcoming_due,
+    }
+    
+    return render(request, 'dashboard/rental_dashboard.html', context)

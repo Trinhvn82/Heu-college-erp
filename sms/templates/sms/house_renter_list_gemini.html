@@ -1,43 +1,46 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load humanize %} 
 
 {% block title %} Lịch sử Thuê nhà {% endblock %}
 
-{% block stylesheets %}
+{% block extra_css %}
 <style>
 /* ----------------------------------
- * CSS Tùy chỉnh cho Bootstrap Timeline
+ * CSS Timeline - Dòng thời gian đẹp
  * ---------------------------------- */
 
 .timeline {
     list-style: none;
-    padding: 20px 0 20px;
+    padding: 30px 0;
     position: relative;
+    margin: 0;
 }
 
-/* Đường kẻ chính (Timeline Line) */
+/* Đường kẻ dọc chính giữa */
 .timeline:before {
     top: 0;
     bottom: 0;
     position: absolute;
-    content: " ";
-    width: 3px;
-    background-color: #eeeeee;
-    left: 50%; /* Đặt đường kẻ chính giữa */
-    margin-left: -1.5px;
+    content: "";
+    width: 4px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    left: 50%;
+    margin-left: -2px;
+    border-radius: 2px;
 }
 
-/* Các sự kiện (li) */
+/* Các mục timeline */
 .timeline-item {
-    margin-bottom: 20px;
+    margin-bottom: 50px;
     position: relative;
+    min-height: 50px;
 }
 
-/* Đảm bảo nội dung không bị float */
+/* Clearfix */
 .timeline-item:before,
 .timeline-item:after {
-    content: " ";
+    content: "";
     display: table;
 }
 
@@ -45,17 +48,42 @@
     clear: both;
 }
 
-/* Thiết lập cho panel (Card) */
+/* Panel chứa nội dung */
 .timeline-panel {
-    width: 45%; /* Chiếm 45% chiều rộng mỗi bên */
     float: left;
     border-radius: 4px;
     position: relative;
+    padding: 0;
 }
 
-/* Căn nội dung panel bên phải (các item chẵn) */
+/* Tablet and up: each panel ~25% of full width */
+@media (min-width: 768px) {
+    .timeline-panel { width: 45% !important; max-width: 45%; }
+}
+
+/* Căn panel bên phải cho item chẵn */
 .timeline-item:nth-child(even) .timeline-panel {
     float: right;
+}
+
+/* Mũi tên trỏ vào timeline (optional) */
+.timeline-panel:before {
+    content: "";
+    position: absolute;
+    top: 26px;
+    right: -15px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 0 10px 15px;
+    border-color: transparent transparent transparent #fff;
+}
+
+.timeline-item:nth-child(even) .timeline-panel:before {
+    left: -15px;
+    right: auto;
+    border-width: 10px 15px 10px 0;
+    border-color: transparent #fff transparent transparent;
 }
 
 /* Nút tròn/Badge */
@@ -75,57 +103,51 @@
     border-radius: 50%;
 }
 
-/* Thiết lập Responsive cho màn hình nhỏ */
+
+
+/* Responsive cho màn hình nhỏ */
 @media(max-width: 991px) {
     .timeline:before {
-        left: 20px; /* Đẩy đường kẻ sang trái */
+        left: 30px;
     }
     .timeline-item {
-        margin-left: 40px;
+        margin-left: 0;
     }
     .timeline-panel {
-        width: 100%; /* Chiếm toàn bộ chiều rộng */
-        float: none;
-        padding-left: 70px; /* Thêm padding để tránh badge */
+        width: calc(100% - 80px);
+        float: none !important;
+        margin-left: 80px;
+    }
+    .timeline-panel:before {
+        display: none;
     }
     .timeline-item:nth-child(even) .timeline-panel {
-        float: none; /* Bỏ float phải */
+        float: none !important;
+        margin-left: 80px;
     }
     .timeline-badge {
-        left: 20px; /* Đẩy badge về sát đường kẻ mới */
+        left: 30px;
         margin-left: -25px;
     }
 }
 </style>
-{% endblock stylesheets %}
+{% endblock extra_css %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index1' %}"><i class="fas fa-home"></i></a></li>
+        <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Lịch sử thuê nhà</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-
-    <main class="content">
-
-        {% include 'includes/navigation.html' %}
-        {% include 'sms/alerts.html' %}
-        
-        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
-            <img class="loader-element animate__animated animate__jackInTheBox"
-                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
-        </div>
-
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Lịch sử Người thuê nhà</li>
-                </ol>
-            </div>
-        </div>
-
-
-        <div class="card border-light shadow-sm mb-4">
+        <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <div class="row">
-                    <div class="col-lg-10 offset-lg-1">
+                    <div class="col-12">
                         <h2 class="h5 mb-4 text-center border-bottom pb-2">Dòng thời gian thuê nhà</h2>
                         
                         <ul class="timeline">
@@ -142,7 +164,7 @@
                                         </p>
                                         
                                         <a href="{% url 'create_hr' id %}" 
-                                        class="btn btn-primary **bg-primary** btn-sm text-white animate-up-2">
+                                        class="btn btn-primary bg-primary btn-sm text-white animate-up-2">
                                             <span class="fas fa-plus-circle me-2"></span> Tạo Hợp đồng Mới Ngay
                                         </a>
                                     </div>
@@ -209,9 +231,6 @@
                     </div>
                 </div>
             </div>
-        </div>        
-    </main>
+        </div>
 
 {% endblock content %}
-
-{% block javascripts %}{% endblock javascripts %}

@@ -1,32 +1,13 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/rental_base.html" %}
 {% load static %}
 
-{% block title %} Transactions {% endblock %}
+{% block title %}Danh sách Khách thuê{% endblock %}
 
-<!-- Specific Page CSS goes HERE  -->
-{% block stylesheets %}{% endblock stylesheets %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Khách thuê</li>
+{% endblock %}
 
 {% block content %}
-
-    <main class="content">
-
-        {% include 'includes/navigation.html' %}
-        {% include 'sms/alerts.html' %}
-
-        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
-            <img class="loader-element animate__animated animate__jackInTheBox"
-                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
-        </div>
-
-
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="\"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Thông tin người thuê nhà</li>
-                </ol>
-            </div>
-        </div>
 
         <div class="row item-row">
             <div class="col-12">
@@ -66,6 +47,7 @@
                                 <th>Mã</th>
                                 <th>Họ tên</th>
                                 <th>SDT</th>
+                                <th>Thông tin User</th>
                                 <th>Tác nghiệp</th>
                             </tr>
                         </thead>
@@ -83,6 +65,20 @@
                                 </td>
                                 <td>{{ renter.hoten }}</td>
                                 <td>{{ renter.sdt }}</td>
+                                <td>
+                                    {% if renter.user %}
+                                    <div class="small">
+                                        <strong>Username:</strong> {{ renter.ma }}
+                                        {% if not renter.user.is_active %}
+                                            <span class="badge bg-danger">Đã khóa</span>
+                                        {% endif %}
+                                        <br>
+                                        {% if renter.init_pwd %}
+                                        <strong>Password:</strong> {{ renter.init_pwd }}
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <div>
                                         <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -105,6 +101,13 @@
                                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
                                                   </svg>
                                                  <span></span>Reset Password
+                                            </a>
+                                            <a class="dropdown-item edit_item"
+                                                href="{% url 'toggle_renter_status' renter.id%}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lock" viewBox="0 0 16 16">
+                                                    <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 5.996V14H3s-1 0-1-1 1-4 6-4c.564 0 1.077.038 1.544.107a4.524 4.524 0 0 0-.803.918A10.46 10.46 0 0 0 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664zM9 13a1 1 0 0 1 1-1v-1a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm3-3a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1"/>
+                                                </svg>
+                                                 <span></span>{% if renter.user.is_active %}Khóa{% else %}Mở khóa{% endif %} tài khoản
                                             </a>
                                             {%else%}
                                             <a class="dropdown-item edit_item"
@@ -210,10 +213,5 @@
                 {% endif %}
             </div>
         </div>
-        
-    </main>
 
 {% endblock content %}
-
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}

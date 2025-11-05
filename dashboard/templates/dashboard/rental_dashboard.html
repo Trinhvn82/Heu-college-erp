@@ -1,0 +1,492 @@
+{% extends 'layouts/rental_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Dashboard Quản lý Nhà trọ{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Dashboard Nhà trọ</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">
+                <i class="fas fa-chart-line"></i> Dashboard Thống kê Quản lý Nhà trọ
+            </h2>
+            <p class="text-muted">Tổng quan hệ thống cho thuê nhà trọ</p>
+        </div>
+    </div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Vị trí (Locations)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_locations }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-map-marker-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Nhà trọ (Houses)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_houses }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-home fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Người thuê (Renters)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_renters }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Hợp đồng đang hiệu lực
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_contracts }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-contract fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê hóa đơn -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                Tổng hóa đơn
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_hoadon }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Chưa thanh toán
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ hoadon_chuatt }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Đang thanh toán (Công nợ)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ hoadon_dangtt }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Đã thanh toán
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ hoadon_datt }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê tài chính -->
+    <div class="row mb-4">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Tổng doanh thu
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_revenue|intcomma }} VNĐ
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Đã thu
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_paid|intcomma }} VNĐ
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Công nợ
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_debt|intcomma }} VNĐ
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="row mb-4">
+        <!-- Biểu đồ doanh thu theo tháng -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Doanh thu 6 tháng gần nhất</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ loại nhà -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Phân loại nhà trọ</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="houseTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ trạng thái hóa đơn -->
+    <div class="row mb-4">
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Trạng thái hóa đơn</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="billStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Thông tin khác</h6>
+                </div>
+                <div class="card-body">
+                    <h4 class="small font-weight-bold">
+                        Giá thuê trung bình
+                        <span class="float-right">{{ avg_rent|intcomma }} VNĐ/tháng</span>
+                    </h4>
+                    <hr>
+                    <h4 class="small font-weight-bold">
+                        Hóa đơn sắp đến hạn (7 ngày)
+                        <span class="float-right text-warning">{{ upcoming_due }}</span>
+                    </h4>
+                    <hr>
+                    <h4 class="small font-weight-bold">
+                        Hóa đơn quá hạn
+                        <span class="float-right text-danger">{{ hoadon_quahan }}</span>
+                    </h4>
+                    <hr>
+                    <div class="mt-4">
+                        <a href="{% url 'loc_list' %}" class="btn btn-primary btn-block">
+                            <i class="fas fa-map-marker-alt"></i> Xem danh sách vị trí & hóa đơn
+                        </a>
+                        <a href="{% url 'renter_list' %}" class="btn btn-info btn-block mt-2">
+                            <i class="fas fa-users"></i> Xem danh sách người thuê
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+.border-left-danger {
+    border-left: 0.25rem solid #e74a3b !important;
+}
+.border-left-secondary {
+    border-left: 0.25rem solid #858796 !important;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// Biểu đồ doanh thu theo tháng
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+const revenueChart = new Chart(revenueCtx, {
+    type: 'line',
+    data: {
+        labels: {{ monthly_labels|safe }},
+        datasets: [{
+            label: 'Doanh thu (VNĐ)',
+            data: {{ monthly_revenue|safe }},
+            backgroundColor: 'rgba(78, 115, 223, 0.05)',
+            borderColor: 'rgba(78, 115, 223, 1)',
+            borderWidth: 2,
+            pointRadius: 3,
+            pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+            pointBorderColor: 'rgba(78, 115, 223, 1)',
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+            pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
+            pointHitRadius: 10,
+            pointBorderWidth: 2,
+            fill: true
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyColor: "#858796",
+                titleMarginBottom: 10,
+                titleColor: '#6e707e',
+                titleFont: {
+                    size: 14
+                },
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                padding: 15,
+                displayColors: false,
+                intersect: false,
+                mode: 'index',
+                caretPadding: 10,
+                callbacks: {
+                    label: function(context) {
+                        var label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' VNĐ';
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    maxTicksLimit: 7
+                }
+            },
+            y: {
+                ticks: {
+                    callback: function(value, index, values) {
+                        return new Intl.NumberFormat('vi-VN').format(value);
+                    }
+                },
+                grid: {
+                    color: "rgb(234, 236, 244)",
+                    zeroLineColor: "rgb(234, 236, 244)",
+                    drawBorder: false,
+                    borderDash: [2],
+                    zeroLineBorderDash: [2]
+                }
+            }
+        }
+    }
+});
+
+// Biểu đồ loại nhà
+const houseTypeCtx = document.getElementById('houseTypeChart').getContext('2d');
+const houseTypeChart = new Chart(houseTypeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ house_type_labels|safe }},
+        datasets: [{
+            data: {{ house_type_data|safe }},
+            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+            hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#c9302c'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)"
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                padding: 15,
+                displayColors: false,
+                caretPadding: 10
+            },
+            legend: {
+                display: true,
+                position: 'bottom'
+            }
+        },
+        cutout: '80%'
+    }
+});
+
+// Biểu đồ trạng thái hóa đơn
+const billStatusCtx = document.getElementById('billStatusChart').getContext('2d');
+const billStatusChart = new Chart(billStatusCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Chưa thanh toán', 'Đang thanh toán', 'Đã thanh toán', 'Quá hạn'],
+        datasets: [{
+            data: [{{ hoadon_chuatt }}, {{ hoadon_dangtt }}, {{ hoadon_datt }}, {{ hoadon_quahan }}],
+            backgroundColor: ['#858796', '#f6c23e', '#1cc88a', '#e74a3b'],
+            hoverBackgroundColor: ['#6c6d7a', '#dda20a', '#17a673', '#c9302c'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)"
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                backgroundColor: "rgb(255,255,255)",
+                bodyColor: "#858796",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                padding: 15,
+                displayColors: false,
+                caretPadding: 10
+            },
+            legend: {
+                display: true,
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -3,6 +3,16 @@ from django import forms
 from .models import *
 import decimal
 from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate
+
+class CustomAuthenticationForm(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise ValidationError(
+                "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ chủ nhà để được hỗ trợ.",
+                code='inactive',
+            )
 
 class CreateTeacher(forms.ModelForm):
     class Meta:
@@ -116,7 +126,7 @@ class CreateRenter(forms.ModelForm):
     class Meta:
         model = Renter
         fields = "__all__"
-        exclude = ['user','chu_id','ma']
+        exclude = ['user','chu_id','ma','init_pwd']
 
         widgets = {
             'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên'}), 

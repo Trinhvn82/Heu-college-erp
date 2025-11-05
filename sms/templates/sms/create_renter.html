@@ -1,28 +1,19 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/rental_base.html" %}
 {% load static %}
 
 {% block title %} Tạo người thuê {% endblock %}
 
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index1' %}"><i class="fas fa-home"></i></a></li>
+        <li class="breadcrumb-item"><a href="{% url 'renter_list' %}">Thông tin người thuê</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tạo mới</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
-
-    <main class="content">
-
-        {% include 'includes/navigation.html' %}
-
-        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
-            <img class="loader-element animate__animated animate__jackInTheBox"
-                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
-        </div>
-
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'renter_list' %}">Thông tin người thuê</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Tạo mới</li>
-                </ol>
-            </div>
-        </div>
 
         <div class="row item-row">
             <div class="col-12">
@@ -44,6 +35,5 @@
                 </div>
             </div>
         </div>
-    </main>
 
 {% endblock content %}

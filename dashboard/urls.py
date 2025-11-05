@@ -8,4 +8,5 @@ urlpatterns = [
     path('api-hssv', views.api_hssv, name='api_hssv'),
     path('chamcong', views.report_chamcong, name='report_chamcong'),
     path('hocphi', views.report_hocphi, name='report_hocphi'),
+    path('rental', views.rental_dashboard, name='rental_dashboard'),
 ]
