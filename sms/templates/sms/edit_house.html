@@ -1,52 +1,24 @@
-﻿{% extends "layouts/base.html" %}
+﻿{% extends "layouts/rental_base.html" %}
 {% load static %}
 
-{% block title %} Cập nhật địa điểm {% endblock %}
+{% block title %}Cập nhật nhà{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}"><i class="fas fa-home"></i></a></li>
+        <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Địa điểm</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'house_list' loc_id %}">Nhà</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Cập nhật nhà</li>
+    </ol>
+</nav>
+{% endblock %}
 
 {% block content %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" integrity="sha512-nMNlpuaDPrqlEls3IX/Q56H36qvBASwb3ipuo3MxeWbsQB1881ox0cRv7UPTgBlriqoynt35KjEwgGUeUXIPnw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-<script>
-    $(document).ready(function() {
-        $('#id_xp').select2();
-    });    
-</script>
-
-<script>
-    // Hàm này tự động thêm dấu chấm (.) làm dấu phân cách hàng ngàn
-    function formatThousands(input) {
-        // 1. Chỉ giữ lại các chữ số (0-9)
-        let rawValue = input.value.replace(/[^0-9]/g, ''); 
-
-        if (rawValue) {
-            // 2. Định dạng: chèn dấu chấm (Dấu phân cách hàng ngàn theo chuẩn VN)
-            let formattedValue = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            input.value = formattedValue;
-        }
-    }
-</script>
-<main class="content">
-
-        {% include 'includes/navigation.html' %}
-
-        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
-            <img class="loader-element animate__animated animate__jackInTheBox"
-                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
-        </div>
-
-
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Địa điểm</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'house_list' loc_id %}">Nhà</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Cập nhật nhà</li>
-                </ol>
-        </div>
-        </div>
 
         <div class="row item-row">
             <div class="col-12" id="sad-monsters">
@@ -73,6 +45,26 @@
                 </div>
             </div>
         </div>
-    </main>
-    
 {% endblock content %}
+
+{% block extra_js %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js" integrity="sha512-2ImtlRlf2VVmiGZsjm9bEyhjGW4dU7B6TNwh/hx/iSByxNENtj3WVE6o/9Lj4TJeVXPi4bnOIMXFIJJAeufa0A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_xp').select2();
+    });
+    
+    // Hàm này tự động thêm dấu chấm (.) làm dấu phân cách hàng ngàn
+    function formatThousands(input) {
+        // 1. Chỉ giữ lại các chữ số (0-9)
+        let rawValue = input.value.replace(/[^0-9]/g, ''); 
+
+        if (rawValue) {
+            // 2. Định dạng: chèn dấu chấm (Dấu phân cách hàng ngàn theo chuẩn VN)
+            let formattedValue = rawValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            input.value = formattedValue;
+        }
+    }
+</script>
+{% endblock %}
