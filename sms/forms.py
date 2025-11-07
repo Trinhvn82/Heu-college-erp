@@ -690,7 +690,7 @@ class CreateHoaDonForm(forms.ModelForm):
             'house': forms.Select(attrs={'class': 'form-control'}),
             'ten': forms.TextInput(attrs={'class': 'form-control'}),
             'duedate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            
+            'qr_code_image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
         

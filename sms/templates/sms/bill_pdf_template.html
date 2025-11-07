@@ -83,6 +83,14 @@
             </tr>
         </table>
         
+        {% if hoadon.qr_code_image %}
+        <div style="margin-top: 30px; text-align: center; border: 2px solid #ccc; padding: 15px; border-radius: 8px;">
+            <p style="margin-bottom: 10px; font-weight: bold;">QUÉT MÃ ĐỂ THANH TOÁN</p>
+            <img src="{{ hoadon.qr_code_image.path }}" alt="QR Code" style="max-width: 180px; border: 1px solid #ddd; padding: 5px;">
+            <p style="margin-top: 10px; font-size: 9pt; color: #666;">Quét mã QR để chuyển khoản trực tiếp đến tài khoản chủ nhà</p>
+        </div>
+        {% endif %}
+        
         <p style="margin-top: 50px;">Ký tên Chủ nhà: ..........................</p>
         <p style="text-align: right;">Ký tên Người thuê: ..........................</p>
         

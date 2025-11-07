@@ -5121,7 +5121,7 @@ def create_bill_view(request, house_id):
     all_renters = HouseRenter.objects.filter(house=house).select_related('renter').values_list('renter__hoten', flat=True).distinct()
 
     if request.method == 'POST':
-        form = CreateHoaDonForm(request.POST, house=house)
+        form = CreateHoaDonForm(request.POST, request.FILES, house=house)
         if form.is_valid():
             
             # LƯU HÓA ĐƠN
@@ -5144,6 +5144,20 @@ def create_bill_view(request, house_id):
                     )
             except Exception:
                 pass
+
+            # Gửi email PDF hóa đơn cho renter (nếu có email)
+            if new_bill.renter and new_bill.renter.email:
+                try:
+                    email_sent = send_bill_email_with_pdf(new_bill)
+                    if email_sent:
+                        messages.info(request, f"Đã gửi hóa đơn PDF qua email tới {new_bill.renter.email}")
+                    else:
+                        messages.warning(request, "Không thể gửi email hóa đơn. Vui lòng kiểm tra cấu hình email.")
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Lỗi khi gửi email hóa đơn: {e}")
+                    messages.warning(request, "Có lỗi khi gửi email hóa đơn.")
 
             renter_info = f" cho {new_bill.renter.hoten}" if new_bill.renter else ""
             messages.success(request, f"Đã tạo Hóa đơn mới cho {house.ten}{renter_info} thành công!")
@@ -5404,7 +5418,7 @@ def update_bill_view(request, bill_id):
     tien_thue_co_dinh = Decimal(house.permonth) 
 
     if request.method == 'POST':
-        form = CreateHoaDonForm(request.POST, instance=bill, house=house) 
+        form = CreateHoaDonForm(request.POST, request.FILES, instance=bill, house=house) 
         if form.is_valid():
             
             # LẤY DỮ LIỆU SẠCH TỪ FORM
@@ -5659,8 +5673,179 @@ from reportlab.pdfbase.ttfonts import TTFont
 from decimal import Decimal
 import os
 from django.conf import settings 
+from django.core.mail import EmailMessage
 # Đảm bảo đã import các Models cần thiết
-from .models import Hoadon, HouseRenter 
+from .models import Hoadon, HouseRenter
+
+
+def send_bill_email_with_pdf(hoadon):
+    """
+    Gửi email hóa đơn với PDF đính kèm cho renter
+    
+    Args:
+        hoadon: Đối tượng Hoadon cần gửi email
+    
+    Returns:
+        bool: True nếu gửi thành công, False nếu thất bại
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Kiểm tra renter có email không
+    if not hoadon.renter or not hoadon.renter.email:
+        logger.info(f"Bill {hoadon.id}: Renter không có email, bỏ qua gửi mail")
+        return False
+    
+    try:
+        from reportlab.pdfbase.pdfmetrics import registerFont
+        from reportlab.pdfbase.ttfonts import TTFont
+        registerFont(TTFont('Arial','ARIAL.ttf'))
+        VIETNAMESE_FONT = 'Arial'
+
+        # Tạo PDF trong memory
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, 
+                                leftMargin=1.5*cm, rightMargin=1.5*cm, 
+                                topMargin=2*cm, bottomMargin=2*cm)
+        Story = []
+
+        # Lấy thông tin renter
+        renter = hoadon.renter
+        
+        # Định dạng số
+        def f(number):
+            return "{:,.0f}".format(Decimal(number or 0)).replace(",", ",")
+
+        # Styles
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Arial', fontName=VIETNAMESE_FONT, fontSize=10, leading=12))
+        normal_style = styles['Arial']
+
+        # Tiêu đề
+        p_title = Paragraph(f'<font name="{VIETNAMESE_FONT}">HÓA ĐƠN THUÊ NHÀ - KỲ {hoadon.duedate.strftime("%m/%Y")}</font>', normal_style)
+        Story.append(p_title)
+        Story.append(Spacer(0, 0.5*cm))
+
+        # Thông tin chung
+        Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Nhà trọ: {hoadon.house.ten} - {hoadon.house.loc.diachi}</font>', normal_style))
+        if renter:
+            Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Người thuê: {renter.hoten} - SĐT: {renter.sdt}</font>', normal_style))
+        Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Ngày tạo: {hoadon.ngay_tao.strftime("%d/%m/%Y")}</font>', normal_style))
+        Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Ngày hết hạn: {hoadon.duedate.strftime("%d/%m/%Y")}</font>', normal_style))
+        Story.append(Spacer(0, 1*cm))
+
+        # Bảng chi tiết
+        def vn_text(text):
+            return Paragraph(f'<font name="{VIETNAMESE_FONT}">{text}</font>', normal_style)
+
+        table_data = [
+            [vn_text('STT'), vn_text('Mục'), vn_text('Đơn vị'), vn_text('Số lượng'), vn_text('Đơn giá'), vn_text('Thành tiền (VNĐ)')],
+            [1, vn_text('Tiền thuê nhà'), 'Tháng', 1, f(hoadon.house.permonth), f(hoadon.tienthuenha)],
+            [2, vn_text('Tiền Điện'), 'kWh', '', '', f(hoadon.tiendien)],
+            [3, vn_text('Tiền Nước'), 'm³', '', '', f(hoadon.tiennuoc)],
+            [4, vn_text('Chi phí khác'), 'Lần', 1, f(hoadon.tienkhac), f(hoadon.tienkhac)],
+            ['', '', '', '', vn_text('TỔNG CỘNG'), f(hoadon.TONG_CONG)]
+        ]
+        
+        table_style = TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.9, 0.9, 0.9)),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTNAME', (0, 0), (-1, -1), VIETNAMESE_FONT), 
+            ('ALIGN', (3, 1), (-1, -1), 'RIGHT'), 
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ALIGN', (4, -1), (-1, -1), 'RIGHT'),
+            ('BACKGROUND', (4, -1), (-1, -1), colors.yellow),
+        ])
+        
+        t = Table(table_data, colWidths=[0.8*cm, 4*cm, 1.5*cm, 2*cm, 2*cm, 3*cm])
+        t.setStyle(table_style)
+        Story.append(t)
+        Story.append(Spacer(0, 0.5*cm))
+
+        # Tổng kết
+        summary_data = [
+            [vn_text('TỔNG CỘNG PHẢI THU'), f(hoadon.TONG_CONG)],
+            [vn_text('Số tiền đã thanh toán'), f(hoadon.SO_TIEN_DA_TRA)],
+            [vn_text('CÔNG NỢ CÒN LẠI'), f(hoadon.CONG_NO)],
+        ]
+        summary_table = Table(summary_data, colWidths=[5*cm, 4*cm])
+        summary_table.setStyle(TableStyle([
+            ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+            ('FONTNAME', (0, 0), (-1, -1), VIETNAMESE_FONT),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.8, 0.9, 1)),
+            ('TEXTCOLOR', (1, -1), (1, -1), colors.red if hoadon.CONG_NO > 0 else colors.green),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+        ]))
+        Story.append(summary_table)
+
+        # QR Code (nếu có)
+        if hoadon.qr_code_image:
+            try:
+                from reportlab.platypus import Image as RLImage
+                Story.append(Spacer(0, 0.5*cm))
+                Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">QUÉT MÃ ĐỂ THANH TOÁN</font>', normal_style))
+                Story.append(Spacer(0, 0.3*cm))
+                
+                qr_path = hoadon.qr_code_image.path
+                if os.path.exists(qr_path):
+                    qr_img = RLImage(qr_path, width=4*cm, height=4*cm)
+                    Story.append(qr_img)
+                    Story.append(Spacer(0, 0.2*cm))
+                    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}"><i>Quét mã QR để chuyển khoản trực tiếp đến tài khoản chủ nhà</i></font>', normal_style))
+            except Exception as e:
+                logger.warning(f"Không thể thêm QR code vào email PDF: {e}")
+
+        # Chữ ký
+        Story.append(Spacer(0, 1*cm))
+        Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}"><i>Hóa đơn được tạo tự động bởi hệ thống.</i></font>', normal_style))
+        
+        # Build PDF
+        doc.build(Story)
+        pdf_content = buffer.getvalue()
+        buffer.close()
+
+        # Tạo email
+        subject = f'Hóa đơn {hoadon.house.ten} - Tháng {hoadon.duedate.strftime("%m/%Y")}'
+        
+        # Nội dung email
+        message = f"""
+Kính gửi {renter.hoten},
+
+Bạn có hóa đơn mới cho nhà trọ {hoadon.house.ten}.
+
+Chi tiết hóa đơn:
+- Kỳ thanh toán: {hoadon.duedate.strftime("%m/%Y")}
+- Tổng tiền: {f(hoadon.TONG_CONG)} VNĐ
+- Đã thanh toán: {f(hoadon.SO_TIEN_DA_TRA)} VNĐ
+- Còn nợ: {f(hoadon.CONG_NO)} VNĐ
+- Hạn thanh toán: {hoadon.duedate.strftime("%d/%m/%Y")}
+
+Vui lòng kiểm tra file PDF đính kèm để xem chi tiết.
+
+Trân trọng,
+Ban quản lý
+"""
+        
+        email = EmailMessage(
+            subject=subject,
+            body=message,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[hoadon.renter.email],
+        )
+        
+        # Đính kèm PDF
+        pdf_filename = f'HoaDon_{hoadon.house.ten}_{hoadon.duedate.strftime("%Y%m")}.pdf'
+        email.attach(pdf_filename, pdf_content, 'application/pdf')
+        
+        # Gửi email
+        email.send(fail_silently=False)
+        
+        logger.info(f"Đã gửi email hóa đơn {hoadon.id} tới {hoadon.renter.email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Lỗi khi gửi email hóa đơn {hoadon.id}: {str(e)}")
+        return False 
 
 
 @login_required
@@ -5680,12 +5865,16 @@ def generate_bill_pdf(request, bill_id):
                             topMargin=2*cm, bottomMargin=2*cm)
     Story = []
 
-    # --- TÌM NGƯỜI THUÊ HIỆN TẠI ---
-    active_contract = HouseRenter.objects.filter(
-        house=hoadon.house, 
-        active=True
-    ).select_related('renter').first()
-    renter = active_contract.renter if active_contract else None
+    # --- LẤY THÔNG TIN NGƯỜI THUÊ ---
+    # Ưu tiên lấy từ hoadon.renter (người được tạo hóa đơn cho)
+    # Nếu không có thì tìm active contract
+    renter = hoadon.renter
+    if not renter:
+        active_contract = HouseRenter.objects.filter(
+            house=hoadon.house, 
+            active=True
+        ).select_related('renter').first()
+        renter = active_contract.renter if active_contract else None
     
     # --- ĐỊNH DẠNG SỐ VÀ CHUẨN BỊ DỮ LIỆU ---
     def f(number):
@@ -5711,7 +5900,10 @@ def generate_bill_pdf(request, bill_id):
 
     # --- 2. THÔNG TIN CHUNG (ĐÃ XÓA THẺ B) ---
     Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Nhà trọ: {hoadon.house.ten} - {hoadon.house.loc.diachi}</font>', normal_style))
-    Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Người thuê: {renter.hoten if renter else "Đang trống"}</font>', normal_style))
+    if renter:
+        Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Người thuê: {renter.hoten} - SĐT: {renter.sdt}</font>', normal_style))
+    else:
+        Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Người thuê: Đang trống</font>', normal_style))
     Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Ngày tạo: {hoadon.ngay_tao.strftime("%d/%m/%Y")}</font>', normal_style))
     Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">Ngày hết hạn: {hoadon.duedate.strftime("%d/%m/%Y")}</font>', normal_style))
     Story.append(Spacer(0, 1*cm))
@@ -5777,6 +5969,29 @@ def generate_bill_pdf(request, bill_id):
         ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
     ]))
     Story.append(summary_table)
+
+    # --- QR CODE (nếu có) ---
+    if hoadon.qr_code_image:
+        try:
+            from reportlab.platypus import Image as RLImage
+            import os
+            
+            Story.append(Spacer(0, 0.5*cm))
+            Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}">QUÉT MÃ ĐỂ THANH TOÁN</font>', normal_style))
+            Story.append(Spacer(0, 0.3*cm))
+            
+            # Get absolute path to QR code image
+            qr_path = hoadon.qr_code_image.path
+            if os.path.exists(qr_path):
+                qr_img = RLImage(qr_path, width=4*cm, height=4*cm)
+                Story.append(qr_img)
+                Story.append(Spacer(0, 0.2*cm))
+                Story.append(Paragraph(f'<font name="{VIETNAMESE_FONT}"><i>Quét mã QR để chuyển khoản trực tiếp đến tài khoản chủ nhà</i></font>', normal_style))
+        except Exception as e:
+            # Log error but continue generating PDF
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error adding QR code to PDF: {e}")
 
     # --- Chữ ký và Ghi chú ---
     Story.append(Spacer(0, 1*cm))

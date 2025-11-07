@@ -24,6 +24,7 @@ EMAIL_HOST = EMAIL_HOST
 EMAIL_HOST_USER = EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 EMAIL_PORT= EMAIL_PORT
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Email mặc định khi gửi
 
 
 #FRONTEND_DIR = BASE_DIR + "/frontend"
@@ -47,8 +48,13 @@ ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'info.User'
 
-SESSION_COOKIE_AGE =  600 # 5 minutes
+# Session Configuration
+SESSION_COOKIE_AGE = 1800  # Default 30 minutes (for owners)
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
+
+# Custom timeout for different user types
+RENTER_SESSION_TIMEOUT = 600   # 10 minutes for renters
+OWNER_SESSION_TIMEOUT = 1800   # 30 minutes for owners and admin
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -106,6 +112,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'sms.middleware.DynamicSessionTimeoutMiddleware',  # Must be after AuthenticationMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
@@ -213,6 +220,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # For production collectstatic
+
+# Additional locations of static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Static file finders
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

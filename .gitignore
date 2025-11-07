@@ -53,6 +53,21 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Static files (collected by collectstatic)
+/staticfiles/
+/static/admin/
+/static/rest_framework/
+
+# Backup and temporary files
+*.dump
+*.bak
+*.backup
+*.tmp
+~*
+archive/
 
 # Flask stuff:
 instance/
@@ -110,6 +125,28 @@ media/
 *.pyc
 *.db
 *.pid
+
+# Old scripts and data files
+insert_*_script.py
+Schedule_script.py
+dropnotnull_script.py
+excel2pdf.py
+script.py
+sites.py
+Data.xlsx
+pandas_simple.xlsx
+template_kqht.*
+outfile
+psql.config
+
+# Backups
+*.dump
+*.zip
+sms-backup*.dump
+
+# Images not in git
+DSCF*.JPG
+*.jpg.backup
 
 # Ignore Django Migrations in Development if you are working on team
 

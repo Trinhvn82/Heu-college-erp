@@ -283,7 +283,8 @@ class Hoadon(models.Model):
     SO_TIEN_DA_TRA = models.IntegerField(blank=True, null=True, default=0, verbose_name="Số tiền đã trả")
     CONG_NO = models.IntegerField(blank=True, null=True, default=0, verbose_name="Công nợ")
     status = models.CharField(max_length=10, choices=st_choice, default='ChuaTT', verbose_name="Trạng thái")
-    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú"   )
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
+    qr_code_image = models.ImageField(upload_to='bill_qr_codes/', blank=True, null=True, verbose_name="QR Code thanh toán")
 
     history = HistoricalRecords()
  
