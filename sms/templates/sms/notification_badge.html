@@ -1,0 +1,8 @@
+<a class="nav-link position-relative text-white" href="{% url 'notifications_list' %}">
+    <span class="fas fa-bell fa-lg"></span>
+    {% if unread_count > 0 %}
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{ unread_count }}
+    </span>
+    {% endif %}
+</a>

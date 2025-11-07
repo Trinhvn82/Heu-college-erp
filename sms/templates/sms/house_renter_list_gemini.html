@@ -133,6 +133,62 @@
 </style>
 {% endblock extra_css %}
 
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('createHRForm');
+        const modal = document.getElementById('createHRModal');
+        const modalInstance = new bootstrap.Modal(modal);
+        const timelineWrapper = document.getElementById('hr-timeline-wrapper');
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(form);
+                const submitBtn = form.querySelector('button[type="submit"]');
+                
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang lưu...';
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'HX-Request': 'true'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Update timeline
+                    timelineWrapper.innerHTML = html;
+                    
+                    // Close modal
+                    modalInstance.hide();
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Show success message
+                    alert('Thêm hợp đồng thành công!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi lưu hợp đồng!');
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i>Lưu Hợp đồng';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
+
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -150,87 +206,53 @@
                     <div class="col-12">
                         <h2 class="h5 mb-4 text-center border-bottom pb-2">Dòng thời gian thuê nhà</h2>
                         
-                        <ul class="timeline">
-                            <li class="timeline-item">
-                                <div class="timeline-badge bg-primary">
-                                    <span class="fas fa-file-signature"></span>
-                                </div>
-                                
-                                <div class="timeline-panel card shadow-sm mb-3 border-primary">
-                                    <div class="card-body text-center">
-                                        <h5 class="card-title text-primary">Bắt đầu một Hợp đồng mới?</h5>
-                                        <p class="card-text text-muted mb-3">
-                                            Tạo bản ghi hợp đồng tiếp theo hoặc hợp đồng thuê đầu tiên cho nhà trọ này.
-                                        </p>
-                                        
-                                        <a href="{% url 'create_hr' id %}" 
-                                        class="btn btn-primary bg-primary btn-sm text-white animate-up-2">
-                                            <span class="fas fa-plus-circle me-2"></span> Tạo Hợp đồng Mới Ngay
-                                        </a>
-                                    </div>
-                                </div>
-                            </li>
-                            {% if hrs %}
-                                {% for record in hrs reversed %} 
-                                    
-                                    <li class="timeline-item">
-                                        <div class="timeline-badge bg-{% if record.active %}success{% else %}danger{% endif %}"><span class="fas fa-home"></span></div>
-                                        
-                                        <div class="timeline-panel card shadow-sm mb-3 border-{% if record.active %}success{% else %}danger{% endif %}">
-                                            <div class="card-header bg-light border-bottom-0 d-flex justify-content-between align-items-center">
-                                                <h5 class="mb-0 text-{% if record.active %}success{% else %}danger{% endif %}">
-                                                    {{ record.renter.hoten }}
-                                                    <span class="badge bg-{% if record.active %}success{% else %}danger{% endif %}">{% if record.active %}ĐANG THUÊ{% else %}ĐÃ KẾT THÚC{% endif %}</span>
-                                                </h5>
-                                                <small class="text-muted">
-                                                    <span class="fas fa-calendar-alt"></span> Bắt đầu: <strong>{{ record.rent_from|date:"d/m/Y" }}</strong>
-                                                </small>
-                                            </div>
-                                            <div class="card-body">
-                                                <p class="card-text mb-1">
-                                                    <span class="fas fa-map-marker-alt"></span> **Nhà trọ:** {{ record.house.ten|default:"[Chưa có Tên]" }}
-                                                </p>
-                                                <p class="card-text mb-1">
-                                                    <span class="fas fa-phone-alt"></span> **Liên hệ:** {{ record.renter.sdt }} | **CCCD:** {{ record.renter.cccd }}
-                                                </p>
-                                                
-                                                <p class="card-text mb-1">
-                                                    <span class="fas fa-money-bill-wave"></span> **Giá thuê:** {{ record.house.permonth|intcomma }} VNĐ/tháng
-                                                </p>
-
-                                                {% if not record.active %}
-                                                    <p class="card-text mb-0 text-danger">
-                                                        <span class="fas fa-clock"></span> **Kết thúc:** {{ record.rent_to|date:"d/m/Y" }}
-                                                    </p>
-                                                {% endif %}
-                                                
-                                                <hr class="my-2">
-                                                <div class="dropdown">
-                                                    <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                        <span class="icon icon-sm"><span class="fas fa-ellipsis-h icon-dark"></span></span> Tác vụ
-                                                    </button>
-                                                    <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
-                                                        <a class="dropdown-item edit_item" href=""> 
-                                                            <span class="fas fa-edit me-2"></span>Cập nhật
-                                                        </a>
-                                                        <a class="dropdown-item text-danger" href=""> 
-                                                            <span class="fas fa-trash-alt me-2"></span>Xóa
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            {% else %}
-                                <div class="alert alert-warning text-center mt-3">
-                                    Đây là nhà trọ chưa có lịch sử thuê. Hãy tạo hợp đồng đầu tiên!
-                                </div>
-                            {% endif %}
-                        </ul>
+                        <div
+                            id="hr-timeline-wrapper"
+                            hx-get="{% url 'hr_list_partial' id %}"
+                            hx-trigger="refresh-hr-list"
+                            hx-swap="innerHTML"
+                        >
+                            {% include 'sms/fragments/_hr_timeline_list.html' with hrs=hrs id=id %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+<!-- Modal: Tạo Hợp đồng Mới -->
+<div class="modal fade" id="createHRModal" tabindex="-1" aria-labelledby="createHRModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createHRModalLabel">
+                    <i class="fas fa-file-signature me-2"></i>Tạo Hợp đồng Thuê Mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createHRForm" method="post" action="{% url 'create_hr' id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        {% for field in forms %}
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Lưu Hợp đồng
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock content %}

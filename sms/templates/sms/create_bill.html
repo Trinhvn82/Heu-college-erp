@@ -32,12 +32,30 @@
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h5 class="mb-3">
+                        <span class="fas fa-file-invoice me-2"></span>
+                        {% if bill %}Cập nhật hóa đơn{% else %}Tạo hóa đơn mới{% endif %} - {{ house.ten }}
+                    </h5>
+                    
+                    <div class="alert alert-info mb-3">
+                        <span class="fas fa-info-circle me-2"></span>
+                        <strong>Lưu ý về Khách thuê:</strong> 
+                        Chọn khách thuê từng có hợp đồng với nhà này (bất kể hợp đồng đang active hay đã kết thúc). 
+                        Mặc định sẽ chọn khách thuê đang thuê hiện tại.
+                    </div>
+                    
                     <form action="" method="post" >
                         {% csrf_token %}
                         <div class="row">
                             {% for field in forms %}
                                 <div class="col-md-6 mb-3"> 
-                                    <div>{{ field.label_tag }}{{ field }}</div>
+                                    <div>
+                                        {{ field.label_tag }}
+                                        {{ field }}
+                                        {% if field.help_text %}
+                                        <small class="form-text text-muted d-block">{{ field.help_text }}</small>
+                                        {% endif %}
+                                    </div>
                                     {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
                                 </div>
                             {% endfor %}

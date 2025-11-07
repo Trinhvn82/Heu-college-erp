@@ -96,6 +96,7 @@
                   <th>#</th>
                   <th>Vị trí</th>
                   <th>Nhà Trọ</th>
+                  <th>Khách thuê</th>
                   <th>Mô tả</th>
                   <th>Tổng cộng</th>
                   <th>Đã trả</th>
@@ -112,6 +113,13 @@
                     <td>{{ forloop.counter0|add:page_obj.start_index }}</td>
                     <td class="text-wrap">{{ bill.house.loc.diachi }}</td>
                     <td class="text-wrap">{{ bill.house.ten }}</td>
+                    <td class="text-wrap">
+                      {% if bill.renter %}
+                        <span class="fas fa-user me-1"></span>{{ bill.renter.hoten }}
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
                     <td class="text-wrap">{{ bill.ten }}</td>
                     <td>{{ bill.TONG_CONG|intcomma }}</td>
                     <td>{{ bill.SO_TIEN_DA_TRA|intcomma }}</td>
@@ -130,20 +138,14 @@
                       {% endif %}
                     </td>
                     <td>
-                      <div class="dropdown">
-                        <button class="btn btn-link text-dark mr-2 dropdown-toggle m-0 p-0" data-bs-toggle="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          <span class="icon icon-sm"><span class="fas fa-ellipsis-h icon-dark"></span></span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end">
-                          <a class="dropdown-item" href="{% url 'bill_detail' bill_id=bill.id %}"><span class="fas fa-eye me-2"></span>Chi tiết</a>
-                          <a class="dropdown-item" href="{% url 'update_bill' bill_id=bill.id %}"><span class="fas fa-pen me-2"></span>Cập nhật</a>
-                        </div>
-                      </div>
+                      <a class="btn btn-sm btn-info" href="{% url 'bill_detail' bill_id=bill.id %}">
+                        <span class="fas fa-eye me-1"></span>Chi tiết
+                      </a>
                     </td>
                   </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="11" class="text-center">Không có hóa đơn phù hợp.</td>
+                    <td colspan="12" class="text-center">Không có hóa đơn phù hợp.</td>
                   </tr>
                 {% endfor %}
               </tbody>

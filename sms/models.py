@@ -392,6 +392,54 @@ class Thanhtoan(models.Model):
     def __str__(self):
         return self.ten
 
+# ==========================
+# Notifications & Issues
+# ==========================
+
+class Notification(models.Model):
+    TYPE_CHOICES = (
+        ('bill_created', 'Bill Created'),
+        ('payment_submitted', 'Payment Submitted'),
+        ('issue_reported', 'Issue Reported'),
+        ('issue_resolved', 'Issue Resolved'),
+        ('bill_commented', 'Bill Commented'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField(blank=True, null=True)
+    type = models.CharField(max_length=32, choices=TYPE_CHOICES)
+    target_url = models.CharField(max_length=255, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} -> {self.user}"
+
+
+class IssueReport(models.Model):
+    STATUS_CHOICES = (
+        ('new', 'Mới'),
+        ('in_progress', 'Đang xử lý'),
+        ('resolved', 'Đã xử lý'),
+    )
+    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='issues')
+    renter = models.ForeignKey(Renter, on_delete=models.CASCADE, related_name='issues')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.house.ten} - {self.title} ({self.get_status_display()})"
+
 class SvStatus(models.Model):
     ma = models.IntegerField(default= 1)
     ten = models.CharField(max_length=100)
@@ -722,6 +770,19 @@ class HouseRenter(models.Model):
         ordering = ["-id",]
     def __str__(self):
         return self.renter.hoten + " - " + self.house.loc.diachi
+
+# Ensure only one active contract per house at the model layer
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=HouseRenter)
+def ensure_single_active_contract(sender, instance: HouseRenter, created, **kwargs):
+    """When a contract is saved as active, deactivate all other active contracts of the same house.
+    Works on both create and update flows.
+    """
+    if instance.active and instance.house_id:
+        # Deactivate any other active contracts for this house
+        HouseRenter.objects.filter(house_id=instance.house_id, active=True).exclude(id=instance.id).update(active=False)
 
 class CtdtMonhoc(models.Model):
     #ten = models.CharField(max_length=100)
@@ -1157,3 +1218,116 @@ class Giayto_hs81(models.Model):
     history = HistoricalRecords()
     def __str__(self):
         return self.ten
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('bill_created', 'Bill Created'),
+        ('payment_submitted', 'Payment Submitted'),
+        ('issue_reported', 'Issue Reported'),
+        ('issue_resolved', 'Issue Resolved'),
+        ('bill_commented', 'Bill Commented'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sms_notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    target_url = models.CharField(max_length=500, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+
+
+class IssueReport(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'Mới'),
+        ('in_progress', 'Đang xử lý'),
+        ('pending_confirmation', 'Chờ xác nhận'),
+        ('resolved', 'Đã xử lý'),
+        ('rejected', 'Chưa xong'),
+    ]
+    
+    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='issues')
+    renter = models.ForeignKey(Renter, on_delete=models.CASCADE, related_name='reported_issues')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.house.ten} - {self.title}"
+
+
+class IssueImage(models.Model):
+    """Images attached to issue reports"""
+    issue = models.ForeignKey(IssueReport, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='issues/%Y/%m/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    caption = models.CharField(max_length=200, blank=True)
+    
+    def __str__(self):
+        return f"Image for {self.issue.title}"
+
+
+class IssueComment(models.Model):
+    """Comments and replies on issues"""
+    issue = models.ForeignKey(IssueReport, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.issue.title}"
+
+
+class IssueStatusHistory(models.Model):
+    """Track status changes for issues"""
+    issue = models.ForeignKey(IssueReport, on_delete=models.CASCADE, related_name='status_history')
+    old_status = models.CharField(max_length=20, choices=IssueReport.STATUS_CHOICES)
+    new_status = models.CharField(max_length=20, choices=IssueReport.STATUS_CHOICES)
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    note = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-changed_at']
+        verbose_name_plural = 'Issue status histories'
+    
+    def __str__(self):
+        return f"{self.issue.title}: {self.old_status} → {self.new_status}"
+
+
+# ==========================
+# Bill Comments
+# ==========================
+class BillComment(models.Model):
+    """Comments and replies on bills (Hoadon)"""
+    bill = models.ForeignKey(Hoadon, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Bill #{self.bill_id} - {self.user.username}: {self.comment[:30]}"

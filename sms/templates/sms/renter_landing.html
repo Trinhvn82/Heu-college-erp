@@ -1,0 +1,569 @@
+{% extends "layouts/landing.html" %}
+{% load static %}
+
+{% block title %}Chào mừng - Hệ thống Quản lý Nhà trọ{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    body {
+        font-family: 'Inter', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 80px 0;
+        margin-top: -1px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .hero-section p.lead {
+        font-size: 1.5rem;
+        opacity: 0.95;
+        margin-bottom: 2rem;
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    .feature-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        color: #667eea;
+    }
+    
+    .feature-card h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+    
+    .feature-card p {
+        color: #718096;
+        line-height: 1.8;
+        margin-bottom: 0;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        padding: 60px 0;
+        background: white;
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 2rem;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 20%);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: scale(1.05);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #718096;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: var(--success-gradient);
+        color: white;
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 15s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(180deg); }
+    }
+    
+    .cta-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .cta-section h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    .btn-cta {
+        padding: 1rem 3rem;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        background: white;
+        color: #11998e;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cta:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        color: #11998e;
+    }
+    
+    /* Services Grid */
+    .services-section {
+        padding: 80px 0;
+        background: linear-gradient(180deg, #f5f7fa 0%, white 100%);
+    }
+    
+    .section-title {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+    
+    .section-title h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+    }
+    
+    .section-title h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+    }
+    
+    .section-title p {
+        color: #718096;
+        font-size: 1.2rem;
+    }
+    
+    /* Benefits List */
+    .benefits-section {
+        padding: 80px 0;
+        background: white;
+    }
+    
+    .benefit-item {
+        display: flex;
+        align-items: start;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .benefit-item:hover {
+        background: #f7fafc;
+        transform: translateX(10px);
+    }
+    
+    .benefit-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .benefit-content h4 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .benefit-content p {
+        color: #718096;
+        margin-bottom: 0;
+    }
+    
+    /* Floating Animation */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    .floating {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2.5rem;
+        }
+        
+        .hero-section p.lead {
+            font-size: 1.2rem;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="animate__animated animate__fadeInLeft">
+                    Chào mừng đến với<br>
+                    <span style="color: #ffd700;">Hệ thống Quản lý Nhà trọ</span>
+                </h1>
+                <p class="lead animate__animated animate__fadeInLeft animate__delay-1s">
+                    Giải pháp toàn diện giúp bạn quản lý nhà trọ dễ dàng, hiệu quả và chuyên nghiệp
+                </p>
+                <div class="animate__animated animate__fadeInUp animate__delay-2s">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'loc_list' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow-lg">
+                            <span class="fas fa-building me-2"></span>Vào hệ thống
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow-lg me-3">
+                            <span class="fas fa-sign-in-alt me-2"></span>Đăng nhập
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill">
+                            <span class="fas fa-arrow-down me-2"></span>Tìm hiểu thêm
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <div class="floating">
+                    <i class="fas fa-home" style="font-size: 15rem; opacity: 0.2;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_locations }}+</div>
+                    <div class="stat-label">Vị trí quản lý</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_houses }}+</div>
+                    <div class="stat-label">Nhà/Phòng trọ</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.total_renters }}+</div>
+                    <div class="stat-label">Khách thuê</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stat-card">
+                    <div class="stat-number">{{ stats.revenue_month|floatformat:0 }}</div>
+                    <div class="stat-label">Doanh thu tháng (VNĐ)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="services-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Tính năng nổi bật</h2>
+            <p>Mọi thứ bạn cần để quản lý nhà trọ hiệu quả</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Quản lý Vị trí</h3>
+                    <p>
+                        Quản lý nhiều vị trí nhà trọ với thông tin chi tiết, địa chỉ, 
+                        hình ảnh và bản đồ tích hợp Google Maps.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3>Quản lý Phòng trọ</h3>
+                    <p>
+                        Theo dõi thông tin từng phòng trọ, tình trạng thuê, 
+                        giá cả và các tiện ích đi kèm một cách dễ dàng.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Quản lý Khách thuê</h3>
+                    <p>
+                        Lưu trữ đầy đủ thông tin khách thuê, lịch sử hợp đồng, 
+                        thanh toán và liên hệ nhanh chóng.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                    <h3>Hóa đơn & Thanh toán</h3>
+                    <p>
+                        Tạo hóa đơn tự động, theo dõi thanh toán, 
+                        công nợ và lịch sử giao dịch chi tiết.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Thống kê & Báo cáo</h3>
+                    <p>
+                        Dashboard trực quan với biểu đồ, thống kê doanh thu, 
+                        công nợ và hiệu suất kinh doanh.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Responsive Design</h3>
+                    <p>
+                        Giao diện thân thiện, hoạt động mượt mà trên mọi 
+                        thiết bị: máy tính, tablet và điện thoại.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="benefits-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Tại sao chọn chúng tôi?</h2>
+            <p>Những lợi ích vượt trội khi sử dụng hệ thống</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Tiết kiệm thời gian</h4>
+                        <p>Tự động hóa các tác vụ lặp đi lặp lại, giảm thiểu công việc thủ công</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>An toàn & Bảo mật</h4>
+                        <p>Dữ liệu được mã hóa và bảo vệ an toàn với công nghệ hiện đại</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Cập nhật liên tục</h4>
+                        <p>Thường xuyên cập nhật tính năng mới và cải thiện trải nghiệm</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Tối ưu chi phí</h4>
+                        <p>Giảm chi phí quản lý, tăng hiệu quả thu chi và doanh thu</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Hỗ trợ 24/7</h4>
+                        <p>Đội ngũ hỗ trợ luôn sẵn sàng giải đáp mọi thắc mắc của bạn</p>
+                    </div>
+                </div>
+                
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Dễ dàng sử dụng</h4>
+                        <p>Giao diện trực quan, thân thiện, không cần đào tạo phức tạp</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not user.is_authenticated %}
+<section class="cta-section">
+    <div class="container cta-content">
+        <h2 class="animate__animated animate__fadeInUp">
+            Sẵn sàng bắt đầu?
+        </h2>
+        <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+            Đăng nhập ngay để trải nghiệm hệ thống quản lý nhà trọ hiện đại
+        </p>
+        <a href="{% url 'login' %}" class="btn btn-cta animate__animated animate__fadeInUp animate__delay-2s">
+            <span class="fas fa-sign-in-alt me-2"></span>Đăng nhập ngay
+        </a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -632,6 +632,15 @@ class CreateDiem(forms.ModelForm):
 # FORM TẠO/CẬP NHẬT HÓA ĐƠN MỚI
 # ==========================================================
 class CreateHoaDonForm(forms.ModelForm):
+    # Thêm field renter với queryset động
+    renter = forms.ModelChoiceField(
+        queryset=Renter.objects.none(),  # Sẽ được set trong __init__
+        label="Khách thuê",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        help_text="Chọn khách thuê đang thuê nhà này (nếu có)"
+    )
+    
     # Định nghĩa lại các trường số cần format JS là CharField
     tienthuenha = forms.CharField(
         label="Tiền thuê nhà(VNĐ)",
@@ -718,6 +727,61 @@ class CreateHoaDonForm(forms.ModelForm):
             
                 
         return cleaned_data
+    
+    def clean_renter(self):
+        """Validate renter: nếu chọn renter, phải có hợp đồng với house này"""
+        renter = self.cleaned_data.get('renter')
+        
+        # Nếu không chọn renter thì OK (field là optional)
+        if not renter:
+            return renter
+        
+        # Nếu chọn renter, cần có house context để validate
+        # House được lưu trong instance khi edit, hoặc cần check từ view
+        # Vì form được init với house, ta cần lưu house vào form instance
+        if hasattr(self, '_house'):
+            house = self._house
+            # Kiểm tra renter có hợp đồng với house này không
+            has_contract = HouseRenter.objects.filter(house=house, renter=renter).exists()
+            if not has_contract:
+                raise forms.ValidationError(
+                    f"Khách thuê '{renter.hoten}' không có hợp đồng nào với nhà '{house.ten}'. "
+                    f"Vui lòng chọn khách thuê khác hoặc để trống."
+                )
+        
+        return renter
+    
+    def __init__(self, *args, **kwargs):
+        # Nhận house từ view để filter renter
+        house = kwargs.pop('house', None)
+        super().__init__(*args, **kwargs)
+        
+        # Lưu house vào form để dùng trong clean_renter
+        self._house = house
+        
+        if house:
+            # Lấy TẤT CẢ renter từng có hợp đồng với house này (bất kể active hay không)
+            all_contracts = HouseRenter.objects.filter(house=house).select_related('renter')
+            
+            if all_contracts.exists():
+                # Lấy danh sách renter_id từ tất cả hợp đồng (distinct để tránh trùng)
+                renter_ids = all_contracts.values_list('renter_id', flat=True).distinct()
+                self.fields['renter'].queryset = Renter.objects.filter(id__in=renter_ids).order_by('-id')
+                
+                # Set default là renter có hợp đồng ACTIVE (nếu có)
+                active_contract = all_contracts.filter(active=True).first()
+                if active_contract:
+                    self.fields['renter'].initial = active_contract.renter
+                else:
+                    # Nếu không có active, chọn hợp đồng gần nhất
+                    self.fields['renter'].initial = all_contracts.order_by('-rent_from').first().renter
+                
+                # Cập nhật help text để người dùng biết
+                self.fields['renter'].help_text = "Danh sách khách thuê từng có hợp đồng với nhà này"
+            else:
+                # Không có hợp đồng nào, hiển thị tất cả renter của chủ nhà
+                self.fields['renter'].queryset = Renter.objects.filter(chu_id=house.loc.chu_id).order_by('-id')
+                self.fields['renter'].help_text = "Chọn khách thuê (nhà này chưa có hợp đồng nào)"
     
 class CreateThanhToanForm(forms.ModelForm):
     # Dùng CharField để xử lý định dạng dấu chấm của JS

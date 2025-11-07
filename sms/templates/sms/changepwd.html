@@ -1,64 +1,168 @@
-{% extends "layouts/base.html" %}
+{% extends "layouts/rental_base.html" %}
 {% load static %}
 
-{% block title %} Tạo CTĐT {% endblock %}
+{% block title %}Đổi mật khẩu{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Đổi mật khẩu</li>
+{% endblock %}
 
 {% block content %}
-
-    <main class="content">
-        <script type="text/javascript">
-            function reveal()
-            {
-            if(document.getElementById('box').checked)
-               document.getElementById("id_password").type='text';
-            else
-                document.getElementById("id_password").type='password';
-            }
-        </script> 
-
-        {% include 'includes/navigation.html' %}
-
-        <div class="preloader bg-soft flex-column justify-content-center align-items-center">
-            <img class="loader-element animate__animated animate__jackInTheBox"
-                 src="{% static 'assets/img/brand/light.svg' %}" height="60" alt="Volt logo">
-        </div>
-
-        <div class="py-4">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
-                    <li class="breadcrumb-item"><a href="#"><span class="fas fa-home"></span></a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Change Password</li>
-                </ol>
-            </nav>
-        </div>
-
-        <div class="row item-row">
-            <div class="col-12">
-                <div class="card card-body bg-white border-light shadow-sm mb-4">
-                    <p class="text-muted">Change password</p>
-                    <form action="" method="POST">
-                        {% csrf_token %}
-                        
-                        <div class="col-md-6 mb-3">
-                                <input type="password" name="password" class="form-control" placeholder="Password" required id="id_password">
-                            </div>
-                        
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" id="box"  onclick ="reveal()">
-                                      Show Password
-                                </div>
-                            </div>
-
-                        <div class="row">
-                            <div class="col-6">
-                                <input type="submit" class="btn btn-primary px-4" value="Submit">
-                            </div>
-                        </div>
-                    </form>
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3">
+                <h4 class="mb-0">
+                    <span class="fas fa-key text-primary me-2"></span>
+                    Đổi mật khẩu
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info mb-4">
+                    <span class="fas fa-info-circle me-2"></span>
+                    Vui lòng nhập mật khẩu mới cho tài khoản <strong>{{ user.username }}</strong>
                 </div>
+
+                <form method="POST" id="changePasswordForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="current_password" class="form-label">
+                            <span class="fas fa-lock me-2"></span>Mật khẩu hiện tại <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-shield-alt"></i></span>
+                            <input type="password" 
+                                   name="current_password" 
+                                   class="form-control" 
+                                   id="current_password"
+                                   placeholder="Nhập mật khẩu hiện tại"
+                                   required>
+                        </div>
+                        <small class="text-muted">Xác nhận danh tính của bạn</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="new_password" class="form-label">
+                            <span class="fas fa-key me-2"></span>Mật khẩu mới <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" 
+                                   name="password" 
+                                   class="form-control" 
+                                   id="new_password"
+                                   placeholder="Nhập mật khẩu mới"
+                                   required
+                                   minlength="6">
+                        </div>
+                        <small class="text-muted">Tối thiểu 6 ký tự</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirm_password" class="form-label">
+                            <span class="fas fa-check-circle me-2"></span>Xác nhận mật khẩu <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-check"></i></span>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="confirm_password"
+                                   placeholder="Nhập lại mật khẩu mới"
+                                   required
+                                   minlength="6">
+                        </div>
+                        <small class="text-muted">Nhập lại để xác nhận</small>
+                        <div class="invalid-feedback" id="password-mismatch">
+                            Mật khẩu xác nhận không khớp!
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" 
+                               type="checkbox" 
+                               id="showPasswords"
+                               onchange="togglePasswordVisibility()">
+                        <label class="form-check-label" for="showPasswords">
+                            <span class="fas fa-eye me-1"></span>Hiển thị mật khẩu
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="fas fa-save me-2"></span>Đổi mật khẩu
+                        </button>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                            <span class="fas fa-arrow-left me-2"></span>Quay lại
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
-    </main>
 
-{% endblock content %}
+        <!-- Security Tips -->
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body">
+                <h6 class="mb-3">
+                    <span class="fas fa-shield-alt text-success me-2"></span>
+                    Mẹo bảo mật
+                </h6>
+                <ul class="small text-muted mb-0">
+                    <li>Sử dụng mật khẩu mạnh với ít nhất 8 ký tự</li>
+                    <li>Kết hợp chữ hoa, chữ thường, số và ký tự đặc biệt</li>
+                    <li>Không sử dụng thông tin cá nhân dễ đoán</li>
+                    <li>Đổi mật khẩu thường xuyên để bảo mật tài khoản</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePasswordVisibility() {
+    const checkbox = document.getElementById('showPasswords');
+    const currentPassword = document.getElementById('current_password');
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    const type = checkbox.checked ? 'text' : 'password';
+    currentPassword.type = type;
+    newPassword.type = type;
+    confirmPassword.type = type;
+}
+
+// Validate password match before submit
+document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const mismatchDiv = document.getElementById('password-mismatch');
+    
+    if (newPassword.value !== confirmPassword.value) {
+        e.preventDefault();
+        confirmPassword.classList.add('is-invalid');
+        mismatchDiv.style.display = 'block';
+        return false;
+    } else {
+        confirmPassword.classList.remove('is-invalid');
+        mismatchDiv.style.display = 'none';
+    }
+});
+
+// Remove invalid state when user types
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const mismatchDiv = document.getElementById('password-mismatch');
+    
+    if (newPassword.value === confirmPassword.value) {
+        confirmPassword.classList.remove('is-invalid');
+        confirmPassword.classList.add('is-valid');
+        mismatchDiv.style.display = 'none';
+    } else {
+        confirmPassword.classList.add('is-invalid');
+        confirmPassword.classList.remove('is-valid');
+        mismatchDiv.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}

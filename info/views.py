@@ -634,14 +634,34 @@ def add_renteruser(request, id):
     return redirect("renter_list")
 
 @login_required
+@login_required
 def user_changepwd(request):
-
     if request.method == "POST":
-        user = User.objects.get(username = request.user.username)
-        user.set_password(request.POST.get('password', None))
-        user.save()    
-        messages.success(request, "Thay doi password thanh cong!")
-        return redirect("lop_list")
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('password', '')
+        
+        # Kiểm tra mật khẩu hiện tại
+        if not request.user.check_password(current_password):
+            messages.error(request, "Mật khẩu hiện tại không đúng!")
+            return render(request, "sms/changepwd.html")
+        
+        # Kiểm tra mật khẩu mới không được trống
+        if not new_password or len(new_password) < 6:
+            messages.error(request, "Mật khẩu mới phải có ít nhất 6 ký tự!")
+            return render(request, "sms/changepwd.html")
+        
+        # Đổi mật khẩu
+        user = request.user
+        user.set_password(new_password)
+        user.save()
+        
+        # Update session để không bị logout
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        
+        messages.success(request, "Đổi mật khẩu thành công!")
+        return redirect("loc_list")
+    
     return render(request, "sms/changepwd.html")
 
 def signup(request):

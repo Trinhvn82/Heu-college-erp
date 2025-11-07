@@ -1,0 +1,299 @@
+{% extends "layouts/renter_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Chi tiết sự cố{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'renter_dashboard' %}"><i class="fas fa-home"></i></a></li>
+        <li class="breadcrumb-item"><a href="{% url 'renter_issues' %}">Sự cố</a></li>
+        <li class="breadcrumb-item active">Chi tiết #{{ issue.id }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+        <div class="d-block mb-4 mb-md-0">
+            <h2 class="h4">Chi tiết sự cố</h2>
+            <p class="mb-0">{{ issue.title }}</p>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'renter_issues' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabInfo">
+                                <i class="fas fa-info-circle me-1"></i>Thông tin
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabImages">
+                                <i class="fas fa-images me-1"></i>Hình ảnh <span class="badge bg-secondary text-white">{{ images|length }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabComments">
+                                <i class="fas fa-comments me-1"></i>Bình luận <span class="badge bg-secondary text-white">{{ comments|length }}</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabHistory">
+                                <i class="fas fa-history me-1"></i>Lịch sử
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Tab: Info -->
+                        <div class="tab-pane fade show active" id="tabInfo">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="mb-1">{{ issue.title }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-home me-1"></i>{{ issue.house.ten }} | 
+                                                <i class="fas fa-user me-1"></i>{{ issue.renter.hoten }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            {% if issue.status == 'new' %}
+                                                <span class="badge bg-warning text-dark">Mới</span>
+                                            {% elif issue.status == 'in_progress' %}
+                                                <span class="badge bg-info text-white">Đang xử lý</span>
+                                            {% elif issue.status == 'pending_confirmation' %}
+                                                <span class="badge bg-primary text-white">Chờ xác nhận</span>
+                                            {% elif issue.status == 'resolved' %}
+                                                <span class="badge bg-success text-white">Đã xử lý</span>
+                                            {% elif issue.status == 'rejected' %}
+                                                <span class="badge bg-danger text-white">Chưa xong</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-muted">Mô tả</label>
+                                    <p class="mb-0" style="white-space: pre-wrap;">{{ issue.description }}</p>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-muted">Thời gian báo cáo</label>
+                                    <p class="mb-0">
+                                        <i class="fas fa-clock me-1"></i>{{ issue.created_at|date:'d/m/Y H:i' }}
+                                    </p>
+                                </div>
+
+                                {% if issue.resolved_at %}
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small text-muted">Thời gian xử lý xong</label>
+                                    <p class="mb-0 text-success">
+                                        <i class="fas fa-check-circle me-1"></i>{{ issue.resolved_at|date:'d/m/Y H:i' }}
+                                    </p>
+                                </div>
+                                {% endif %}
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-muted">Cập nhật lần cuối</label>
+                                    <p class="mb-0">{{ issue.updated_at|date:'d/m/Y H:i' }}</p>
+                                </div>
+
+                                {% if is_renter and issue.status == 'pending_confirmation' %}
+                                <div class="col-12">
+                                    <div class="alert alert-warning">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-check-circle fa-2x me-3 text-warning"></i>
+                                            <div>
+                                                <strong>Chủ nhà đã đánh dấu đã xử lý xong</strong>
+                                                <p class="mb-0 small">Vui lòng kiểm tra và xác nhận bằng các nút ở phía dưới.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if is_landlord and issue.status != 'resolved' and issue.status != 'pending_confirmation' %}
+                                <div class="col-12">
+                                    <form method="post" action="{% url 'change_issue_status' issue.id %}">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <select name="status" class="form-select">
+                                                <option value="in_progress" {% if issue.status == 'in_progress' %}selected{% endif %}>Đang xử lý</option>
+                                                <option value="resolved">Đã xử lý</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-1"></i>Cập nhật trạng thái
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Tab: Images -->
+                        <div class="tab-pane fade" id="tabImages">
+                            {% if images %}
+                                <div class="row g-2">
+                                    {% for img in images %}
+                                    <div class="col-md-4">
+                                        <a href="{{ img.image.url }}" target="_blank">
+                                            <img src="{{ img.image.url }}" class="img-fluid rounded" alt="{{ img.caption }}">
+                                        </a>
+                                        {% if img.caption %}
+                                        <small class="text-muted d-block mt-1">{{ img.caption }}</small>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-image fa-2x mb-2"></i>
+                                    <p>Chưa có hình ảnh nào</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Tab: Comments -->
+                        <div class="tab-pane fade" id="tabComments">
+                            <div id="commentsList">
+                                {% for comment in comments %}
+                                    {% include 'sms/partials/comment_item.html' with comment=comment is_landlord=is_landlord %}
+                                {% empty %}
+                                    <div class="text-center text-muted py-3">
+                                        <i class="fas fa-comments fa-2x mb-2"></i>
+                                        <p>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Comment form -->
+                            <form method="post" 
+                                  action="{% url 'add_issue_comment' issue.id %}"
+                                  hx-post="{% url 'add_issue_comment' issue.id %}"
+                                  hx-target="#commentsList"
+                                  hx-swap="beforeend"
+                                  hx-on::after-request="this.reset()"
+                                  class="mt-3">
+                                {% csrf_token %}
+                                <div class="mb-2">
+                                    {{ comment_form.comment }}
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>Gửi bình luận
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Tab: History -->
+                        <div class="tab-pane fade" id="tabHistory">
+                            {% if status_history %}
+                                <div class="timeline">
+                                    {% for h in status_history %}
+                                    <div class="d-flex mb-3">
+                                        <div class="me-3">
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" 
+                                                 style="width: 36px; height: 36px;">
+                                                <i class="fas fa-exchange-alt"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between">
+                                                <strong>{{ h.changed_by.username }}</strong>
+                                                <small class="text-muted">{{ h.changed_at|date:'d/m/Y H:i' }}</small>
+                                            </div>
+                                            <p class="mb-0">
+                                                Đã chuyển từ 
+                                                <span class="badge bg-secondary text-white">{{ h.get_old_status_display }}</span>
+                                                sang 
+                                                <span class="badge bg-primary text-white">{{ h.get_new_status_display }}</span>
+                                            </p>
+                                            {% if h.note %}
+                                            <small class="text-muted">{{ h.note }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-history fa-2x mb-2"></i>
+                                    <p>Chưa có lịch sử thay đổi</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if is_landlord and issue.status != 'resolved' and issue.status != 'pending_confirmation' %}
+                                <a href="{% url 'resolve_issue' issue.id %}" class="btn btn-success">
+                                    <i class="fas fa-check me-1"></i>Đánh dấu đã xử lý
+                                </a>
+                            {% endif %}
+                            
+                            {% if is_renter and issue.status == 'pending_confirmation' %}
+                                <a href="{% url 'renter_confirm_issue' issue.id %}" class="btn btn-success me-2">
+                                    <i class="fas fa-check-circle me-1"></i>Xác nhận đã xong
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                    <i class="fas fa-times-circle me-1"></i>Chưa xong
+                                </button>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{% url 'renter_issues' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Từ chối xác nhận -->
+{% if is_renter and issue.status == 'pending_confirmation' %}
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Báo cáo chưa xong</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'change_issue_status' issue.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="rejected">
+                <div class="modal-body">
+                    <p>Bạn có chắc muốn báo cáo sự cố này vẫn chưa được xử lý xong?</p>
+                    <div class="mb-3">
+                        <label class="form-label">Lý do (tùy chọn)</label>
+                        <textarea name="note" class="form-control" rows="3" placeholder="Mô tả lý do tại sao chưa xong..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận chưa xong</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

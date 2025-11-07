@@ -10,9 +10,14 @@ from htmx_patterns.views.gv_lmh import view_gv_lmh_search, view_gv_lmh
 
 from htmx_patterns.views.notifications import live_tester, make_notification
 from sms.tasks import create_tbs
+from . import views as sms_views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('welcome/', views.renter_landing, name='renter_landing'),
+    path('renter/dashboard/', views.renter_dashboard, name='renter_dashboard'),
+    path('renter/bills/', views.renter_bills, name='renter_bills'),
+    path('renter/locations/', views.renter_locations, name='renter_locations'),
     #path('alllop/', views.lop_list, name='lop_list'),
     #path('', views.index, name='t_clas'),
     path('teacher/<slug:teacher_id>/<int:choice>/Classes/',
@@ -172,9 +177,14 @@ urlpatterns = [
     path('upload-lmh/<int:lmh_id>/', views.upload_file_lmh, name='upload_file_lmh'),
 
     path('upload-loc/<int:loc_id>/', views.upload_file_loc, name='upload_file_loc'),
-    path('view-loc/<int:loc_id>/', views.view_loc, name='view_loc'),
-    path('create-hr/<int:id>/', views.create_hr, name='create_hr'),
+     path('view-loc/<int:loc_id>/', views.view_loc, name='view_loc'),
+     path('houses/', views.houses, name='houses'),
+     path('houses/partial/', views.houses_partial, name='houses_partial'),
+     path('create-hr/<int:id>/', views.create_hr, name='create_hr'),
     path('hr-list/<int:id>/', views.hr_list, name='hr_list'),
+     path('hr-list-partial/<int:id>/', views.hr_list_partial, name='hr_list_partial'),
+     path('hr-toggle-active/<int:hr_id>/', views.hr_toggle_active, name='hr_toggle_active'),
+     path('hr-delete/<int:hr_id>/', views.hr_delete, name='hr_delete'),
   #  path('upload-house/<int:house_id>/', views.upload_file_house, name='upload_file_house'),
 
     path('hoclai-lmh/<int:lmh_id>/', views.hoclai_list, name='hoclai_list'),
@@ -222,6 +232,7 @@ urlpatterns = [
     path('location/<int:loc_id>/bills/', views.bill_list_view, name='bill_list'),
     path('house/<int:house_id>/create-bill/', views.create_bill_view, name='create_bill'),
     path('bill/<int:bill_id>/detail/', views.bill_detail_view, name='bill_detail'),
+     path('bill/<int:bill_id>/comment/', sms_views.add_bill_comment, name='add_bill_comment'),
     path('bill/<int:bill_id>/update/', views.update_bill_view, name='update_bill'),
     # bill payment
     path('bill/<int:bill_id>/add-payment/', views.add_payment, name='add_payment'),
@@ -239,6 +250,23 @@ urlpatterns = [
      path('api/locations/<int:loc_id>/houses/', views.api_houses_by_location, name='api_houses_by_location'),
     #path('bill/<int:bill_id>/excel/', views.generate_bill_excel, name='generate_bill_excel'),
     path('bill/<int:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf'),
+
+     # Notifications & Issues
+     path('notifications/list/', sms_views.notifications_list, name='notifications_list'),
+     path('notifications/badge/', sms_views.notification_badge, name='notification_badge'),
+     path('notifications/<int:notification_id>/read/', sms_views.mark_notification_read, name='mark_notification_read'),
+     # Renter issues
+     path('renter/issues/', sms_views.renter_issue_list, name='renter_issues'),
+     path('issues/report/', sms_views.renter_report_issue, name='renter_report_issue'),
+     # Landlord issues
+     path('issues/', sms_views.issue_list, name='issue_list'),
+     path('issues/<int:issue_id>/', sms_views.issue_detail, name='issue_detail'),
+     path('issues/<int:issue_id>/modal/', sms_views.issue_detail_modal, name='issue_detail_modal'),
+     path('issues/<int:issue_id>/comment/', sms_views.add_issue_comment, name='add_issue_comment'),
+     path('issues/<int:issue_id>/status/', sms_views.change_issue_status, name='change_issue_status'),
+     path('issues/<int:issue_id>/resolve/', sms_views.resolve_issue, name='resolve_issue'),
+     path('issues/<int:issue_id>/confirm/', sms_views.renter_confirm_issue, name='renter_confirm_issue'),
+     path('issues/bulk-status/', sms_views.bulk_change_issue_status, name='bulk_change_issue_status'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

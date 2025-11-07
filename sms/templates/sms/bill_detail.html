@@ -1,4 +1,4 @@
-{% extends "layouts/rental_base.html" %}
+{% extends base_template %}
 {% load static %}
 {% load humanize %}
 
@@ -21,27 +21,41 @@
 {% block title %}Chi tiết Hóa đơn{% endblock %}
 
 {% block breadcrumb_items %}
+{% if is_renter_view %}
+<li class="breadcrumb-item"><a href="{% url 'renter_bills' %}">Hóa đơn</a></li>
+{% else %}
 <li class="breadcrumb-item"><a href="{% url 'invoice_search' %}">Hóa đơn</a></li>
-<li class="breadcrumb-item active">Chi tiết #{{ bill.id }}</li>
+{% endif %}
+<li class="breadcrumb-item active">Chi tiết #{{ hoadon.id }}</li>
 {% endblock %}
 
 {% block content %}
-                <li class="breadcrumb-item"><a href="{% url 'bill_list' loc_id=loc_id %}">Danh sách Hóa đơn</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Chi tiết Hóa đơn</li>
-            </ol>
-        </div>
-        <div class="btn-group">
-            <a href="{% url 'generate_bill_pdf' bill_id=hoadon.id %}" class="btn btn-success animate-up-2" target="_blank">
-                <span class="fas fa-file-pdf me-2"></span> Tải về PDF
-            </a>
-        </div>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Chi tiết Hóa đơn</h2>
+        <p class="mb-0">Danh sách Hóa đơn</p>
     </div>
+    <div class="btn-group">
+        <a href="{% url 'generate_bill_pdf' bill_id=hoadon.id %}" class="btn btn-success animate-up-2" target="_blank">
+            <span class="fas fa-file-pdf me-2"></span> Tải về PDF
+        </a>
+    </div>
+</div>
 
     <!-- First row: Bill and Payment details side by side -->
     <div class="row mb-4">
         <div class="col-lg-6">
             <div class="card card-body bg-white border-light shadow-sm h-100">
                 <h3 class="h5 mb-3 border-bottom pb-2">Hóa đơn: {{ hoadon.ten }} | {{ hoadon.house.ten }}</h3>
+                
+                {% if hoadon.renter %}
+                <div class="alert alert-light border mb-3 text-dark">
+                    <span class="fas fa-user me-2"></span><strong>Khách thuê:</strong> {{ hoadon.renter.hoten }}
+                    {% if hoadon.renter.sdt %}
+                    <br><span class="fas fa-phone me-2"></span><strong>SĐT:</strong> {{ hoadon.renter.sdt }}
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
@@ -108,9 +122,9 @@
                             <strong>Hóa đơn này đã được thanh toán đủ.</strong>
                     </div>
                 {% else %}
-                    <!-- Button to open modal for adding payment -->
+                    <!-- Button to open modal for adding payment (cả landlord và renter) -->
                     <button type="button" class="btn btn-primary animate-up-2" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                        <span class="fas fa-plus-circle me-2"></span> Ghi nhận Thanh toán
+                        <span class="fas fa-plus-circle me-2"></span> {% if is_renter_view %}Gửi thanh toán{% else %}Ghi nhận Thanh toán{% endif %}
                     </button>
                 {% endif %}
                 
@@ -135,8 +149,9 @@
                                 <span class="badge bg-{% if tt.status == 'Daxn'%}success{% elif tt.status == 'Choxn' %}warning{% else %}secondary{% endif %} text-dark">{%if tt.status == 'Daxn'%}Đã Xác nhận{% elif tt.status == 'Choxn' %}Chờ Xác nhận{% else %}Đã Hủy{% endif %}</span>
                             </span>
                             
+                            <span class="text-muted me-3">{{ tt.ngay_tao|date:"d/m/Y H:i" }}</span>
+                            {% if not is_renter_view %}
                             <span class="dropdown">
-                                <span class="text-muted me-3">{{ tt.ngay_tao|date:"d/m/Y H:i" }}</span>
                                 <button class="btn btn-link text-dark dropdown-toggle m-0 p-0" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     <span class="icon icon-sm"><span class="fas fa-ellipsis-h icon-dark"></span></span>
                                 </button>
@@ -154,6 +169,7 @@
                                     </a>
                                 </div>
                             </span>
+                            {% endif %}
                         </div>
                         <p class="small mb-0 text-dark">
                             Người tạo: {{ tt.user.username|default:"N/A" }} | Ghi chú: {{ tt.ghichu|default:"Không có" }}
@@ -238,6 +254,7 @@
                                                         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#fileModal-{{ file.id }}">
                                                             <span class="fas fa-eye me-2"></span> Xem
                                                         </a>
+                                                        {% if not is_renter_view %}
                                                         <div class="dropdown-divider"></div>
                                                         {% if perms.sms.delete_uploadedfile or file.user == user %}
                                                             <button type="button" class="dropdown-item text-danger confirm-delete-btn"
@@ -245,6 +262,7 @@
                                                                     data-file-name="{{ file.mota|default:file.file.name }}">
                                                                 <span class="fas fa-trash-alt me-2"></span> Xóa
                                                             </button>
+                                                        {% endif %}
                                                         {% endif %}
                                                     </div>
                                                 </div>
@@ -288,7 +306,9 @@
                             </div>
                         {% empty %}
                             <div class="col-12">
-                                <div class="alert alert-info small text-center m-3">Chưa có file minh chứng nào được tải lên.</div>
+                                <div class="alert alert-light border small text-center text-dark m-3">
+                                    <i class="fas fa-folder-open me-2"></i>Chưa có file minh chứng nào được tải lên.
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -297,17 +317,32 @@
         </div>
     </div>
 
-    <!-- Modal: Add Payment -->
+    <!-- Comments row -->
+    <div class="row">
+        <div class="col-12">
+            {% include 'sms/partials/bill_comments.html' %}
+        </div>
+    </div>
+
+    <!-- Modal: Add Payment (cả landlord và renter) -->
     <div class="modal fade" id="addPaymentModal" tabindex="-1" aria-labelledby="addPaymentModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addPaymentModalLabel">Ghi nhận Thanh toán</h5>
+                    <h5 class="modal-title" id="addPaymentModalLabel">
+                        {% if is_renter_view %}Gửi thanh toán{% else %}Ghi nhận Thanh toán{% endif %}
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="post" action="{% url 'add_payment' bill_id=hoadon.id %}">
                     {% csrf_token %}
                     <div class="modal-body">
+                        {% if is_renter_view %}
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Thanh toán của bạn sẽ ở trạng thái <strong>"Chờ xác nhận"</strong> cho đến khi chủ nhà xác nhận.
+                        </div>
+                        {% endif %}
                         <div class="mb-3">
                             <label for="{{ payment_form.tientt.id_for_label }}" class="form-label">{{ payment_form.tientt.label }}</label>
                             {{ payment_form.tientt }}
@@ -321,14 +356,17 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary">Ghi nhận Thanh toán</button>
+                        <button type="submit" class="btn btn-primary">
+                            {% if is_renter_view %}Gửi thanh toán{% else %}Ghi nhận Thanh toán{% endif %}
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Confirm Delete Modal -->
+    <!-- Confirm Delete Modal (chỉ landlord) -->
+    {% if not is_renter_view %}
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -349,8 +387,9 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
-    <!-- Upload Modal -->
+    <!-- Upload Modal (cả landlord và renter) -->
     <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">

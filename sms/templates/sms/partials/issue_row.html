@@ -1,0 +1,26 @@
+<tr class="new-issue-highlight cursor-pointer"
+    data-bs-toggle="modal" 
+    data-bs-target="#issueDetailModal"
+    hx-get="{% url 'issue_detail' i.id %}"
+    hx-target="#issueDetailModal .modal-content"
+    hx-swap="innerHTML"
+    style="cursor: pointer;">
+  <td class="text-nowrap">{{ i.created_at|date:'d/m/Y H:i' }}</td>
+  <td>{{ i.house.ten }}</td>
+  <td>{{ i.title }}</td>
+  <td>
+    {% if i.status == 'new' %}
+      <span class="badge bg-warning text-dark">Mới</span>
+    {% elif i.status == 'in_progress' %}
+      <span class="badge bg-info text-dark">Đang xử lý</span>
+    {% elif i.status == 'pending_confirmation' %}
+      <span class="badge bg-primary">Chờ xác nhận</span>
+    {% elif i.status == 'resolved' %}
+      <span class="badge bg-success">Đã xử lý</span>
+    {% elif i.status == 'rejected' %}
+      <span class="badge bg-danger">Chưa xong</span>
+    {% else %}
+      <span class="badge bg-secondary">{{ i.status }}</span>
+    {% endif %}
+  </td>
+</tr>

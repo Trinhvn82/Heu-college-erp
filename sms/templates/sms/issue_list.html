@@ -1,0 +1,142 @@
+{% extends 'layouts/rental_base.html' %}
+{% block title %}Sự cố{% endblock %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Sự cố</li>
+{% endblock %}
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="h5 mb-0"><span class="fas fa-wrench me-2"></span>Danh sách sự cố</h3>
+      <div id="bulkActions" class="d-none">
+        <form method="post" action="{% url 'bulk_change_issue_status' %}" class="d-inline-flex gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="issue_ids" id="selectedIssues">
+          <select name="status" class="form-select form-select-sm">
+            <option value="in_progress">Đang xử lý</option>
+            <option value="resolved">Đã xử lý</option>
+          </select>
+          <button type="submit" class="btn btn-sm btn-primary">
+            <i class="fas fa-check-double me-1"></i>Cập nhật <span id="selectedCount">0</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {% if issues %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle" id="issuesTable">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" class="form-check-input" id="selectAll">
+              </th>
+              <th>Thời gian</th>
+              <th>Nhà/Phòng</th>
+              <th>Khách thuê</th>
+              <th>Tiêu đề</th>
+              <th>Trạng thái</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in issues %}
+            <tr class="cursor-pointer"
+                data-bs-toggle="modal" 
+                data-bs-target="#issueDetailModal"
+                hx-get="{% url 'issue_detail' i.id %}"
+                hx-target="#issueDetailModal .modal-content"
+                hx-swap="innerHTML"
+                style="cursor: pointer;">
+              <td onclick="event.stopPropagation();">
+                <input type="checkbox" class="form-check-input issue-checkbox" value="{{ i.id }}" data-status="{{ i.status }}">
+              </td>
+              <td>{{ i.created_at|date:'d/m/Y H:i' }}</td>
+              <td>{{ i.house.ten }}</td>
+              <td>{{ i.renter.hoten }}</td>
+              <td>{{ i.title }}</td>
+              <td>
+                {% if i.status == 'resolved' %}
+                  <span class="badge bg-success">Đã xử lý</span>
+                {% elif i.status == 'pending_confirmation' %}
+                  <span class="badge bg-primary">Chờ xác nhận</span>
+                {% elif i.status == 'rejected' %}
+                  <span class="badge bg-danger">Chưa xong</span>
+                {% elif i.status == 'in_progress' %}
+                  <span class="badge bg-info">Đang xử lý</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark">Mới</span>
+                {% endif %}
+              </td>
+              <td class="text-end" onclick="event.stopPropagation();">
+                {% if i.status != 'resolved' and i.status != 'pending_confirmation' %}
+                  <a class="btn btn-sm btn-outline-success" href="{% url 'resolve_issue' i.id %}">
+                    <span class="fas fa-check me-1"></span>Xử lý xong
+                  </a>
+                {% elif i.status == 'pending_confirmation' %}
+                  <span class="badge bg-info text-white"><i class="fas fa-hourglass-half me-1"></i>Chờ xác nhận</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-center text-muted py-5">
+        <span class="fas fa-inbox fa-2x mb-2"></span>
+        <div>Chưa có sự cố nào</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal for issue detail -->
+<div class="modal fade" id="issueDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <!-- HTMX will load detail here -->
+    </div>
+  </div>
+</div>
+
+<script>
+// Select all checkbox
+document.getElementById('selectAll')?.addEventListener('change', function() {
+  const checkboxes = document.querySelectorAll('.issue-checkbox');
+  checkboxes.forEach(cb => cb.checked = this.checked);
+  updateBulkActions();
+});
+
+// Individual checkboxes
+document.querySelectorAll('.issue-checkbox').forEach(cb => {
+  cb.addEventListener('change', updateBulkActions);
+});
+
+function updateBulkActions() {
+  const checked = document.querySelectorAll('.issue-checkbox:checked');
+  const bulkActions = document.getElementById('bulkActions');
+  const selectedCount = document.getElementById('selectedCount');
+  const selectedIssues = document.getElementById('selectedIssues');
+  
+  if (checked.length > 0) {
+    bulkActions.classList.remove('d-none');
+    selectedCount.textContent = checked.length;
+    selectedIssues.value = Array.from(checked).map(cb => cb.value).join(',');
+  } else {
+    bulkActions.classList.add('d-none');
+  }
+}
+
+// Prevent row click when clicking checkbox
+document.querySelectorAll('.issue-checkbox').forEach(cb => {
+  cb.closest('td').addEventListener('click', e => e.stopPropagation());
+});
+</script>
+
+<style>
+  tr.cursor-pointer:hover {
+    background-color: #f8f9fa;
+  }
+</style>
+{% endblock %}

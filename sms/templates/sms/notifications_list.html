@@ -1,0 +1,224 @@
+{% extends 'layouts/renter_base.html' %}
+{% load humanize %}
+{% block title %}Thông báo{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Thông báo</li>
+{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h3 class="h5 mb-3"><span class="fas fa-bell me-2"></span>Thông báo của bạn</h3>
+    {% if items %}
+      <ul class="list-group list-group-flush">
+        {% for n in items %}
+          {% if not n.is_read %}
+            {# Chưa đọc - Nền sáng, viền xanh #}
+            <li class="list-group-item d-flex justify-content-between align-items-start bg-light border-start border-primary border-4">
+              <div class="me-auto">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="fw-bold">{{ n.title }}</div>
+                  <span class="badge bg-primary">Chưa đọc</span>
+                </div>
+                {% if n.message %}<div class="text-dark small mt-1">{{ n.message }}</div>{% endif %}
+                <div class="text-muted small mt-1">
+                  <i class="fas fa-clock me-1"></i>{{ n.created_at|date:'d/m/Y H:i' }}
+                </div>
+              </div>
+              {% if n.target_url %}
+                <button class="btn btn-sm btn-primary issue-modal-btn" 
+                        data-notification-id="{{ n.id }}"
+                        data-target-url="{{ n.target_url }}">
+                  <i class="fas fa-eye me-1"></i>Xem
+                </button>
+              {% endif %}
+            </li>
+          {% else %}
+            {# Đã đọc - Nền trắng, không viền #}
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+              <div class="me-auto">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="fw-normal text-muted">{{ n.title }}</div>
+                  <span class="badge bg-secondary">Đã đọc</span>
+                </div>
+                {% if n.message %}<div class="text-muted small mt-1">{{ n.message }}</div>{% endif %}
+                <div class="text-muted small mt-1">
+                  <i class="fas fa-clock me-1"></i>{{ n.created_at|date:'d/m/Y H:i' }}
+                </div>
+              </div>
+              {% if n.target_url %}
+                <button class="btn btn-sm btn-outline-secondary issue-modal-btn" 
+                        data-notification-id="{{ n.id }}"
+                        data-target-url="{{ n.target_url }}">
+                  <i class="fas fa-external-link-alt me-1"></i>Mở lại
+                </button>
+              {% endif %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="text-center text-muted py-5">
+        <span class="fas fa-inbox fa-2x mb-2"></span>
+        <div>Không có thông báo nào</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal for Issue Detail -->
+<div class="modal fade" id="issueModal" tabindex="-1" aria-labelledby="issueModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div id="issueModalContent">
+        <!-- Content will be loaded here -->
+        <div class="modal-body text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Event delegation for issue modal buttons
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.issue-modal-btn');
+  if (!btn) return;
+  
+  e.preventDefault();
+  console.log('Button clicked:', btn);
+  
+  const notificationId = btn.dataset.notificationId;
+  const targetUrl = btn.dataset.targetUrl;
+  
+  console.log('Notification ID:', notificationId, 'Target URL:', targetUrl);
+  
+  // Check if it's an issue or bill
+  const issueMatch = targetUrl.match(/\/issues\/(\d+)\//);
+  const billMatch = targetUrl.match(/\/bill\/(\d+)\/detail\//);
+  
+  if (issueMatch) {
+    const issueId = issueMatch[1];
+    console.log('Issue ID extracted:', issueId);
+    loadIssueModal(issueId, notificationId);
+  } else if (billMatch) {
+    // For bills, just navigate to the page (no modal for now)
+    const billId = billMatch[1];
+    console.log('Bill ID extracted:', billId, '- Navigating to bill page');
+    window.location.href = targetUrl;
+  } else {
+    // Cannot extract ID (old notification or list page URL) - just navigate normally
+    console.log('Cannot extract ID from:', targetUrl, '- Navigating normally');
+    window.location.href = targetUrl;
+  }
+});
+
+function loadIssueModal(issueId, notificationId) {
+  console.log('Loading modal for issue:', issueId);
+  
+  const modalElement = document.getElementById('issueModal');
+  const modalContent = document.getElementById('issueModalContent');
+  
+  if (!modalElement || !modalContent) {
+    console.error('Modal elements not found!');
+    alert('Không tìm thấy modal element');
+    return;
+  }
+  
+  // Build modal URL
+  const modalUrl = `/sms/issues/${issueId}/modal/`;
+  console.log('Fetching from:', modalUrl);
+  
+  // Show loading spinner
+  modalContent.innerHTML = `
+    <div class="modal-body text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+      </div>
+    </div>
+  `;
+  
+  // Show modal
+  const modal = new bootstrap.Modal(modalElement);
+  modal.show();
+  
+  // Fetch content
+  fetch(modalUrl)
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (!response.ok) throw new Error('Network response was not ok: ' + response.status);
+      return response.text();
+    })
+    .then(html => {
+      console.log('HTML received, length:', html.length);
+      modalContent.innerHTML = html;
+      
+      // Mark notification as read
+      if (notificationId) {
+        fetch(`/sms/notifications/${notificationId}/read/?modal=1`, {
+          method: 'GET',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(() => {
+          console.log('Notification marked as read');
+          // Update UI: change badge and styling
+          updateNotificationUI(notificationId);
+        })
+        .catch(err => console.error('Error marking notification as read:', err));
+      }
+    })
+    .catch(error => {
+      console.error('Error loading modal:', error);
+      modalContent.innerHTML = `
+        <div class="modal-body text-center py-5 text-danger">
+          <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+          <p>Có lỗi xảy ra khi tải dữ liệu</p>
+          <small>${error.message}</small>
+        </div>
+      `;
+    });
+}
+
+function updateNotificationUI(notificationId) {
+  // Find the notification item
+  const btn = document.querySelector(`.issue-modal-btn[data-notification-id="${notificationId}"]`);
+  if (!btn) return;
+  
+  const listItem = btn.closest('li');
+  if (!listItem) return;
+  
+  // Update from "unread" style to "read" style
+  // Remove unread styling
+  listItem.classList.remove('bg-light', 'border-start', 'border-primary', 'border-4');
+  
+  // Update badge from "Chưa đọc" to "Đã đọc"
+  const badge = listItem.querySelector('.badge.bg-primary');
+  if (badge) {
+    badge.textContent = 'Đã đọc';
+    badge.classList.remove('bg-primary');
+    badge.classList.add('bg-secondary');
+  }
+  
+  // Update title styling
+  const title = listItem.querySelector('.fw-bold');
+  if (title) {
+    title.classList.remove('fw-bold');
+    title.classList.add('fw-normal', 'text-muted');
+  }
+  
+  // Update button
+  btn.textContent = ' Mở lại';
+  btn.classList.remove('btn-primary');
+  btn.classList.add('btn-outline-secondary');
+  btn.innerHTML = '<i class="fas fa-external-link-alt me-1"></i>Mở lại';
+  
+  console.log('Notification UI updated for ID:', notificationId);
+}
+</script>
+{% endblock %}

@@ -11,6 +11,7 @@ from notifications.signals import notify
 
 from django.template.loader import render_to_string
 from decimal import Decimal
+from django.contrib import messages
 
 
 
@@ -23,6 +24,7 @@ import shutil, os
 
 from django.conf import settings
 from django.http import HttpResponse, Http404, JsonResponse
+import json
 
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
@@ -53,10 +55,177 @@ from pypdf import PdfReader
 from pypdf.errors import PdfReadError
 
 
+# ============================================
+# Helper Functions for Ownership Validation
+# ============================================
+
+def get_object_or_forbidden(model, user, error_message, **kwargs):
+    """
+    Get object and validate ownership. Returns object or redirects with error message.
+    
+    Args:
+        model: Django model class
+        user: Current request user
+        error_message: Message to display if access denied
+        **kwargs: Query parameters (must include 'id' or 'pk')
+    
+    Returns:
+        Tuple of (object, None) if valid, or (None, redirect_response) if invalid
+    """
+    try:
+        obj = get_object_or_404(model, **kwargs)
+        
+        # Superuser has access to everything
+        if user.is_superuser:
+            return obj, None
+        
+        # Check ownership based on model type
+        if model == Location:
+            if obj.chu_id != user.id:
+                messages.error(user, error_message or "Bạn không có quyền truy cập vị trí này")
+                return None, redirect('loc_list')
+        
+        elif model == House:
+            if obj.loc.chu_id != user.id:
+                messages.error(user, error_message or "Bạn không có quyền truy cập nhà này")
+                return None, redirect('loc_list')
+        
+        elif model == Renter:
+            from django.db.models import Q
+            # Renter must belong to user or have contract in user's house
+            if not Renter.objects.filter(
+                Q(chu_id=user.id) | Q(houserenter__house__loc__chu=user)
+            ).filter(id=obj.id).exists():
+                messages.error(user, error_message or "Bạn không có quyền truy cập khách thuê này")
+                return None, redirect('renter_list')
+        
+        elif model == HouseRenter:
+            if obj.house.loc.chu_id != user.id:
+                messages.error(user, error_message or "Bạn không có quyền truy cập hợp đồng này")
+                return None, redirect('loc_list')
+        
+        elif model == Hoadon:
+            # Check if user is landlord or renter of this bill
+            is_landlord = obj.house.loc.chu_id == user.id
+            is_renter = False
+            try:
+                is_renter = obj.renter and obj.renter.user_id == user.id
+            except (AttributeError, Renter.DoesNotExist):
+                pass
+            
+            if not is_landlord and not is_renter:
+                messages.error(user, error_message or "Bạn không có quyền truy cập hóa đơn này")
+                # Redirect based on user type
+                try:
+                    if user.renter:
+                        return None, redirect('/renter/dashboard/')
+                except (AttributeError, Renter.DoesNotExist):
+                    pass
+                return None, redirect('invoice_search')
+        
+        elif model == Thanhtoan:
+            if obj.hoadon.house.loc.chu_id != user.id:
+                messages.error(user, error_message or "Bạn không có quyền truy cập thanh toán này")
+                return None, redirect('invoice_search')
+        
+        return obj, None
+        
+    except Http404:
+        messages.error(user, "Không tìm thấy dữ liệu yêu cầu")
+        # Return to appropriate list view
+        if model == Location:
+            return None, redirect('loc_list')
+        elif model in [House, HouseRenter, Hoadon, Thanhtoan]:
+            return None, redirect('loc_list')
+        elif model == Renter:
+            return None, redirect('renter_list')
+        else:
+            return None, redirect('index')
+
+
+def block_renter_access(request, redirect_url='renter_dashboard', message="Bạn không có quyền truy cập chức năng này."):
+    """Check if user is a renter and block access. Returns redirect response or None"""
+    try:
+        if request.user.renter:
+            messages.error(request, message)
+            return redirect(redirect_url)
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    return None
+
+
+def validate_location_access(request, loc_id):
+    """Validate location access and return (location, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        Location, 
+        request.user,
+        f"Bạn không có quyền truy cập vị trí ID {loc_id}",
+        id=loc_id
+    )
+
+
+def validate_house_access(request, house_id):
+    """Validate house access and return (house, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        House,
+        request.user,
+        f"Bạn không có quyền truy cập nhà ID {house_id}",
+        id=house_id
+    )
+
+
+def validate_renter_access(request, renter_id):
+    """Validate renter access and return (renter, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        Renter,
+        request.user,
+        f"Bạn không có quyền truy cập khách thuê ID {renter_id}",
+        id=renter_id
+    )
+
+
+def validate_contract_access(request, hr_id):
+    """Validate house-renter contract access and return (contract, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        HouseRenter,
+        request.user,
+        f"Bạn không có quyền truy cập hợp đồng ID {hr_id}",
+        id=hr_id
+    )
+
+
+def validate_bill_access(request, bill_id):
+    """Validate bill access and return (bill, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        Hoadon,
+        request.user,
+        f"Bạn không có quyền truy cập hóa đơn ID {bill_id}",
+        id=bill_id
+    )
+
+
+def validate_payment_access(request, payment_id):
+    """Validate payment access and return (payment, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        Thanhtoan,
+        request.user,
+        f"Bạn không có quyền truy cập thanh toán ID {payment_id}",
+        id=payment_id
+    )
+
+
 #@login_required
 def index(request):
     if not request.user.is_authenticated:
-        return redirect("index1")
+        return redirect("renter_landing")
+    
+    # Check if user is a renter - use try/except to avoid AttributeError
+    try:
+        if request.user.renter:
+            return redirect("/renter/dashboard/")
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
     if request.user.is_superuser:
         return redirect("shop-statistics")
     elif request.user.is_hv:
@@ -66,7 +235,10 @@ def index(request):
     elif request.user.is_internalstaff:
         return redirect("lop_list")
     else:
-        return redirect("index1")
+        # Check if user is a landlord (has locations)
+        if Location.objects.filter(chu=request.user).exists():
+            return redirect("loc_list")
+        return redirect("renter_landing")
 
     #return render(request, 'info/logout.html')
 
@@ -159,7 +331,27 @@ def ns_list(request):
 
 @login_required
 def renter_list(request):
-    renters = Renter.objects.all().order_by('hoten')
+    from django.db.models import Q
+    
+    # Chặn renter truy cập danh sách khách thuê
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền xem danh sách khách thuê.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    if request.user.is_superuser:
+        renters = Renter.objects.all().order_by('hoten')
+    else:
+        # Renter được gán trực tiếp cho chủ (chu_id) hoặc có hợp đồng tại nhà thuộc chủ đó
+        renters = (
+            Renter.objects.filter(
+                Q(chu_id=request.user.id) | Q(houserenter__house__loc__chu=request.user)
+            )
+            .distinct()
+            .order_by('hoten')
+        )
     if request.method == "POST":
             query_name = request.POST.get('name', None)
             if query_name:
@@ -1463,6 +1655,199 @@ def index1(request):
     }
     return render(request, "sms/index.html", context)
 
+def renter_landing(request):
+    """Landing page riêng cho renter với thiết kế đẹp"""
+    from django.db.models import Sum
+    from datetime import datetime
+    
+    # Thống kê tổng quan cho landing page
+    stats = {
+        'total_locations': Location.objects.count(),
+        'total_houses': House.objects.count(),
+        'total_renters': HouseRenter.objects.filter(active=True).values('renter').distinct().count(),
+        'revenue_month': 0,
+    }
+    
+    # Doanh thu tháng hiện tại (chỉ hiển thị cho superuser hoặc landlord)
+    if request.user.is_authenticated:
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        if request.user.is_superuser:
+            revenue = Hoadon.objects.filter(
+                ngay_tao__month=current_month,
+                ngay_tao__year=current_year
+            ).aggregate(total=Sum('SO_TIEN_DA_TRA'))['total'] or 0
+        else:
+            # Chỉ tính doanh thu của chủ nhà hiện tại
+            revenue = Hoadon.objects.filter(
+                house__loc__chu=request.user,
+                ngay_tao__month=current_month,
+                ngay_tao__year=current_year
+            ).aggregate(total=Sum('SO_TIEN_DA_TRA'))['total'] or 0
+        stats['revenue_month'] = int(revenue) if revenue else 0
+    
+    context = {
+        'stats': stats
+    }
+    
+    return render(request, 'sms/renter_landing.html', context)
+
+@login_required
+def renter_dashboard(request):
+    """Dashboard riêng cho renter - hiển thị hợp đồng và hóa đơn"""
+    try:
+        # Lấy thông tin renter từ user hiện tại
+        renter = Renter.objects.get(user=request.user)
+    except Renter.DoesNotExist:
+        messages.error(request, "Bạn chưa được liên kết với tài khoản khách thuê.")
+        return redirect('renter_landing')
+    
+    # DEBUG: Log renter info
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Renter Dashboard - User: {request.user.username}, Renter ID: {renter.id}, Renter Name: {renter.hoten}")
+    
+    # Lấy tất cả hợp đồng của renter (chỉ lấy hợp đồng có house)
+    contracts = HouseRenter.objects.filter(
+        renter=renter,
+        house__isnull=False
+    ).select_related('house', 'house__loc', 'house__loc__chu').order_by('-active', '-rent_from')
+    
+    # DEBUG: Log contracts
+    logger.info(f"Contracts count: {contracts.count()}")
+    for c in contracts:
+        logger.info(f"  - Contract: {c.house.ten}, Renter: {c.renter.hoten} (ID: {c.renter.id})")
+    
+    # Lấy tất cả hóa đơn liên quan đến renter (chỉ lấy hóa đơn có house)
+    bills = Hoadon.objects.filter(
+        renter=renter,
+        house__isnull=False
+    ).select_related('house', 'house__loc').order_by('-ngay_tao')
+    
+    # DEBUG: Log bills
+    logger.info(f"Bills count: {bills.count()}")
+    for b in bills[:5]:  # Log first 5 bills
+        logger.info(f"  - Bill ID: {b.id}, House: {b.house.ten}, Renter: {b.renter.hoten if b.renter else 'None'} (ID: {b.renter.id if b.renter else 'None'})")
+    
+    # Thống kê
+    active_contracts = contracts.filter(active=True).count()
+    total_contracts = contracts.count()
+    
+    # Thống kê hóa đơn
+    from django.db.models import Q, Count
+    bill_stats = {
+        'total': bills.count(),
+        'unpaid': bills.filter(status='ChuaTT').count(),
+        'paying': bills.filter(status='DangTT').count(),
+        'paid': bills.filter(status='DaTT').count(),
+        'overdue': bills.filter(status='QuaHan').count(),
+    }
+    
+    # Tổng công nợ
+    total_debt = bills.filter(
+        Q(status='ChuaTT') | Q(status='DangTT') | Q(status='QuaHan')
+    ).aggregate(
+        total=Sum('CONG_NO')
+    )['total'] or 0
+    
+    context = {
+        'renter': renter,
+        'contracts': contracts,
+        'bills': bills[:10],  # 10 hóa đơn gần nhất
+        'active_contracts': active_contracts,
+        'total_contracts': total_contracts,
+        'bill_stats': bill_stats,
+        'total_debt': total_debt,
+    }
+    
+    return render(request, 'sms/renter_dashboard.html', context)
+
+@login_required
+def renter_bills(request):
+    """Trang xem tất cả hóa đơn của renter"""
+    try:
+        renter = Renter.objects.get(user=request.user)
+    except Renter.DoesNotExist:
+        messages.error(request, "Bạn chưa được liên kết với tài khoản khách thuê.")
+        return redirect('renter_landing')
+    
+    # Lấy tất cả hóa đơn
+    bills = Hoadon.objects.filter(
+        renter=renter,
+        house__isnull=False
+    ).select_related('house', 'house__loc').order_by('-ngay_tao')
+    
+    # Lọc theo trạng thái nếu có
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        bills = bills.filter(status=status_filter)
+    
+    # Thống kê
+    from django.db.models import Q, Sum
+    bill_stats = {
+        'total': bills.count(),
+        'unpaid': bills.filter(status='ChuaTT').count(),
+        'paying': bills.filter(status='DangTT').count(),
+        'paid': bills.filter(status='DaTT').count(),
+        'overdue': bills.filter(status='QuaHan').count(),
+    }
+    
+    total_debt = bills.filter(
+        Q(status='ChuaTT') | Q(status='DangTT') | Q(status='QuaHan')
+    ).aggregate(total=Sum('CONG_NO'))['total'] or 0
+    
+    context = {
+        'renter': renter,
+        'bills': bills,
+        'bill_stats': bill_stats,
+        'total_debt': total_debt,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'sms/renter_bills.html', context)
+
+@login_required
+def renter_locations(request):
+    """Trang xem các địa điểm mà renter có hợp đồng"""
+    try:
+        renter = Renter.objects.get(user=request.user)
+    except Renter.DoesNotExist:
+        messages.error(request, "Bạn chưa được liên kết với tài khoản khách thuê.")
+        return redirect('renter_landing')
+    
+    # Lấy tất cả location mà renter có hợp đồng
+    location_ids = HouseRenter.objects.filter(
+        renter=renter,
+        house__isnull=False
+    ).values_list('house__loc_id', flat=True).distinct()
+    
+    locations = Location.objects.filter(
+        id__in=location_ids
+    ).select_related('chu').prefetch_related('house_set')
+    
+    # Thêm thông tin hợp đồng cho mỗi location
+    for loc in locations:
+        houses = House.objects.filter(
+            loc=loc,
+            houserenter__renter=renter
+        ).distinct()
+        
+        # Thêm thông tin hợp đồng cho mỗi house
+        for house in houses:
+            house.renter_contract = HouseRenter.objects.filter(
+                house=house,
+                renter=renter
+            ).order_by('-rent_from').first()
+        
+        loc.renter_houses = houses
+    
+    context = {
+        'renter': renter,
+        'locations': locations,
+    }
+    
+    return render(request, 'sms/renter_locations.html', context)
+
 @login_required
 @permission_required('sms.view_lop',raise_exception=True)
 def lop_list_guardian(request):
@@ -1487,6 +1872,13 @@ def lop_list_guardian(request):
 
 @login_required
 def loc_list(request):
+    # Chặn renter truy cập - chuyển về trang locations của họ
+    try:
+        if request.user.renter:
+            messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
+            return redirect('renter_locations')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
 
     loca = Location.objects.filter(chu=request.user).order_by('id')
     paginator = Paginator(loca, 20)
@@ -1499,8 +1891,17 @@ def loc_list(request):
 
 @login_required
 def house_list(request, loc_id):
-
-    house = House.objects.filter(loc_id=loc_id).order_by('id')
+    # Chặn renter truy cập - chuyển về trang locations của họ
+    try:
+        if request.user.renter:
+            messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
+            return redirect('renter_locations')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    # Chỉ xem được nhà thuộc location của chính chủ
+    loc = get_object_or_404(Location, pk=loc_id, chu=request.user) if not request.user.is_superuser else get_object_or_404(Location, pk=loc_id)
+    house = House.objects.filter(loc_id=loc.id).order_by('id')
     paginator = Paginator(house, 20)
     page = request.GET.get('page')
     paged_students = paginator.get_page(page)
@@ -1509,6 +1910,92 @@ def house_list(request, loc_id):
         "loc_id": loc_id
     }
     return render(request, "sms/house_list.html", context)
+
+@login_required
+def houses(request):
+    """Consolidated Houses page with location filter and quick actions.
+    - Shows a location dropdown scoped to the current landlord (or all for superuser)
+    - Lists houses for the selected location with actions: Edit, Manage contracts
+    """
+    # Block renters; redirect them to their own locations page
+    try:
+        if request.user.renter:
+            messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
+            return redirect('renter_locations')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+
+    # Locations available to the current user
+    if request.user.is_superuser:
+        locations = Location.objects.all().order_by('id')
+    else:
+        locations = Location.objects.filter(chu=request.user).order_by('id')
+
+    # Selected location from querystring
+    selected_loc_id = request.GET.get('loc')
+    selected_loc = None
+    houses_qs = House.objects.none()
+
+    if selected_loc_id:
+        # Validate access to selected location
+        selected_loc, error_response = validate_location_access(request, selected_loc_id)
+        if error_response:
+            return error_response
+    elif locations.exists():
+        # Default to the first location for convenience
+        selected_loc = locations.first()
+
+    if selected_loc:
+        houses_qs = House.objects.filter(loc=selected_loc).order_by('id')
+
+    # Optional pagination for long lists
+    paginator = Paginator(houses_qs, 20)
+    page = request.GET.get('page')
+    paged_houses = paginator.get_page(page)
+
+    context = {
+        'locations': locations,
+        'selected_loc': selected_loc,
+        'houses': paged_houses,
+    }
+    return render(request, 'sms/houses.html', context)
+
+@login_required
+def houses_partial(request):
+    """HTMX fragment for the houses table filtered by location (query param: ?loc=<id>)."""
+    # Block renters
+    try:
+        if request.user.renter:
+            messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
+            return redirect('renter_locations')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+
+    # Determine available locations
+    locations_qs = Location.objects.all().order_by('id') if request.user.is_superuser else Location.objects.filter(chu=request.user).order_by('id')
+
+    loc_id = request.GET.get('loc')
+    selected_loc = None
+    houses_qs = House.objects.none()
+
+    if loc_id:
+        selected_loc, error_response = validate_location_access(request, loc_id)
+        if error_response:
+            return error_response
+    elif locations_qs.exists():
+        selected_loc = locations_qs.first()
+
+    if selected_loc:
+        houses_qs = House.objects.filter(loc=selected_loc).order_by('id')
+
+    paginator = Paginator(houses_qs, 20)
+    page = request.GET.get('page')
+    paged_houses = paginator.get_page(page)
+
+    return render(request, 'sms/fragments/_houses_table.html', {
+        'houses': paged_houses,
+        'selected_loc': selected_loc,
+    })
 
 @login_required
 @permission_required('sms.view_lop',raise_exception=True)
@@ -2284,6 +2771,14 @@ def create_lop(request):
 
 @login_required
 def create_loc(request):
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền tạo địa điểm.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
     if request.method == "POST":
         forms = CreateLoc(request.POST, request.FILES or None)
         if forms.is_valid():
@@ -2308,13 +2803,24 @@ def create_loc(request):
 
 @login_required
 def create_house(request,loc_id):
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền tạo nhà/phòng.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
     if request.method == "POST":
         forms = CreateHouse(request.POST, request.FILES or None)
 
         if forms.is_valid():
-                    
+            # Đảm bảo Location thuộc chủ hiện tại
+            posted_loc_id = request.POST.get('loc', None) or loc_id
+            if not request.user.is_superuser:
+                get_object_or_404(Location, pk=posted_loc_id, chu=request.user)
             house = forms.save(commit=False)
-            house.loc_id = request.POST.get('loc', None)
+            house.loc_id = posted_loc_id
             
             house.save()
             messages.success(request, "Tạo mới nhà trọ thành công!")
@@ -2431,6 +2937,14 @@ def create_ns(request):
 
 @login_required
 def create_renter(request):
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền tạo khách thuê.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
     if request.method == "POST":
         forms = CreateRenter(request.POST, request.FILES or None)
         # if Renter.objects.filter(ma = forms['ma'].value().strip()).first():
@@ -2587,7 +3101,21 @@ def edit_lopmonhoc(request, lmh_id):
 
 @login_required
 def edit_loc(request, loc_id):
-    loc = Location.objects.filter(id=loc_id).select_related("xp")[0]
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền sửa địa điểm.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    # Validate location access
+    loc, error_response = validate_location_access(request, loc_id)
+    if error_response:
+        return error_response
+    
+    # Reload with select_related for optimization
+    loc = Location.objects.select_related("xp").get(id=loc_id)
     loc_forms = CreateLoc(instance=loc)
 
     if request.method == "POST":
@@ -2606,7 +3134,29 @@ def edit_loc(request, loc_id):
 
 @login_required
 def edit_house(request, loc_id, house_id):
-    house = House.objects.filter(id=house_id)[0]
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền sửa nhà/phòng.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    # Validate location access first
+    loc, error_response = validate_location_access(request, loc_id)
+    if error_response:
+        return error_response
+    
+    # Validate house access and ensure it belongs to the location
+    house, error_response = validate_house_access(request, house_id)
+    if error_response:
+        return error_response
+    
+    # Ensure house belongs to the specified location
+    if house.loc_id != loc_id:
+        messages.error(request, "Nhà này không thuộc vị trí được chỉ định")
+        return redirect('house_list', loc_id)
+    
     #house_forms = CreateHouse(instance=house)
 
     if request.method == "POST":
@@ -3294,7 +3844,19 @@ def edit_ns(request, ns_id):
 
 @login_required
 def edit_renter(request, renter_id):
-    renter = Renter.objects.get(id=renter_id)
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền sửa thông tin khách thuê.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    # Validate renter access
+    renter, error_response = validate_renter_access(request, renter_id)
+    if error_response:
+        return error_response
+    
     #lop_id, monhoc_id = lmh.lop_id, lmh.monhoc_id
     renter_forms = CreateRenter(instance=renter)
 
@@ -3697,8 +4259,10 @@ def upload_file_hv(request, hv_id):
 @login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
 def view_loc(request, loc_id):
-
-    loc = Location.objects.get(id = loc_id)
+    # Validate location access
+    loc, error_response = validate_location_access(request, loc_id)
+    if error_response:
+        return error_response
 
 # ----------------------------------------------------
     # BỔ SUNG LOGIC LẤY DỮ LIỆU NHÀ VÀ NGƯỜI THUÊ
@@ -3736,8 +4300,11 @@ def view_loc(request, loc_id):
 @login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
 def upload_file_loc(request, loc_id):
+    # Validate location access
+    loc, error_response = validate_location_access(request, loc_id)
+    if error_response:
+        return error_response
 
-    loc = Location.objects.get(id = loc_id)
     if request.method == 'POST':
 #        if not(sv.user == request.user):
  #           return HttpResponseForbidden()
@@ -3868,7 +4435,10 @@ def upload_bill_file(request, bill_id):
 @login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
 def create_hr(request, id):
-
+    # Validate house access
+    house, error_response = validate_house_access(request, id)
+    if error_response:
+        return error_response
 
     if request.method == 'POST':
         # Sử dụng HouseRenterForm bạn đã tạo
@@ -3876,18 +4446,25 @@ def create_hr(request, id):
         
         if forms.is_valid():
             new_renter_contract = forms.save(commit=False)
-            
+            # Gắn house trước khi xử lý trạng thái các hợp đồng khác
+            new_renter_contract.house_id = id
+
             # --- Logic nghiệp vụ: Cập nhật trạng thái active của các hợp đồng cũ ---
             if new_renter_contract.active:
-                # Tìm và đặt tất cả các hợp đồng cũ, đang active của nhà trọ này về active=False
-                HouseRenter.objects.filter(house=new_renter_contract.house, active=True).update(active=False)
-            
+                # Đặt tất cả hợp đồng đang active của nhà trọ này về False
+                HouseRenter.objects.filter(house_id=id, active=True).update(active=False)
+
             # Lưu hợp đồng mới
-            new_renter_contract.house_id = id
             new_renter_contract.save()
             
             messages.success(request, 'Thêm hợp đồng thuê mới thành công!')
-            # Chuyển hướng về trang hiện tại với tên URL là 'create_houserenter'
+            
+            # AJAX/HTMX request: trả về timeline mới
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('HX-Request'):
+                hrs = HouseRenter.objects.filter(house_id=id).order_by('-rent_from','-id')
+                return render(request, 'sms/fragments/_hr_timeline_list.html', {'hrs': hrs, 'id': id})
+            
+            # Normal request: chuyển hướng về trang hiện tại
             return redirect('hr_list', id)
         else:
             # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
@@ -3920,8 +4497,12 @@ def create_hr(request, id):
 
 @login_required
 def hr_list(request, id):
-    # Lấy danh sách lịch sử thuê nhà (để hiển thị Timeline)
-    hrs = HouseRenter.objects.all().order_by('id')
+    # Validate house access
+    house, error_response = validate_house_access(request, id)
+    if error_response:
+        return error_response
+    
+    hrs = HouseRenter.objects.filter(house_id=id).order_by('-rent_from','-id')
     
     # -----------------------------------
     # Logic Xử lý Form POST (Thêm mới)
@@ -3932,18 +4513,20 @@ def hr_list(request, id):
         
         if forms.is_valid():
             new_renter_contract = forms.save(commit=False)
-            
+            # Gắn house trước khi xử lý trạng thái các hợp đồng khác
+            new_renter_contract.house_id = id
+
             # --- Logic nghiệp vụ: Cập nhật trạng thái active của các hợp đồng cũ ---
             if new_renter_contract.active:
-                # Tìm và đặt tất cả các hợp đồng cũ, đang active của nhà trọ này về active=False
-                HouseRenter.objects.filter(house=new_renter_contract.house, active=True).update(active=False)
-            
+                # Đặt tất cả hợp đồng đang active của nhà trọ này về False
+                HouseRenter.objects.filter(house_id=id, active=True).update(active=False)
+
             # Lưu hợp đồng mới
             new_renter_contract.save()
             
             messages.success(request, 'Thêm hợp đồng thuê mới thành công!')
-            # Chuyển hướng về trang hiện tại với tên URL là 'create_houserenter'
-            return redirect('create_houserenter', 1)
+            # Quay lại danh sách hợp đồng của nhà hiện tại
+            return redirect('hr_list', id)
         else:
             # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
             messages.error(request, 'Lỗi: Dữ liệu nhập không hợp lệ. Vui lòng kiểm tra lại Form.')
@@ -3964,6 +4547,78 @@ def hr_list(request, id):
         'id': id
     }
     return render(request, 'sms/house_renter_list_gemini.html', context)
+
+@login_required
+def hr_list_partial(request, id):
+    # Validate house access
+    house, error_response = validate_house_access(request, id)
+    if error_response:
+        return error_response
+
+    hrs = HouseRenter.objects.filter(house_id=id).order_by('-rent_from','-id')
+    return render(request, 'sms/fragments/_hr_timeline_list.html', { 'hrs': hrs, 'id': id })
+
+@login_required
+def hr_toggle_active(request, hr_id: int):
+    """Quick action to toggle a HouseRenter contract's active status from the timeline.
+    If turning active on, ensure all other contracts of the same house are set to inactive.
+    """
+    # Validate access to the contract
+    contract, error_response = validate_contract_access(request, hr_id)
+    if error_response:
+        return error_response
+
+    house_id = contract.house_id
+
+    if request.method != 'POST':
+        messages.error(request, 'Phương thức không hợp lệ.')
+        return redirect('hr_list', house_id)
+
+    if not contract.active:
+        # Activate this contract and deactivate any other active contracts for the same house
+        HouseRenter.objects.filter(house_id=house_id, active=True).exclude(id=contract.id).update(active=False)
+        contract.active = True
+        contract.save(update_fields=['active'])
+        messages.success(request, 'Đã kích hoạt hợp đồng và vô hiệu các hợp đồng khác của nhà này.')
+    else:
+        # Deactivate this contract
+        contract.active = False
+        contract.save(update_fields=['active'])
+        messages.success(request, 'Đã hủy kích hoạt hợp đồng.')
+    # If HTMX request, return the updated fragment for this item
+    if request.headers.get('HX-Request') == 'true':
+        # For HTMX, refresh the entire list so other items reflect the new active state
+        hrs = HouseRenter.objects.filter(house_id=house_id).order_by('-rent_from','-id')
+        return render(request, 'sms/fragments/_hr_timeline_list.html', { 'hrs': hrs, 'id': house_id })
+    # Fallback full page redirect
+    return redirect('hr_list', house_id)
+
+@login_required
+def hr_delete(request, hr_id: int):
+    """Delete a HouseRenter contract only if there is no invoice associated (same house & renter).
+    Supports HTMX inline deletion (removes item) or full redirect with message.
+    """
+    contract, error_response = validate_contract_access(request, hr_id)
+    if error_response:
+        return error_response
+
+    house_id = contract.house_id
+
+    if request.method != 'POST':
+        messages.error(request, 'Phương thức không hợp lệ.')
+        return redirect('hr_list', house_id)
+
+    # Delete without invoice restriction per updated requirement
+    contract.delete()
+    msg = 'Đã xóa hợp đồng thành công.'
+    messages.success(request, msg)
+    if request.headers.get('HX-Request') == 'true':
+        # Return refreshed full timeline list so UI updates immediately
+        hrs = HouseRenter.objects.filter(house_id=house_id).order_by('-rent_from','-id')
+        response = render(request, 'sms/fragments/_hr_timeline_list.html', { 'hrs': hrs, 'id': house_id })
+        response["HX-Trigger"] = json.dumps({"showToast": {"message": msg, "level": "success"}})
+        return response
+    return redirect('hr_list', house_id)
 
 @login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
@@ -4180,6 +4835,10 @@ def delete_file(request, file_id):
 
 @login_required
 def delete_file_loc(request, loc_id, file_id):
+    # Validate location access
+    loc, error_response = validate_location_access(request, loc_id)
+    if error_response:
+        return error_response
 
     uploaded_file = UploadedFile.objects.get(pk=file_id)
 
@@ -4375,22 +5034,50 @@ def add_nsuser(request, id):
     return redirect("ns_list")
 
 @login_required
+@login_required
 def user_changepwd(request):
-
     if request.method == "POST":
-        user = User.objects.get(username = request.user.username)
-        user.set_password(request.POST.get('password', None))
-        user.save()    
-        messages.success(request, "Thay doi password thanh cong!")
-        return redirect("lop_list")
+        current_password = request.POST.get('current_password', '')
+        new_password = request.POST.get('password', '')
+        
+        # Kiểm tra mật khẩu hiện tại
+        if not request.user.check_password(current_password):
+            messages.error(request, "Mật khẩu hiện tại không đúng!")
+            return render(request, "sms/changepwd.html")
+        
+        # Kiểm tra mật khẩu mới không được trống
+        if not new_password or len(new_password) < 6:
+            messages.error(request, "Mật khẩu mới phải có ít nhất 6 ký tự!")
+            return render(request, "sms/changepwd.html")
+        
+        # Đổi mật khẩu
+        user = request.user
+        user.set_password(new_password)
+        user.save()
+        
+        # Update session để không bị logout
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        
+        messages.success(request, "Đổi mật khẩu thành công!")
+        return redirect("loc_list")
+    
     return render(request, "sms/changepwd.html")
 
 @login_required
 def bill_list_view(request, loc_id):
-    houses_in_loc = House.objects.filter(loc_id=loc_id)
-    bills = Hoadon.objects.filter(house__in=houses_in_loc).select_related('house').order_by('-duedate', '-id')
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.info(request, "Vui lòng xem hóa đơn của bạn tại đây.")
+            return redirect('renter_bills')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
     
-    location = get_object_or_404(Location, pk=loc_id)
+    # Chỉ xem hóa đơn của location thuộc chủ hiện tại
+    location = get_object_or_404(Location, pk=loc_id, chu=request.user) if not request.user.is_superuser else get_object_or_404(Location, pk=loc_id)
+    houses_in_loc = House.objects.filter(loc_id=location.id)
+    bills = Hoadon.objects.filter(house__in=houses_in_loc).select_related('house', 'renter').order_by('-duedate', '-id')
     
     paginator = Paginator(bills, 20)
     page = request.GET.get('page')
@@ -4401,13 +5088,24 @@ def bill_list_view(request, loc_id):
         'location': location,
         'loc_id': loc_id,
         # Nếu muốn hiển thị danh sách các House để tạo hóa đơn mới
-        'houses': House.objects.filter(loc_id=loc_id).order_by('ten')
+    'houses': House.objects.filter(loc_id=location.id).order_by('ten')
     }
     return render(request, 'sms/bill_list.html', context)
 
 @login_required
 def create_bill_view(request, house_id):
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền tạo hóa đơn.")
+            return redirect('renter_dashboard')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
     house = get_object_or_404(House, pk=house_id)
+    # Ủy quyền: chỉ chủ của location chứa house mới được tạo hóa đơn
+    if not request.user.is_superuser and house.loc.chu_id != request.user.id:
+        return HttpResponseForbidden("Bạn không có quyền thao tác với nhà trọ này")
     loc_id = house.loc.id 
     
     # Lấy hóa đơn ngay trước hóa đơn đang tạo (Lấy Max ID)
@@ -4415,18 +5113,40 @@ def create_bill_view(request, house_id):
     
     
 
+    # Lấy renter đang thuê (active contract) để làm default
+    active_contract = HouseRenter.objects.filter(house=house, active=True).select_related('renter').first()
+    default_renter = active_contract.renter if active_contract else None
+    
+    # Lấy danh sách tất cả renter từng thuê nhà này (để hiển thị info)
+    all_renters = HouseRenter.objects.filter(house=house).select_related('renter').values_list('renter__hoten', flat=True).distinct()
+
     if request.method == 'POST':
-        form = CreateHoaDonForm(request.POST)
+        form = CreateHoaDonForm(request.POST, house=house)
         if form.is_valid():
             
             # LƯU HÓA ĐƠN
             new_bill = form.save(commit=False)
             new_bill.house = house
-            
+            # Renter đã được chọn trong form (có thể là active hoặc renter khác từng thuê)
             
             new_bill.save() # Kích hoạt logic tự động tính TONG_CONG, CONG_NO
-            
-            messages.success(request, f"Đã tạo Hóa đơn mới cho {house.ten} thành công!")
+
+            # Thông báo cho renter (nếu có)
+            try:
+                if new_bill.renter and new_bill.renter.user:
+                    from .models import Notification
+                    Notification.objects.create(
+                        user=new_bill.renter.user,
+                        title="Bạn có hóa đơn mới",
+                        message=f"Hóa đơn {new_bill.ten} cho {house.ten} đã được tạo.",
+                        type='bill_created',
+                        target_url=f"/sms/bill/{new_bill.id}/detail/"
+                    )
+            except Exception:
+                pass
+
+            renter_info = f" cho {new_bill.renter.hoten}" if new_bill.renter else ""
+            messages.success(request, f"Đã tạo Hóa đơn mới cho {house.ten}{renter_info} thành công!")
             
             return redirect('bill_list', loc_id=loc_id) 
         else:
@@ -4436,16 +5156,22 @@ def create_bill_view(request, house_id):
                     messages.error(request, f"Lỗi ở trường '{field}': {error}")
 
     else:
-        # GET request (Điền sẵn chi số cũ)
-        form = CreateHoaDonForm(initial={
+        # GET request (Điền sẵn thông tin)
+        initial_data = {
             'house': house.id,
             'ten': f"Hóa đơn {house.ten} - {timezone.now().strftime('%m/%Y')}",
-        })
+        }
+        # Tự động chọn renter đang thuê (active) làm default
+        if default_renter:
+            initial_data['renter'] = default_renter.id
+            
+        form = CreateHoaDonForm(initial=initial_data, house=house)
 
     context = {
         'forms': form,
         'house': house,
         'loc_id': loc_id,
+        'bill': None,  # Để template biết đang ở chế độ create
     }
     return render(request, 'sms/create_bill.html', context)
 
@@ -4455,8 +5181,18 @@ def invoice_search(request):
     """Trang tìm kiếm Hóa đơn theo Location, House, ngày tạo, ngày đến hạn, trạng thái"""
     from django.db.models import Sum
     from django.utils.dateparse import parse_date
+    
+    # Chặn renter truy cập - chuyển hướng về trang hóa đơn của họ
+    try:
+        if request.user.renter:
+            messages.info(request, "Vui lòng xem hóa đơn của bạn tại đây.")
+            return redirect('renter_bills')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
 
-    qs = Hoadon.objects.select_related('house', 'house__loc').all().order_by('-ngay_tao', '-id')
+    qs = Hoadon.objects.select_related('house', 'house__loc', 'renter').all().order_by('-ngay_tao', '-id')
+    if not request.user.is_superuser:
+        qs = qs.filter(house__loc__chu=request.user)
 
     # --- Đọc tham số lọc ---
     loc_id = request.GET.get('loc') or ''
@@ -4508,8 +5244,10 @@ def invoice_search(request):
     page_obj = paginator.get_page(page)
 
     # --- Dữ liệu cho bộ lọc ---
-    locations = Location.objects.order_by('id')
-    houses = House.objects.filter(loc_id=loc_id).order_by('ten') if loc_id else House.objects.none()
+    locations = Location.objects.order_by('id') if request.user.is_superuser else Location.objects.filter(chu=request.user).order_by('id')
+    houses = (
+        House.objects.filter(loc_id=loc_id).order_by('ten') if loc_id else House.objects.none()
+    )
     status_choices = Hoadon._meta.get_field('status').choices
 
     context = {
@@ -4540,6 +5278,8 @@ def invoice_export_excel(request):
     from openpyxl.styles import Font, Alignment, numbers
 
     qs = Hoadon.objects.select_related('house', 'house__loc').all().order_by('-ngay_tao', '-id')
+    if not request.user.is_superuser:
+        qs = qs.filter(house__loc__chu=request.user)
 
     # Đọc tham số lọc (giống invoice_search)
     loc_id = request.GET.get('loc') or ''
@@ -4631,14 +5371,26 @@ def invoice_export_excel(request):
 
 @login_required
 def api_houses_by_location(request, loc_id: int):
-    """Trả về danh sách houses theo location (JSON)"""
+    """Trả về danh sách houses theo location (JSON) - chỉ chủ sở hữu xem được"""
+    if not request.user.is_superuser:
+        get_object_or_404(Location, pk=loc_id, chu=request.user)
     houses = House.objects.filter(loc_id=loc_id).order_by('ten').values('id', 'ten')
     return JsonResponse({'results': list(houses)})
 
 @login_required
 def update_bill_view(request, bill_id):
+    # Chặn renter truy cập
+    try:
+        if request.user.renter:
+            messages.error(request, "Bạn không có quyền sửa hóa đơn.")
+            return redirect('renter_bills')
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
     bill = get_object_or_404(Hoadon, pk=bill_id)
     house = bill.house
+    if not request.user.is_superuser and house.loc.chu_id != request.user.id:
+        return HttpResponseForbidden("Bạn không có quyền sửa hóa đơn này")
     loc_id = house.loc.id 
 
     # TÌM CHỈ SỐ CŨ (Lấy hóa đơn ngay trước hóa đơn đang sửa)
@@ -4652,7 +5404,7 @@ def update_bill_view(request, bill_id):
     tien_thue_co_dinh = Decimal(house.permonth) 
 
     if request.method == 'POST':
-        form = CreateHoaDonForm(request.POST, instance=bill) 
+        form = CreateHoaDonForm(request.POST, instance=bill, house=house) 
         if form.is_valid():
             
             # LẤY DỮ LIỆU SẠCH TỪ FORM
@@ -4693,7 +5445,7 @@ def update_bill_view(request, bill_id):
     else:
         # GET request: LOAD DỮ LIỆU TỪ HÓA ĐƠN
         # Form sẽ điền sẵn dữ liệu cũ từ instance=bill
-        form = CreateHoaDonForm(instance=bill)
+        form = CreateHoaDonForm(instance=bill, house=house)
         
     context = {
         'forms': form,
@@ -4708,12 +5460,32 @@ def update_bill_view(request, bill_id):
 
 @login_required
 def bill_detail_view(request, bill_id):
-    hoadon = get_object_or_404(Hoadon, pk=bill_id)
+    # Validate bill access
+    hoadon, error_response = validate_bill_access(request, bill_id)
+    if error_response:
+        return error_response
+    
     loc_id = hoadon.house.loc.id
+    
+    # Check if user is renter (read-only mode)
+    is_renter = False
+    try:
+        is_renter = hoadon.renter and hoadon.renter.user_id == request.user.id
+    except (AttributeError, Renter.DoesNotExist):
+        pass
     
     # Lấy lịch sử thanh toán (Chưa có form ThanhToan, nên tạm thời dùng None)
     lich_su_thanh_toan = Thanhtoan.objects.filter(hoadon=hoadon).order_by('-id')
     lich_su_file = UploadedFile.objects.filter(link_id=bill_id, type=2).order_by('-id')
+    # Bình luận hóa đơn
+    try:
+        from .models import BillComment
+        bill_comments = BillComment.objects.filter(bill=hoadon, parent=None).select_related('user').prefetch_related('replies')
+    except Exception:
+        bill_comments = []
+    
+    # Chọn template base phù hợp
+    base_template = "layouts/renter_base.html" if is_renter else "layouts/rental_base.html"
     
     context = {
         'hoadon': hoadon,
@@ -4721,13 +5493,30 @@ def bill_detail_view(request, bill_id):
         'lich_su_thanh_toan': lich_su_thanh_toan,
         'lich_su_file': lich_su_file,
         'payment_form': CreateThanhToanForm(),
-        'bill_file_form': CreateUploadFile()
+        'bill_file_form': CreateUploadFile(),
+        'is_renter_view': is_renter,  # Flag to show read-only mode
+        'base_template': base_template,  # Template base để extends
+        # Bình luận
+        'bill_comments': bill_comments,
+        'bill_comment_form': BillCommentForm(),
+        'is_landlord': hoadon.house.loc.chu_id == request.user.id,
     }
     return render(request, 'sms/bill_detail.html', context)
 
 @login_required
 def add_payment(request, bill_id):
     hoadon = get_object_or_404(Hoadon, id=bill_id)
+    
+    # Kiểm tra quyền: landlord, renter của hóa đơn, hoặc superuser
+    is_landlord = hoadon.house.loc.chu_id == request.user.id
+    is_renter = False
+    try:
+        is_renter = hoadon.renter and hoadon.renter.user_id == request.user.id
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    if not request.user.is_superuser and not is_landlord and not is_renter:
+        return HttpResponseForbidden("Bạn không có quyền thao tác với hóa đơn này")
 
     if hoadon.status == 'DaTT':
         messages.warning(request, "Hóa đơn này đã thanh toán đủ, không thể thêm thanh toán mới.")
@@ -4742,14 +5531,14 @@ def add_payment(request, bill_id):
         
         try:
             # --- LOGIC XÁC ĐỊNH VAI TRÒ VÀ TRẠNG THÁI BAN ĐẦU ---
-            is_house_owner = False
-            
-            if is_house_owner:
+            # Landlord hoặc superuser: thanh toán tự động được xác nhận
+            # Renter: thanh toán cần chờ xác nhận
+            if is_landlord or request.user.is_superuser:
                 initial_status = 'Daxn' 
                 success_msg = f"Đã ghi nhận & XÁC NHẬN thanh toán {tientt:,} VNĐ."
             else:
                 initial_status = 'Choxn' 
-                success_msg = f"Đã ghi nhận thanh toán {tientt:,} VNĐ. CHỜ CHỦ NHÀ XÁC NHẬN." 
+                success_msg = f"Đã gửi thanh toán {tientt:,} VNĐ. CHỜ CHỦ NHÀ XÁC NHẬN." 
             # --- HẾT LOGIC XÁC ĐỊNH VAI TRÒ ---
 
             # 1. Kiểm tra logic nghiệp vụ: Công nợ
@@ -4764,7 +5553,23 @@ def add_payment(request, bill_id):
             payment.status = initial_status 
 
             payment.save() # Kích hoạt logic tự động cập nhật Hoadon
-            
+
+            # Tạo thông báo cho chủ nhà nếu renter gửi thanh toán (chờ xác nhận)
+            try:
+                if initial_status == 'Choxn':
+                    landlord = hoadon.house.loc.chu
+                    if landlord:
+                        from .models import Notification
+                        Notification.objects.create(
+                            user=landlord,
+                            title="Khách thuê gửi thanh toán",
+                            message=f"{request.user.get_username()} đã gửi thanh toán {tientt:,} VNĐ cho hóa đơn #{hoadon.id}",
+                            type='payment_submitted',
+                            target_url=f"/sms/bill/{hoadon.id}/detail/"
+                        )
+            except Exception:
+                pass
+
             # 3. Thông báo thành công (SỬ DỤNG tientt AN TOÀN)
             messages.success(request, success_msg)
             
@@ -4790,10 +5595,19 @@ def add_payment(request, bill_id):
 
 @login_required
 def confirm_payment_view(request, payment_id):
-    payment = get_object_or_404(Thanhtoan, id=payment_id)
+    # Validate payment access
+    payment, error_response = validate_payment_access(request, payment_id)
+    if error_response:
+        return error_response
+    
     hoadon = payment.hoadon
     
-    # Kiểm tra quyền: Chỉ chủ nhà mới được xác nhận (Giả định: user là chu của Location)
+    # Chỉ landlord hoặc superuser mới được xác nhận thanh toán
+    is_landlord = hoadon.house.loc.chu_id == request.user.id
+    if not request.user.is_superuser and not is_landlord:
+        messages.error(request, "Chỉ chủ nhà mới có quyền xác nhận thanh toán.")
+        return redirect('bill_detail', bill_id=hoadon.id)
+    
     if payment.status == 'Choxn':
         payment.status = 'Daxn'
         payment.save() # Kích hoạt Thanhtoan.save() -> cập nhật Hoadon
@@ -4807,13 +5621,17 @@ def confirm_payment_view(request, payment_id):
 
 @login_required
 def delete_payment_view(request, payment_id):
-    payment = get_object_or_404(Thanhtoan, id=payment_id)
+    # Validate payment access
+    payment, error_response = validate_payment_access(request, payment_id)
+    if error_response:
+        return error_response
+    
     hoadon = payment.hoadon
     
-    # Kiểm tra quyền: Chỉ chủ nhà hoặc người tạo mới được xóa (hoặc dùng permission)
-    is_owner = True
+    # Chỉ landlord hoặc superuser mới được xóa thanh toán
+    is_landlord = hoadon.house.loc.chu_id == request.user.id
     
-    if is_owner:
+    if is_landlord or request.user.is_superuser:
         payment.delete() # Kích hoạt Thanhtoan.delete() -> cập nhật Hoadon
         messages.success(request, f"Đã xóa bản ghi thanh toán {payment.tientt:,} VNĐ.")
     else:
@@ -5109,3 +5927,685 @@ def generate_bill_excel(request, bill_id):
         },
     )
     return response
+
+# ==========================
+# Notifications & Issues Views
+# ==========================
+from django import forms
+
+class IssueReportForm(forms.ModelForm):
+    images = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'multiple': True, 'accept': 'image/*'}),
+        label='Hình ảnh'
+    )
+    
+    class Meta:
+        model = IssueReport
+        fields = ['house', 'title', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows':4})
+        }
+
+    def __init__(self, *args, **kwargs):
+        renter = kwargs.pop('renter', None)
+        super().__init__(*args, **kwargs)
+        if renter is not None:
+            # Chỉ cho chọn house có liên quan tới renter (qua hợp đồng hoặc hóa đơn)
+            houses_qs = House.objects.filter(hoadon__renter=renter).distinct()
+            self.fields['house'].queryset = houses_qs
+
+
+class IssueCommentForm(forms.ModelForm):
+    class Meta:
+        model = IssueComment
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Viết bình luận...', 'class': 'form-control'})
+        }
+
+class BillCommentForm(forms.ModelForm):
+    class Meta:
+        from .models import BillComment
+        model = BillComment
+        fields = ['comment']
+        widgets = {
+            'comment': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Viết bình luận về hóa đơn...', 'class': 'form-control'})
+        }
+
+
+@login_required
+def notifications_list(request):
+    from .models import Notification
+    items = Notification.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Don't auto-mark as read anymore, let users click to mark
+    return render(request, 'sms/notifications_list.html', { 'items': items })
+
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """Mark a notification as read and redirect to target"""
+    from .models import Notification
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+        
+        # If modal parameter, just return success (called via AJAX)
+        if request.GET.get('modal') == '1':
+            return HttpResponse('OK')
+        
+        # Otherwise redirect to target URL or back to notifications
+        if notification.target_url:
+            return redirect(notification.target_url)
+    except Notification.DoesNotExist:
+        pass
+    
+    return redirect('notifications_list')
+
+
+@login_required
+def add_bill_comment(request, bill_id):
+    """Thêm bình luận cho Hóa đơn (chủ nhà hoặc khách thuê liên quan)"""
+    hoadon = get_object_or_404(Hoadon, id=bill_id)
+
+    is_landlord = hoadon.house.loc.chu_id == request.user.id
+    is_renter = False
+    try:
+        is_renter = hoadon.renter and hoadon.renter.user_id == request.user.id
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+
+    if not (request.user.is_superuser or is_landlord or is_renter):
+        return HttpResponse("Unauthorized", status=403)
+
+    if request.method == 'POST':
+        form = BillCommentForm(request.POST)
+        if form.is_valid():
+            from .models import BillComment, Notification
+            c = form.save(commit=False)
+            c.bill = hoadon
+            c.user = request.user
+            parent_id = request.POST.get('parent_id')
+            if parent_id:
+                c.parent_id = parent_id
+            c.save()
+
+            # Gửi thông báo cho bên còn lại
+            try:
+                recipient = None
+                if is_renter:
+                    recipient = hoadon.house.loc.chu
+                else:
+                    recipient = hoadon.renter.user if hoadon.renter and hoadon.renter.user else None
+                if recipient:
+                    from django.urls import reverse
+                    Notification.objects.create(
+                        user=recipient,
+                        title=f"Bình luận mới về Hóa đơn #{hoadon.id}",
+                        message=f"{request.user.username}: {c.comment[:100]}",
+                        type='bill_commented',
+                        target_url=reverse('bill_detail', args=[hoadon.id])
+                    )
+            except Exception:
+                pass
+
+            # HTMX: trả về HTML của comment mới
+            if request.headers.get('HX-Request'):
+                return render(request, 'sms/partials/comment_item.html', {
+                    'comment': c,
+                    'is_landlord': is_landlord,
+                })
+
+    return redirect('bill_detail', bill_id=bill_id)
+    
+    return redirect('notifications_list')
+
+
+@login_required
+def renter_report_issue(request):
+    renter = Renter.objects.filter(user=request.user).first()
+    if renter is None:
+        messages.error(request, "Chỉ khách thuê mới được ghi nhận sự cố.")
+        return redirect('renter_dashboard')
+
+    if request.method == 'POST':
+        form = IssueReportForm(request.POST, request.FILES, renter=renter)
+        if form.is_valid():
+            issue = form.save(commit=False)
+            issue.renter = renter
+            issue.status = 'new'
+            issue.save()
+            
+            # Handle multiple image uploads
+            images = request.FILES.getlist('images')
+            for image in images:
+                IssueImage.objects.create(
+                    issue=issue,
+                    image=image,
+                    uploaded_by=request.user
+                )
+
+            # Notify landlord via notification
+            try:
+                landlord = issue.house.loc.chu
+                if landlord:
+                    from django.urls import reverse
+                    from .models import Notification
+                    Notification.objects.create(
+                        user=landlord,
+                        title="Sự cố mới được báo",
+                        message=f"{renter.hoten} báo sự cố: {issue.title} tại {issue.house.ten}",
+                        type='issue_reported',
+                        target_url=reverse('issue_detail', kwargs={'issue_id': issue.id})
+                    )
+                    
+                    # Send email notification
+                    try:
+                        from django.core.mail import send_mail
+                        from django.conf import settings
+                        send_mail(
+                            subject=f'Sự cố mới: {issue.title}',
+                            message=f'{renter.hoten} đã báo sự cố tại {issue.house.ten}:\n\n{issue.description}',
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[landlord.email],
+                            fail_silently=True,
+                        )
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+            # HTMX request: return new table row + trigger modal close
+            if request.headers.get('HX-Request'):
+                response = render(request, 'sms/partials/issue_row.html', {'i': issue})
+                response['HX-Trigger'] = 'closeModal, issueCreated'
+                return response
+
+            messages.success(request, "Đã ghi nhận sự cố. Chủ nhà sẽ xử lý sớm nhất.")
+            return redirect('renter_issues')
+    else:
+        form = IssueReportForm(renter=renter)
+
+    # If HTMX, return modal content only
+    if request.headers.get('HX-Request'):
+        return render(request, 'sms/partials/renter_issue_form_modal.html', { 'form': form })
+
+    base_template = 'layouts/renter_base.html'
+    return render(request, 'sms/renter_issue_form.html', { 'form': form, 'base_template': base_template })
+
+
+@login_required
+def issue_list(request):
+    """Landlord's issue list - landlords only"""
+    # Check if user is a landlord (owns at least one location)
+    from .models import Location
+    if not Location.objects.filter(chu=request.user).exists():
+        messages.error(request, "Chỉ chủ nhà mới có quyền truy cập trang này.")
+        return redirect('index')
+    
+    issues = IssueReport.objects.filter(house__loc__chu=request.user).select_related('house','renter').order_by('-created_at')
+    return render(request, 'sms/issue_list.html', { 'issues': issues })
+
+
+@login_required
+def change_issue_status(request, issue_id):
+    """Change status of an issue and track history"""
+    issue = get_object_or_404(IssueReport, id=issue_id, house__loc__chu=request.user)
+    
+    new_status = request.POST.get('status', 'resolved')
+    old_status = issue.status
+    
+    if new_status != old_status:
+        issue.status = new_status
+        if new_status == 'resolved':
+            issue.resolved_at = timezone.now()
+        issue.save()
+        
+        # Track status history
+        IssueStatusHistory.objects.create(
+            issue=issue,
+            old_status=old_status,
+            new_status=new_status,
+            changed_by=request.user,
+            note=request.POST.get('note', '')
+        )
+        
+        # Notify renter
+        try:
+            if issue.renter and issue.renter.user:
+                from django.urls import reverse
+                status_text = dict(IssueReport.STATUS_CHOICES).get(new_status, new_status)
+                Notification.objects.create(
+                    user=issue.renter.user,
+                    title=f"Sự cố đã chuyển trạng thái: {status_text}",
+                    message=f"Sự cố '{issue.title}' tại {issue.house.ten} đã chuyển sang: {status_text}.",
+                    type='issue_resolved',
+                    target_url=reverse('issue_detail', kwargs={'issue_id': issue.id})
+                )
+                
+                # Send email
+                try:
+                    from django.core.mail import send_mail
+                    from django.conf import settings
+                    send_mail(
+                        subject=f'Cập nhật sự cố: {issue.title}',
+                        message=f'Sự cố tại {issue.house.ten} đã chuyển sang trạng thái: {status_text}.\n\n{issue.description}',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[issue.renter.user.email],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        
+        messages.success(request, f"Đã cập nhật trạng thái thành '{status_text}'.")
+    
+    # HTMX: refresh detail modal
+    if request.headers.get('HX-Request'):
+        return redirect('issue_detail', issue_id=issue_id)
+    
+    return redirect('issue_list')
+
+
+@login_required
+def resolve_issue(request, issue_id):
+    """Quick resolve action - marks as pending confirmation"""
+    issue = get_object_or_404(IssueReport, id=issue_id, house__loc__chu=request.user)
+    old_status = issue.status
+    
+    issue.status = 'pending_confirmation'
+    issue.save()
+    
+    # Track status history
+    IssueStatusHistory.objects.create(
+        issue=issue,
+        old_status=old_status,
+        new_status='pending_confirmation',
+        changed_by=request.user,
+        note='Chủ nhà đã đánh dấu hoàn thành, chờ khách thuê xác nhận'
+    )
+
+    # Notify renter to confirm
+    try:
+        if issue.renter and issue.renter.user:
+            from django.urls import reverse
+            Notification.objects.create(
+                user=issue.renter.user,
+                title="Vui lòng xác nhận sự cố đã xử lý",
+                message=f"Chủ nhà đã đánh dấu sự cố '{issue.title}' tại {issue.house.ten} là đã xử lý. Vui lòng kiểm tra và xác nhận.",
+                type='issue_resolved',
+                target_url=reverse('issue_detail', kwargs={'issue_id': issue.id})
+            )
+            
+            # Send email
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                send_mail(
+                    subject=f'Xác nhận sự cố đã xử lý: {issue.title}',
+                    message=f'Chủ nhà đã đánh dấu sự cố tại {issue.house.ten} là đã xử lý.\n\nVui lòng vào hệ thống để kiểm tra và xác nhận.\n\n{issue.description}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[issue.renter.user.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    messages.success(request, "Đã đánh dấu hoàn thành. Chờ khách thuê xác nhận.")
+    return redirect('issue_list')
+
+
+@login_required
+def renter_confirm_issue(request, issue_id):
+    """Renter confirms issue is resolved"""
+    issue = get_object_or_404(IssueReport, id=issue_id)
+    
+    # Check renter owns this issue
+    if not (issue.renter and issue.renter.user == request.user):
+        return HttpResponse("Unauthorized", status=403)
+    
+    if issue.status != 'pending_confirmation':
+        messages.warning(request, "Sự cố này không cần xác nhận.")
+        # Return updated issue detail for HTMX
+        return issue_detail(request, issue_id)
+    
+    action = request.POST.get('action')
+    old_status = issue.status
+    
+    if action == 'confirm':
+        issue.status = 'resolved'
+        issue.resolved_at = timezone.now()
+        issue.save()
+        
+        # Track history
+        IssueStatusHistory.objects.create(
+            issue=issue,
+            old_status=old_status,
+            new_status='resolved',
+            changed_by=request.user,
+            note='Khách thuê xác nhận đã xử lý xong'
+        )
+        
+        # Notify landlord
+        try:
+            landlord = issue.house.loc.chu
+            if landlord:
+                from django.urls import reverse
+                Notification.objects.create(
+                    user=landlord,
+                    title="Khách thuê đã xác nhận sự cố",
+                    message=f"{issue.renter.hoten} đã xác nhận sự cố '{issue.title}' tại {issue.house.ten} đã được xử lý xong.",
+                    type='issue_resolved',
+                    target_url=reverse('issue_detail', kwargs={'issue_id': issue.id})
+                )
+        except Exception:
+            pass
+        
+        messages.success(request, "Cảm ơn bạn đã xác nhận. Sự cố đã được đóng.")
+        
+    elif action == 'reject':
+        issue.status = 'rejected'
+        rejection_note = request.POST.get('note', 'Khách thuê cho biết chưa xử lý xong')
+        issue.save()
+        
+        # Track history
+        IssueStatusHistory.objects.create(
+            issue=issue,
+            old_status=old_status,
+            new_status='rejected',
+            changed_by=request.user,
+            note=rejection_note
+        )
+        
+        # Notify landlord
+        try:
+            landlord = issue.house.loc.chu
+            if landlord:
+                from django.urls import reverse
+                Notification.objects.create(
+                    user=landlord,
+                    title="Sự cố cần xử lý lại",
+                    message=f"{issue.renter.hoten} cho biết sự cố '{issue.title}' tại {issue.house.ten} chưa được xử lý xong: {rejection_note}",
+                    type='issue_reported',
+                    target_url=reverse('issue_detail', kwargs={'issue_id': issue.id})
+                )
+                
+                # Send email
+                try:
+                    from django.core.mail import send_mail
+                    from django.conf import settings
+                    send_mail(
+                        subject=f'Sự cố cần xử lý lại: {issue.title}',
+                        message=f'Khách thuê {issue.renter.hoten} cho biết sự cố tại {issue.house.ten} chưa được xử lý xong.\n\nLý do: {rejection_note}\n\n{issue.description}',
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[landlord.email],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        
+        messages.info(request, "Đã gửi yêu cầu xử lý lại cho chủ nhà.")
+    
+    # If HTMX request (from modal), return success response
+    if request.headers.get('HX-Request'):
+        return HttpResponse(status=200)
+    
+    # Otherwise return to notifications list
+    return redirect('notifications_list')
+
+
+@login_required
+def bulk_change_issue_status(request):
+    """Bulk change status for multiple issues"""
+    if request.method == 'POST':
+        issue_ids_str = request.POST.get('issue_ids', '')
+        issue_ids = [int(i) for i in issue_ids_str.split(',') if i]
+        new_status = request.POST.get('status')
+        
+        if issue_ids and new_status:
+            issues = IssueReport.objects.filter(
+                id__in=issue_ids,
+                house__loc__chu=request.user
+            )
+            
+            count = 0
+            for issue in issues:
+                old_status = issue.status
+                if old_status != new_status:
+                    issue.status = new_status
+                    if new_status == 'resolved':
+                        issue.resolved_at = timezone.now()
+                    issue.save()
+                    
+                    # Track history
+                    IssueStatusHistory.objects.create(
+                        issue=issue,
+                        old_status=old_status,
+                        new_status=new_status,
+                        changed_by=request.user,
+                        note='Bulk update'
+                    )
+                    
+                    # Notify renter
+                    try:
+                        if issue.renter and issue.renter.user:
+                            status_text = dict(IssueReport.STATUS_CHOICES).get(new_status, new_status)
+                            Notification.objects.create(
+                                user=issue.renter.user,
+                                title=f"Sự cố đã chuyển trạng thái: {status_text}",
+                                message=f"Sự cố '{issue.title}' tại {issue.house.ten} đã chuyển sang: {status_text}.",
+                                type='issue_resolved',
+                                target_url=reverse('issue_detail', kwargs={'issue_id': issue.id})
+                            )
+                    except Exception:
+                        pass
+                    
+                    count += 1
+            
+            if count > 0:
+                status_text = dict(IssueReport.STATUS_CHOICES).get(new_status, new_status)
+                messages.success(request, f"Đã cập nhật {count} sự cố sang trạng thái '{status_text}'.")
+        
+    return redirect('issue_list')
+
+# ------------------------
+# Authentication Modals
+# ------------------------
+from django.contrib.auth import login as auth_login
+from django.conf import settings
+from .forms import CustomAuthenticationForm
+from django.views.decorators.http import require_http_methods
+
+@require_http_methods(["GET", "POST"])
+def login_modal(request):
+    """Render and process a login form inside an HTML <dialog> for modal usage.
+
+    GET: returns dialog with login form
+    POST: authenticates; if success returns 204 with HX-Trigger to close and refresh/redirect
+    """
+    next_url = request.GET.get('next') or request.POST.get('next') or request.META.get('HTTP_REFERER') or '/'
+
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            # Prefer HX-Redirect to the next_url to refresh the page
+            response = HttpResponse(status=204)
+            response["HX-Redirect"] = next_url
+            # Also trigger closeModal for our dialog system if needed
+            response["HX-Trigger"] = "closeModal"
+            return response
+        # On invalid, fall-through to render form with errors (status 400 for clarity)
+    else:
+        form = CustomAuthenticationForm(request)
+
+    # Render modal dialog
+    from django.shortcuts import render
+    context = {
+        'form': form,
+        'next': next_url,
+    }
+    status = 400 if request.method == 'POST' else 200
+    return render(request, 'sms/partials/login_modal.html', context=context, status=status)
+
+
+@login_required
+def renter_issue_list(request):
+    """Renter's own issue list page - renters only"""
+    # Check if user is a renter
+    try:
+        renter = Renter.objects.get(user=request.user)
+    except Renter.DoesNotExist:
+        messages.error(request, "Chỉ khách thuê mới có quyền truy cập trang này.")
+        return redirect('index')
+    
+    issues = IssueReport.objects.filter(renter=renter).select_related('house', 'renter').order_by('-created_at')
+    return render(request, 'sms/renter_issue_list.html', { 'issues': issues })
+
+
+@login_required
+def issue_detail(request, issue_id):
+    """View issue detail - accessible by renter or landlord"""
+    issue = get_object_or_404(IssueReport, id=issue_id)
+    
+    # Check access: either renter owns it or user is landlord
+    is_renter = issue.renter and issue.renter.user == request.user
+    is_landlord = issue.house.loc.chu == request.user
+    
+    if not (is_renter or is_landlord):
+        return HttpResponse("Unauthorized", status=403)
+    
+    # Get related data
+    images = issue.images.all()
+    comments = issue.comments.filter(parent=None).prefetch_related('replies', 'user')
+    status_history = issue.status_history.select_related('changed_by')
+    comment_form = IssueCommentForm()
+    
+    context = {
+        'issue': issue,
+        'images': images,
+        'comments': comments,
+        'status_history': status_history,
+        'comment_form': comment_form,
+        'is_landlord': is_landlord,
+        'is_renter': is_renter,
+    }
+    
+    # If HTMX request, return modal content only
+    if request.headers.get('HX-Request'):
+        return render(request, 'sms/partials/issue_detail.html', context)
+    
+    # Otherwise return full page
+    return render(request, 'sms/issue_detail_page.html', context)
+
+
+@login_required
+def issue_detail_modal(request, issue_id):
+    """View issue detail for modal - always returns partial content"""
+    issue = get_object_or_404(IssueReport, id=issue_id)
+    
+    # Check access: either renter owns it or user is landlord
+    is_renter = issue.renter and issue.renter.user == request.user
+    is_landlord = issue.house.loc.chu == request.user
+    
+    if not (is_renter or is_landlord):
+        return HttpResponse("Unauthorized", status=403)
+    
+    # Get related data
+    images = issue.images.all()
+    comments = issue.comments.filter(parent=None).prefetch_related('replies', 'user')
+    status_history = issue.status_history.select_related('changed_by')
+    comment_form = IssueCommentForm()
+    
+    context = {
+        'issue': issue,
+        'images': images,
+        'comments': comments,
+        'status_history': status_history,
+        'comment_form': comment_form,
+        'is_landlord': is_landlord,
+        'is_renter': is_renter,
+    }
+    
+    return render(request, 'sms/partials/issue_detail.html', context)
+
+
+@login_required
+def add_issue_comment(request, issue_id):
+    """Add comment to an issue"""
+    issue = get_object_or_404(IssueReport, id=issue_id)
+    
+    # Check access
+    is_renter = issue.renter and issue.renter.user == request.user
+    is_landlord = issue.house.loc.chu == request.user
+    
+    if not (is_renter or is_landlord):
+        return HttpResponse("Unauthorized", status=403)
+    
+    if request.method == 'POST':
+        form = IssueCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.issue = issue
+            comment.user = request.user
+            
+            # Handle reply (parent comment)
+            parent_id = request.POST.get('parent_id')
+            if parent_id:
+                comment.parent_id = parent_id
+            
+            comment.save()
+            
+            # Notify the other party
+            try:
+                recipient = issue.house.loc.chu if is_renter else issue.renter.user
+                if recipient:
+                    from django.urls import reverse
+                    Notification.objects.create(
+                        user=recipient,
+                        title=f"Bình luận mới về sự cố: {issue.title}",
+                        message=f"{request.user.username} đã bình luận: {comment.comment[:100]}...",
+                        type='issue_reported',
+                        target_url=reverse('issue_detail', args=[issue.id])
+                    )
+                    
+                    # Send email
+                    try:
+                        from django.core.mail import send_mail
+                        from django.conf import settings
+                        send_mail(
+                            subject=f'Bình luận mới: {issue.title}',
+                            message=f'{request.user.username} đã bình luận:\n\n{comment.comment}',
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[recipient.email],
+                            fail_silently=True,
+                        )
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            
+            # HTMX: return comment HTML
+            if request.headers.get('HX-Request'):
+                return render(request, 'sms/partials/comment_item.html', {
+                    'comment': comment,
+                    'is_landlord': is_landlord
+                })
+    
+    return redirect('issue_detail', issue_id=issue_id)
+
+
+@login_required
+def notification_badge(request):
+    """HTMX endpoint to return notification badge HTML"""
+    from .models import Notification
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return render(request, 'sms/notification_badge.html', {'unread_count': unread_count})

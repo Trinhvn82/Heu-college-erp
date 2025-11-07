@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 import notifications.urls
 from debug_toolbar.toolbar import debug_toolbar_urls
 from sms.forms import CustomAuthenticationForm
+from sms import views as sms_views
 
 urlpatterns = [
     path('heuadmin/', admin.site.urls),
@@ -19,6 +20,7 @@ urlpatterns = [
 
     path('accounts/login/',
          auth_views.LoginView.as_view(template_name='sms/login.html', authentication_form=CustomAuthenticationForm), name='login'),
+     path('accounts/login-modal/', sms_views.login_modal, name='login_modal'),
     path('accounts/logout/',
          auth_views.LogoutView.as_view(template_name='sms/logout.html'), name='logout'),
 

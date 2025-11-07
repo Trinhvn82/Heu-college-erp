@@ -24,6 +24,9 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -32,7 +35,7 @@
     <!-- Simple Header for Landing -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="/">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'renter_landing' %}">
                 <span class="fas fa-home me-2"></span>
                 Quản lý Nhà trọ
             </a>
@@ -43,13 +46,8 @@
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'rental_dashboard' %}">
-                                <span class="fas fa-chart-line me-1"></span>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'loc_list' %}">
-                                <span class="fas fa-building me-1"></span>Vị trí
+                            <a class="nav-link" href="/">
+                                <span class="fas fa-home me-1"></span>Trang chủ
                             </a>
                         </li>
                         <li class="nav-item dropdown">
@@ -66,11 +64,7 @@
                                 </a></li>
                             </ul>
                         </li>
-                        <li class="nav-item ms-2">
-                            <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">
-                                <span class="fas fa-sign-out-alt me-1"></span>Đăng xuất
-                            </a>
-                        </li>
+                        
                     {% else %}
                         <li class="nav-item">
                             <a class="btn btn-primary" href="{% url 'login' %}">
@@ -110,6 +104,27 @@
 
     <!-- Volt JS -->
     <script src="{% static 'assets/js/volt.js' %}"></script>
+
+    <script>
+        // Add red asterisk to labels of required fields on public pages
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                var requiredFields = document.querySelectorAll('form input[required], form select[required], form textarea[required]');
+                requiredFields.forEach(function(el) {
+                    if (!el.id) return;
+                    var label = document.querySelector('label[for="' + el.id + '"]');
+                    if (label && !label.querySelector('.required-asterisk')) {
+                        var star = document.createElement('span');
+                        star.className = 'required-asterisk text-danger ms-1';
+                        star.textContent = '*';
+                        label.appendChild(star);
+                    }
+                });
+            } catch (e) {
+                // ignore
+            }
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

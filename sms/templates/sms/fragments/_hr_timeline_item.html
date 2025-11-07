@@ -1,0 +1,88 @@
+{% load humanize %}
+<li class="timeline-item" id="hr-item-{{ record.id }}">
+    <div class="timeline-badge bg-{% if record.active %}success{% else %}danger{% endif %}"><span class="fas fa-home"></span></div>
+    
+    <div class="timeline-panel card shadow-sm mb-3 border-{% if record.active %}success{% else %}danger{% endif %}">
+        <div class="card-header bg-light border-bottom-0 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-{% if record.active %}success{% else %}danger{% endif %}">
+                {{ record.renter.hoten }}
+                <span class="badge bg-{% if record.active %}success{% else %}secondary{% endif %} text-white">{% if record.active %}ĐANG THUÊ{% else %}NGƯNG HIỆU LỰC{% endif %}</span>
+            </h5>
+            <small class="text-muted">
+                <span class="fas fa-calendar-alt"></span> Bắt đầu: <strong>{{ record.rent_from|date:"d/m/Y" }}</strong>
+            </small>
+        </div>
+        <div class="card-body">
+            <p class="card-text mb-1">
+                <span class="fas fa-map-marker-alt"></span> Nhà trọ: {{ record.house.ten|default:"[Chưa có Tên]" }}
+            </p>
+            <p class="card-text mb-1">
+                <span class="fas fa-phone-alt"></span> Liên hệ: {{ record.renter.sdt }} | CCCD: {{ record.renter.cccd }}
+            </p>
+            
+            <p class="card-text mb-1">
+                <span class="fas fa-money-bill-wave"></span> Giá thuê: {{ record.house.permonth|intcomma }} VNĐ/tháng
+            </p>
+
+            <hr class="my-2">
+            <div class="d-flex flex-wrap gap-2">
+                {% if not record.active %}
+                <form
+                    action="{% url 'hr_toggle_active' record.id %}"
+                    method="post"
+                    hx-post="{% url 'hr_toggle_active' record.id %}"
+                    hx-target="#hr-timeline-wrapper"
+                    hx-swap="innerHTML"
+                    class="m-0"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-success" title="Kích hoạt hợp đồng" aria-label="Kích hoạt hợp đồng">
+                        <span class="fas fa-toggle-on"></span>
+                    </button>
+                </form>
+                {% else %}
+                <span class="badge bg-success text-white align-self-center">
+                    <span class="fas fa-check-circle me-1"></span>Đang hiệu lực
+                </span>
+                {% endif %}
+
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteHrModal-{{ record.id }}" title="Xóa hợp đồng" aria-label="Xóa hợp đồng">
+                    <span class="fas fa-trash-alt"></span>
+                </button>
+
+                <!-- Delete confirm modal -->
+                <div class="modal fade" id="deleteHrModal-{{ record.id }}" tabindex="-1" aria-labelledby="deleteHrModalLabel-{{ record.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteHrModalLabel-{{ record.id }}">Xác nhận xóa hợp đồng</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Bạn có chắc muốn xóa hợp đồng của <strong>{{ record.renter.hoten }}</strong>
+                                (bắt đầu: {{ record.rent_from|date:"d/m/Y" }})?
+                                Hành động này không thể hoàn tác.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <form
+                                    action="{% url 'hr_delete' record.id %}"
+                                    method="post"
+                                    hx-post="{% url 'hr_delete' record.id %}"
+                                    hx-target="#hr-timeline-wrapper"
+                                    hx-swap="innerHTML"
+                                    class="m-0"
+                                >
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">
+                                        Xóa hợp đồng
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</li>

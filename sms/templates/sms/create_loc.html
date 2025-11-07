@@ -13,14 +13,13 @@
 {% endblock %}
 
 {% block content %}
-                    <li class="breadcrumb-item active" aria-current="page">Tạo mới địa chỉ</li>
-                </ol>
-            </div>
-        </div>
-
         <div class="row item-row">
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm mb-4">
+                    <h2 class="h5 mb-3">
+                        <span class="fas fa-location-dot me-2"></span>
+                        Tạo mới địa chỉ
+                    </h2>
                     <form action="" method="post" >
                         {% csrf_token %}
                         <div class="row">

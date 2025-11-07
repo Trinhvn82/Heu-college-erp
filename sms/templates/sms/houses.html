@@ -1,0 +1,52 @@
+{% extends "layouts/rental_base.html" %}
+{% load static %}
+
+{% block title %}Nhà trọ{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Nhà</li>
+{% endblock %}
+
+{% block content %}
+<div class="card border-light shadow-sm mb-4">
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-center mb-3"
+          hx-get="{% url 'houses_partial' %}"
+          hx-target="#houses-list-wrapper"
+          hx-swap="innerHTML"
+          hx-include="#locSelect"
+          hx-indicator="#houses-indicator"
+          hx-push-url="true">
+      <div class="col-auto">
+        <label for="locSelect" class="col-form-label">Vị trí</label>
+      </div>
+      <div class="col-auto">
+  <select id="locSelect" name="loc" class="form-select" onchange="this.form.requestSubmit()">
+          {% for loc in locations %}
+            <option value="{{ loc.id }}" {% if selected_loc and loc.id == selected_loc.id %}selected{% endif %}>
+              {{ loc.diachi }} - {{ loc.xp.ten }}, {{ loc.xp.tp }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto ms-auto d-flex align-items-center">
+        {% if selected_loc %}
+        <a class="btn btn-primary" href="{% url 'create_house' selected_loc.id %}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+          </svg>
+          Thêm nhà
+        </a>
+        {% endif %}
+        <div id="houses-indicator" class="spinner-border text-primary ms-2 htmx-indicator" role="status" style="width: 1.5rem; height: 1.5rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </form>
+    <div id="houses-list-wrapper">
+      {% include 'sms/fragments/_houses_table.html' with houses=houses selected_loc=selected_loc %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

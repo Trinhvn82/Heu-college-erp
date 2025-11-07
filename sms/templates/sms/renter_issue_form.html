@@ -1,0 +1,35 @@
+{% extends base_template|default:'layouts/renter_base.html' %}
+{% block title %}Báo sự cố{% endblock %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="/renter/dashboard/">Dashboard</a></li>
+<li class="breadcrumb-item active">Báo sự cố</li>
+{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h3 class="h5 mb-3"><span class="fas fa-triangle-exclamation text-warning me-2"></span>Báo sự cố</h3>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="id_house" class="form-label">Nhà/Phòng</label>
+            {{ form.house }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tiêu đề</label>
+            {{ form.title }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mô tả chi tiết</label>
+            {{ form.description }}
+          </div>
+          <button class="btn btn-primary" type="submit">
+            <span class="fas fa-paper-plane me-1"></span>Gửi sự cố
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% load humanize %}
+<div class="card card-body bg-white border-light shadow-sm">
+  <h3 class="h5 mb-3 border-bottom pb-2">Trao đổi / Bình luận</h3>
+
+  <div id="billCommentsList">
+    {% for comment in bill_comments %}
+      {% include 'sms/partials/comment_item.html' with comment=comment is_landlord=is_landlord %}
+    {% empty %}
+      <div class="alert alert-light border text-dark small">
+        <i class="fas fa-comments me-1"></i>Chưa có bình luận nào. Hãy bắt đầu cuộc trao đổi về hóa đơn này.
+      </div>
+    {% endfor %}
+  </div>
+
+  <form method="post"
+        action="{% url 'add_bill_comment' hoadon.id %}"
+        hx-post="{% url 'add_bill_comment' hoadon.id %}"
+        hx-target="#billCommentsList"
+        hx-swap="beforeend"
+        hx-on::after-request="this.reset()"
+        class="mt-3">
+    {% csrf_token %}
+    <div class="mb-2">
+      {{ bill_comment_form.comment }}
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary">
+      <i class="fas fa-paper-plane me-1"></i>Gửi bình luận
+    </button>
+  </form>
+</div>

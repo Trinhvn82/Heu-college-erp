@@ -1,0 +1,28 @@
+{% load humanize %}
+<ul class="timeline" id="hr-timeline">
+    <li class="timeline-item">
+        <div class="timeline-badge bg-primary">
+            <span class="fas fa-file-signature"></span>
+        </div>
+        <div class="timeline-panel card shadow-sm mb-3 border-primary">
+            <div class="card-body text-center">
+                <h5 class="card-title text-primary">Bắt đầu một Hợp đồng mới?</h5>
+                <p class="card-text text-muted mb-3">
+                    Tạo bản ghi hợp đồng tiếp theo hoặc hợp đồng thuê đầu tiên cho nhà trọ này.
+                </p>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createHRModal">
+                    <span class="fas fa-plus-circle me-2"></span> Tạo Hợp đồng Mới Ngay
+                </button>
+            </div>
+        </div>
+    </li>
+    {% if hrs %}
+        {% for record in hrs %}
+            {% include 'sms/fragments/_hr_timeline_item.html' with record=record %}
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-warning text-dark text-center mt-3">
+            Đây là nhà trọ chưa có lịch sử thuê. Hãy tạo hợp đồng đầu tiên!
+        </div>
+    {% endif %}
+</ul>

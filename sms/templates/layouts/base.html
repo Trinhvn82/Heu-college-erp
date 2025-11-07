@@ -84,6 +84,29 @@
    
     <script defer src="{% static 'js/htmx-1.9.4.js' %}"></script>
     <script defer src="{% static 'js/modals.js' %}"></script>
+    <script>
+      // Open login modal when needed
+      function openLoginModal(nextUrl){
+          const url = '/accounts/login-modal/' + (nextUrl ? ('?next=' + encodeURIComponent(nextUrl)) : '');
+          fetch(url, { headers: { 'HX-Request': 'true' }})
+              .then(r => r.text())
+              .then(html => {
+                  const tmp = document.createElement('div');
+                  tmp.innerHTML = html;
+                  const dialog = tmp.querySelector('dialog');
+                  if (dialog){
+                      document.body.appendChild(dialog);
+                      dialog.addEventListener('close', ()=> dialog.remove());
+                      dialog.showModal();
+                  }
+              }).catch(()=>{});
+      }
+      document.body?.addEventListener('htmx:responseError', function(evt){
+          if (evt.detail && evt.detail.xhr && evt.detail.xhr.status === 401){
+              openLoginModal(location.pathname + location.search);
+          }
+      });
+    </script>
     <link href="{% static 'css/modals.css' %}" rel="stylesheet">
   
     {% block stylesheets %}{% endblock stylesheets %}

@@ -1,0 +1,141 @@
+<div class="modal-header">
+  <h5 class="modal-title"><i class="fas fa-triangle-exclamation text-warning me-2"></i>Báo sự cố</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+  <form method="post" 
+        enctype="multipart/form-data"
+        hx-post="{% url 'renter_report_issue' %}" 
+        hx-target="#issueTableBody" 
+        hx-swap="afterbegin"
+        hx-encoding="multipart/form-data"
+        id="issueForm">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_house" class="form-label">Nhà/Phòng <span class="text-danger">*</span></label>
+      <select name="house" id="id_house" class="form-select" required>
+        <option value="">-- Chọn nhà/phòng --</option>
+        {% for choice in form.house.field.choices %}
+          {% if choice.0 %}
+          <option value="{{ choice.0 }}" {% if choice.0 == form.house.value %}selected{% endif %}>{{ choice.1 }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+      <div class="invalid-feedback">Vui lòng chọn nhà/phòng.</div>
+    </div>
+    <div class="mb-3">
+      <label for="id_title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+      <input type="text" name="title" id="id_title" class="form-control" 
+             placeholder="Ví dụ: Điện bị cúp, Nước không chảy, Khóa cửa hỏng..."
+             maxlength="200" required value="{{ form.title.value|default:'' }}">
+      <div class="invalid-feedback">Vui lòng nhập tiêu đề.</div>
+    </div>
+    <div class="mb-3">
+      <label for="id_description" class="form-label">Mô tả chi tiết <span class="text-danger">*</span></label>
+      <textarea name="description" id="id_description" class="form-control" rows="4" 
+                placeholder="Mô tả chi tiết tình trạng sự cố để chúng tôi có thể hỗ trợ nhanh nhất..."
+                required>{{ form.description.value|default:'' }}</textarea>
+      <div class="form-text">Vui lòng mô tả càng chi tiết càng tốt để chủ nhà có thể xử lý hiệu quả.</div>
+      <div class="invalid-feedback">Vui lòng mô tả chi tiết sự cố.</div>
+    </div>
+    <div class="mb-3">
+      <label for="id_images" class="form-label">Hình ảnh minh họa (tùy chọn)</label>
+      <input type="file" name="images" id="id_images" class="form-control" multiple accept="image/*">
+      <div class="form-text">
+        <i class="fas fa-info-circle me-1"></i>Có thể chọn nhiều hình. Hỗ trợ: JPG, PNG, GIF (tối đa 5MB/ảnh)
+      </div>
+      <div id="imagePreview" class="mt-2 d-flex flex-wrap gap-2"></div>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <i class="fas fa-paper-plane me-1"></i>Gửi sự cố
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+// Autofocus first field when modal opens
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('issueModal');
+  if (modal) {
+    modal.addEventListener('shown.bs.modal', function() {
+      const firstInput = modal.querySelector('select, input, textarea');
+      if (firstInput) firstInput.focus();
+    });
+  }
+});
+
+// Client-side validation
+document.getElementById('issueForm').addEventListener('submit', function(e) {
+  const form = e.target;
+  const house = form.querySelector('#id_house');
+  const title = form.querySelector('#id_title');
+  const description = form.querySelector('#id_description');
+  
+  let valid = true;
+  
+  // Validate house
+  if (!house.value) {
+    house.classList.add('is-invalid');
+    valid = false;
+  } else {
+    house.classList.remove('is-invalid');
+    house.classList.add('is-valid');
+  }
+  
+  // Validate title
+  if (!title.value.trim()) {
+    title.classList.add('is-invalid');
+    valid = false;
+  } else {
+    title.classList.remove('is-invalid');
+    title.classList.add('is-valid');
+  }
+  
+  // Validate description
+  if (!description.value.trim()) {
+    description.classList.add('is-invalid');
+    valid = false;
+  } else {
+    description.classList.remove('is-invalid');
+    description.classList.add('is-valid');
+  }
+  
+  if (!valid) {
+    e.preventDefault();
+    return false;
+  }
+  
+  // Disable submit button to prevent double-submit
+  const submitBtn = form.querySelector('#submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang gửi...';
+});
+
+// Image preview
+document.getElementById('id_images').addEventListener('change', function(e) {
+  const preview = document.getElementById('imagePreview');
+  preview.innerHTML = '';
+  
+  const files = Array.from(e.target.files);
+  files.forEach((file, index) => {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const div = document.createElement('div');
+        div.className = 'position-relative';
+        div.innerHTML = `
+          <img src="${e.target.result}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+          <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-0" 
+                  style="width: 20px; height: 20px; font-size: 10px; line-height: 1;"
+                  onclick="this.parentElement.remove();">×</button>
+        `;
+        preview.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+});
+</script>

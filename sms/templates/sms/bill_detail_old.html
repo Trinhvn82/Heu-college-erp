@@ -80,13 +80,13 @@
                         <div class="col-md-4">
                             <p class="mb-1 text-muted">Trạng thái</p>
                             {% if hoadon.status == 'DaTT' %}
-                                <span class="badge bg-success">Đã Thanh toán</span>
+                                <span class="badge bg-success text-white">Đã Thanh toán</span>
                             {% elif hoadon.status == 'QuaHan' %}
-                                <span class="badge bg-danger">QUÁ HẠN</span>
+                                <span class="badge bg-danger text-white">QUÁ HẠN</span>
                             {% elif hoadon.status == 'DangTT' %}
                                 <span class="badge bg-warning text-dark">Đang Thanh toán</span>
                             {% else %}
-                                <span class="badge bg-secondary">Chưa Thanh toán</span>
+                                <span class="badge bg-secondary text-white">Chưa Thanh toán</span>
                             {% endif %}
                         </div>
                     </div>

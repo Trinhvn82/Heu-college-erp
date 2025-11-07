@@ -21,6 +21,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
     <style>
         body {
             background-color: #f5f7fa;
@@ -63,6 +66,25 @@
             border: none;
             box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
+        /* Fix collapsed navbar on mobile */
+        @media (max-width: 991.98px) {
+            .main-navbar .navbar-collapse {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                padding: 1rem !important;
+                border-radius: 0.5rem !important;
+                margin-top: 0.5rem !important;
+            }
+            .main-navbar .navbar-nav .nav-link {
+                color: white !important;
+                padding: 0.75rem 1rem !important;
+            }
+            .main-navbar .navbar-nav .nav-link:hover {
+                background-color: rgba(255,255,255,0.2) !important;
+            }
+            .main-navbar .dropdown-toggle {
+                color: white !important;
+            }
+        }
         .content-wrapper {
             padding: 2rem 0;
             min-height: calc(100vh - 200px);
@@ -85,6 +107,93 @@
             font-weight: 700;
             color: #2d3748;
         }
+        /* Ensure proper text contrast for all badges and buttons */
+        .badge.bg-success,
+        .badge.bg-danger,
+        .badge.bg-primary,
+        .badge.bg-secondary,
+        .badge.bg-dark,
+        .badge.bg-info {
+            color: white !important;
+        }
+        .badge.bg-warning,
+        .badge.bg-light {
+            color: #212529 !important;
+        }
+        .btn-outline-secondary,
+        .btn-outline-info,
+        .btn-outline-primary {
+            border-width: 1.5px;
+        }
+        .btn-outline-secondary:hover,
+        .btn-outline-info:hover,
+        .btn-outline-primary:hover {
+            color: white !important;
+        }
+        /* Timeline badge text */
+        .timeline-badge {
+            color: white !important;
+        }
+        /* Ensure button icons are visible */
+        .btn-sm svg,
+        .btn-sm .fas,
+        .btn-sm .fa {
+            opacity: 1;
+        }
+        /* Ensure all Bootstrap buttons have proper text color */
+        .btn-primary,
+        .btn-success,
+        .btn-danger,
+        .btn-info,
+        .btn-secondary,
+        .btn-dark {
+            color: white !important;
+        }
+        .btn-warning,
+        .btn-light {
+            color: #212529 !important;
+        }
+        /* Fix icon-only buttons - ensure icons inherit color */
+        .btn-sm .fas,
+        .btn-sm .fa,
+        .btn .fas,
+        .btn .fa {
+            color: inherit;
+        }
+        /* Outline buttons - ensure proper text/icon color */
+        .btn-outline-danger {
+            color: #dc3545 !important;
+        }
+        .btn-outline-danger:hover {
+            color: white !important;
+            background-color: #dc3545 !important;
+        }
+        /* Card headers should have dark text */
+        .card-header {
+            color: inherit;
+        }
+        /* Ensure text in light backgrounds is dark */
+        .bg-light,
+        .card-header.bg-light {
+            color: #212529 !important;
+        }
+        /* Fix alert boxes with proper text color */
+        .alert-warning {
+            color: #856404 !important;
+            background-color: #fff3cd !important;
+        }
+        .alert-info {
+            color: white !important;
+            background-color: #0d6efd !important;
+        }
+        .alert-success {
+            color: white !important;
+            background-color: #198754 !important;
+        }
+        .alert-danger {
+            color: white !important;
+            background-color: #dc3545 !important;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -103,29 +212,55 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'rental_dashboard' %}active{% endif %}" href="{% url 'rental_dashboard' %}">
-                            <span class="fas fa-chart-line me-1"></span>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'loc' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loc_list' %}">
-                            <span class="fas fa-map-marker-alt me-1"></span>Vị trí
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'renter' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'renter_list' %}">
-                            <span class="fas fa-users me-1"></span>Khách thuê
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'invoice' in request.resolver_match.url_name or 'bill' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'invoice_search' %}">
-                            <span class="fas fa-file-invoice me-1"></span>Hóa đơn
-                        </a>
-                    </li>
+                    {% if user.is_authenticated %}
+                        {# Menu cho Landlord/Admin - hiển thị mặc định #}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'rental_dashboard' %}active{% endif %}" href="{% url 'rental_dashboard' %}">
+                                <span class="fas fa-chart-line me-1"></span>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'loc' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loc_list' %}">
+                                <span class="fas fa-map-marker-alt me-1"></span>Vị trí
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'house' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'houses' %}">
+                                <span class="fas fa-house me-1"></span>Nhà
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'renter' in request.resolver_match.url_name and 'renter_dashboard' not in request.resolver_match.url_name %}active{% endif %}" href="{% url 'renter_list' %}">
+                                <span class="fas fa-users me-1"></span>Khách thuê
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'invoice' in request.resolver_match.url_name or 'bill' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'invoice_search' %}">
+                                <span class="fas fa-file-invoice me-1"></span>Hóa đơn
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'issue_list' %}active{% endif %}" href="{% url 'issue_list' %}">
+                                <span class="fas fa-wrench me-1"></span>Sự cố
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
+                        <li class="nav-item" 
+                            hx-get="{% url 'notification_badge' %}" 
+                            hx-trigger="every 10s"
+                            hx-swap="innerHTML">
+                            <a class="nav-link position-relative" href="{% url 'notifications_list' %}">
+                                <span class="fas fa-bell"></span>
+                                {% if unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                  {{ unread_notifications_count }}
+                                </span>
+                                {% endif %}
+                            </a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="fas fa-user-circle me-1"></span>{{ user.username }}
@@ -140,14 +275,10 @@
                                 </a></li>
                             </ul>
                         </li>
-                        <li class="nav-item ms-2">
-                            <a class="btn btn-sm btn-outline-light" href="{% url 'logout' %}">
-                                <span class="fas fa-sign-out-alt me-1"></span>Đăng xuất
-                            </a>
-                        </li>
+                        
                     {% else %}
                         <li class="nav-item">
-                            <a class="btn btn-light btn-sm" href="{% url 'login' %}">
+                            <a class="btn btn-light btn-sm" href="{% url 'login' %}" data-login-modal="true">
                                 <span class="fas fa-sign-in-alt me-1"></span>Đăng nhập
                             </a>
                         </li>
@@ -174,14 +305,24 @@
             </div>
             {% endblock %}
 
-            <!-- Alerts -->
+            <!-- Toast Notifications -->
             {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+            <div aria-live="polite" aria-atomic="true" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+                <div id="toast-container" class="toast-container">
+                    {% for message in messages %}
+                        {% with tags=message.tags %}
+                        <div class="toast align-items-center {% if 'success' in tags %}text-bg-success{% elif 'error' in tags or 'danger' in tags %}text-bg-danger{% elif 'warning' in tags %}text-bg-warning text-dark{% elif 'info' in tags %}text-bg-info text-dark{% else %}text-bg-secondary{% endif %} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4000">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    {{ message }}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+            </div>
             {% endif %}
 
             <!-- Page Content -->
@@ -208,6 +349,138 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'assets/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js' %}"></script>
     <script src="{% static 'assets/js/volt.js' %}"></script>
+
+    <script>
+        // Bootstrap Toast: show all message toasts on load
+        document.addEventListener('DOMContentLoaded', function(){
+            try {
+                var toastElList = [].slice.call(document.querySelectorAll('#toast-container .toast'));
+                toastElList.forEach(function(toastEl){
+                    var toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                });
+            } catch(e) { /* no-op */ }
+        });
+    </script>
+
+    <script>
+        // Show toast from HTMX custom event (triggered via HX-Trigger header)
+        document.addEventListener('showToast', function(evt){
+            try {
+                var detail = evt.detail || {};
+                var message = detail.message || '';
+                var level = detail.level || 'info';
+                var cls = 'text-bg-secondary';
+                if (level === 'success') cls = 'text-bg-success';
+                else if (level === 'danger' || level === 'error') cls = 'text-bg-danger';
+                else if (level === 'warning') cls = 'text-bg-warning text-dark';
+                else if (level === 'info') cls = 'text-bg-info text-dark';
+
+                var container = document.querySelector('.toast-container') || (function(){
+                    var wrap = document.createElement('div');
+                    wrap.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                    wrap.style.zIndex = 1080;
+                    document.body.appendChild(wrap);
+                    return wrap;
+                })();
+
+                var toastEl = document.createElement('div');
+                toastEl.className = 'toast align-items-center ' + cls + ' border-0';
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.innerHTML = '<div class="d-flex">\
+                    <div class="toast-body">' + message + '</div>\
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>\
+                </div>';
+                container.appendChild(toastEl);
+                var toast = new bootstrap.Toast(toastEl, { delay: 4000, autohide: true });
+                toast.show();
+                toastEl.addEventListener('hidden.bs.toast', function(){ toastEl.remove(); });
+            } catch (e) { /* no-op */ }
+        });
+    </script>
+
+    <script>
+        // Auto-scroll to alerts if present so user doesn't miss success/error messages
+        document.addEventListener('DOMContentLoaded', function(){
+            try {
+                var alertBox = document.querySelector('#page-alerts .alert');
+                if (alertBox) {
+                    alertBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // brief highlight effect
+                    alertBox.style.boxShadow = '0 0 0 3px rgba(25,135,84,.25)';
+                    setTimeout(function(){ alertBox.style.boxShadow = ''; }, 1200);
+                }
+            } catch(e) { /* no-op */ }
+        });
+    </script>
+
+    <script>
+        // Login modal helper
+        function openLoginModal(nextUrl){
+            const url = '/accounts/login-modal/' + (nextUrl ? ('?next=' + encodeURIComponent(nextUrl)) : '');
+            fetch(url, { headers: { 'HX-Request': 'true' }})
+                .then(r => r.text())
+                .then(html => {
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = html;
+                    const dialog = tmp.querySelector('dialog');
+                    if (dialog){
+                        document.body.appendChild(dialog);
+                        dialog.addEventListener('close', ()=> dialog.remove());
+                        dialog.showModal();
+                    }
+                }).catch(()=>{});
+        }
+
+        // Intercept login link to open modal
+        document.addEventListener('click', function(evt){
+            const a = evt.target.closest('a[data-login-modal]');
+            if (a){
+                evt.preventDefault();
+                openLoginModal(location.pathname + location.search);
+            }
+        });
+
+        // Show login modal automatically on HTMX 401 (session timeout)
+        document.body.addEventListener('htmx:responseError', function(evt){
+            if (evt.detail && evt.detail.xhr && evt.detail.xhr.status === 401){
+                openLoginModal(location.pathname + location.search);
+            }
+        });
+    </script>
+
+    <script>
+        // Add red asterisk to labels of required fields across the app
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                var requiredFields = document.querySelectorAll('form input[required], form select[required], form textarea[required]');
+                requiredFields.forEach(function(el) {
+                    if (!el.id) return;
+                    var label = document.querySelector('label[for="' + el.id + '"]');
+                    if (label && !label.querySelector('.required-asterisk')) {
+                        var star = document.createElement('span');
+                        star.className = 'required-asterisk text-danger ms-1';
+                        star.textContent = '*';
+                        label.appendChild(star);
+                    }
+                });
+
+                // Handle radio/checkbox groups wrapped in fieldsets
+                document.querySelectorAll('fieldset[required] legend').forEach(function(legend){
+                    if (!legend.querySelector('.required-asterisk')) {
+                        var star2 = document.createElement('span');
+                        star2.className = 'required-asterisk text-danger ms-1';
+                        star2.textContent = '*';
+                        legend.appendChild(star2);
+                    }
+                });
+            } catch (e) {
+                // no-op
+            }
+        });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

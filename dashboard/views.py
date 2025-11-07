@@ -136,30 +136,48 @@ def api_hssv(request):
 @login_required
 def rental_dashboard(request):
     """Dashboard thống kê cho hệ thống cho thuê nhà"""
-    
+
+    # Scope querysets for landlords; superusers see all
+    if request.user.is_superuser:
+        locations_qs = Location.objects.all()
+        houses_qs = House.objects.all()
+        renters_qs = Renter.objects.all()
+        contracts_qs = HouseRenter.objects.all()
+        hoadon_qs = Hoadon.objects.all()
+    else:
+        locations_qs = Location.objects.filter(chu=request.user)
+        houses_qs = House.objects.filter(loc__chu=request.user)
+        renters_qs = (
+            Renter.objects.filter(
+                Q(chu_id=request.user.id) | Q(houserenter__house__loc__chu=request.user)
+            ).distinct()
+        )
+        contracts_qs = HouseRenter.objects.filter(house__loc__chu=request.user)
+        hoadon_qs = Hoadon.objects.filter(house__loc__chu=request.user)
+
     # Thống kê tổng quan
-    total_locations = Location.objects.count()
-    total_houses = House.objects.count()
-    total_renters = Renter.objects.count()
-    active_contracts = HouseRenter.objects.filter(active=True).count()
-    
+    total_locations = locations_qs.count()
+    total_houses = houses_qs.count()
+    total_renters = renters_qs.count()
+    active_contracts = contracts_qs.filter(active=True).count()
+
     # Thống kê hóa đơn
-    total_hoadon = Hoadon.objects.count()
-    hoadon_chuatt = Hoadon.objects.filter(status='ChuaTT').count()
-    hoadon_dangtt = Hoadon.objects.filter(status='DangTT').count()
-    hoadon_datt = Hoadon.objects.filter(status='DaTT').count()
-    hoadon_quahan = Hoadon.objects.filter(status='QuaHan').count()
-    
+    total_hoadon = hoadon_qs.count()
+    hoadon_chuatt = hoadon_qs.filter(status='ChuaTT').count()
+    hoadon_dangtt = hoadon_qs.filter(status='DangTT').count()
+    hoadon_datt = hoadon_qs.filter(status='DaTT').count()
+    hoadon_quahan = hoadon_qs.filter(status='QuaHan').count()
+
     # Thống kê doanh thu
-    total_revenue = Hoadon.objects.aggregate(
+    total_revenue = hoadon_qs.aggregate(
         total=Sum('TONG_CONG')
     )['total'] or 0
-    
-    total_paid = Hoadon.objects.aggregate(
+
+    total_paid = hoadon_qs.aggregate(
         paid=Sum('SO_TIEN_DA_TRA')
     )['paid'] or 0
-    
-    total_debt = Hoadon.objects.aggregate(
+
+    total_debt = hoadon_qs.aggregate(
         debt=Sum('CONG_NO')
     )['debt'] or 0
     
@@ -178,7 +196,7 @@ def rental_dashboard(request):
             next_month = month_start + timedelta(days=32)
             month_end = next_month.replace(day=1) - timedelta(days=1)
         
-        revenue = Hoadon.objects.filter(
+        revenue = hoadon_qs.filter(
             ngay_tao__gte=month_start,
             ngay_tao__lte=month_end
         ).aggregate(total=Sum('TONG_CONG'))['total'] or 0
@@ -187,15 +205,15 @@ def rental_dashboard(request):
         monthly_labels.insert(0, f"{month_start.month}/{month_start.year}")
     
     # Thống kê nhà trọ theo loại
-    house_by_type = House.objects.values('loainha').annotate(count=Count('id'))
+    house_by_type = houses_qs.values('loainha').annotate(count=Count('id'))
     house_type_labels = [item['loainha'] for item in house_by_type]
     house_type_data = [item['count'] for item in house_by_type]
     
     # Thống kê giá thuê trung bình
-    avg_rent = House.objects.aggregate(avg=Avg('permonth'))['avg'] or 0
+    avg_rent = houses_qs.aggregate(avg=Avg('permonth'))['avg'] or 0
     
     # Hóa đơn sắp đến hạn (trong 7 ngày tới)
-    upcoming_due = Hoadon.objects.filter(
+    upcoming_due = hoadon_qs.filter(
         duedate__lte=today.date() + timedelta(days=7),
         duedate__gte=today.date(),
         status__in=['ChuaTT', 'DangTT']

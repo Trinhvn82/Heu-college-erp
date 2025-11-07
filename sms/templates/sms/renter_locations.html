@@ -1,0 +1,205 @@
+{% extends 'layouts/renter_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Địa điểm - Khách thuê{% endblock %}
+
+{% block extra_css %}
+<style>
+    .locations-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .location-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        margin-bottom: 2rem;
+    }
+    .location-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .location-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 1.5rem;
+    }
+    
+    .location-body {
+        padding: 1.5rem;
+    }
+    
+    .house-item {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s;
+    }
+    .house-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .info-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    .info-icon {
+        width: 30px;
+        color: #667eea;
+    }
+    
+    .landlord-info {
+        background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="locations-header">
+        <h1 class="mb-0">
+            <span class="fas fa-map-marked-alt me-3"></span>
+            Địa điểm thuê
+        </h1>
+        <p class="mb-0 mt-2 opacity-75">Các địa điểm bạn đang thuê</p>
+    </div>
+
+    <!-- Locations List -->
+    {% if locations %}
+        {% for location in locations %}
+        <div class="location-card">
+            <div class="location-header">
+                <h3 class="mb-2">
+                    <span class="fas fa-building me-2"></span>
+                    {{ location.diachi }}
+                </h3>
+                <p class="mb-0 opacity-75">
+                    <span class="fas fa-home me-2"></span>
+                    {{ location.renter_houses.count }} phòng đang thuê
+                </p>
+            </div>
+            
+            <div class="location-body">
+                <!-- Location Info -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="info-row">
+                            <span class="info-icon fas fa-calendar-plus"></span>
+                            <div>
+                                <strong>Ngày tạo:</strong> {{ location.ngay_tao|date:"d/m/Y" }}
+                            </div>
+                        </div>
+                        {% if location.ghichu %}
+                        <div class="info-row">
+                            <span class="info-icon fas fa-sticky-note"></span>
+                            <div>
+                                <strong>Ghi chú:</strong> {{ location.ghichu }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Landlord Info -->
+                        <div class="landlord-info">
+                            <h6 class="mb-2">
+                                <span class="fas fa-user-tie me-2"></span>
+                                Thông tin chủ nhà
+                            </h6>
+                            <div class="small">
+                                <div class="mb-1">
+                                    <span class="fas fa-user me-2"></span>
+                                    {{ location.chu.get_full_name|default:location.chu.username }}
+                                </div>
+                                {% if location.chu.email %}
+                                <div class="mb-1">
+                                    <span class="fas fa-envelope me-2"></span>
+                                    {{ location.chu.email }}
+                                </div>
+                                {% endif %}
+                                {% if location.chu.phone %}
+                                <div>
+                                    <span class="fas fa-phone me-2"></span>
+                                    {{ location.chu.phone }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Houses in this location -->
+                <h5 class="mb-3">
+                    <span class="fas fa-door-open me-2 text-primary"></span>
+                    Phòng đang thuê
+                </h5>
+                
+                <div class="row">
+                    {% for house in location.renter_houses %}
+                    <div class="col-md-6">
+                        <div class="house-item">
+                            <h6 class="mb-2">
+                                <span class="fas fa-home me-2"></span>
+                                {{ house.ten }}
+                            </h6>
+                            <div class="small text-muted">
+                                {% if house.dientich %}
+                                <span class="fas fa-ruler-combined me-1"></span>
+                                Diện tích: {{ house.dientich }} m²
+                                <span class="mx-2">|</span>
+                                {% endif %}
+                                {% if house.giathue %}
+                                <span class="fas fa-dollar-sign me-1"></span>
+                                Giá thuê: {{ house.giathue|floatformat:0|intcomma }} VNĐ/tháng
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Contract info -->
+                            {% if house.renter_contract %}
+                            <div class="mt-2 pt-2 border-top">
+                                <div class="small">
+                                    <span class="fas fa-file-contract me-1 text-success"></span>
+                                    Hợp đồng: 
+                                    {{ house.renter_contract.rent_from|date:"d/m/Y" }} - {{ house.renter_contract.rent_to|date:"d/m/Y" }}
+                                    {% if house.renter_contract.active %}
+                                        <span class="badge bg-success ms-2">Đang hiệu lực</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-2">Đã kết thúc</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <span class="fas fa-map-marked-alt fa-3x text-muted mb-3 d-block"></span>
+            <h5 class="text-muted">Chưa có địa điểm nào</h5>
+            <p class="text-muted">Bạn chưa có hợp đồng thuê nào</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

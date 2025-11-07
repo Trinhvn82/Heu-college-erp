@@ -4,7 +4,7 @@
 
 {% block title %} Ảnh & Bản đồ Vị trí {% endblock %}
 
-{% block stylesheets %}
+{% block extra_css %}
 <style>
 /* CSS Tùy chỉnh cho Gallery và Map */
 .gallery-img {
@@ -32,12 +32,22 @@
     transform: scale(1.05);
 }
 .map-container {
-    height: 600px;
+    position: relative;
     width: 100%;
     overflow: hidden;
     border-radius: 8px; /* Bo tròn góc */
 }
+.map-container::before {
+    content: "";
+    display: block;
+    padding-top: 66.67%; /* 2/3 = 66.67% - chiều cao bằng 2/3 chiều rộng */
+}
 .map-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     border: none;
 }
 
@@ -51,7 +61,7 @@
     cursor: pointer;
 }
 </style>
-{% endblock stylesheets %}
+{% endblock extra_css %}
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb">
@@ -290,10 +300,8 @@
                         
                         <div class="map-container shadow-lg">
                             <iframe 
-                                width="100%" 
-                                height="100%" 
+                                style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border: 0 !important;"
                                 frameborder="0" 
-                                style="border:0" 
                                 allowfullscreen="" 
                                 loading="lazy"
                                 referrerpolicy="no-referrer-when-downgrade"
@@ -309,7 +317,7 @@
 {% endblock content %}
 
 {% load static %}
-{% block javascripts %}
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     function showModal(element) {
@@ -365,6 +373,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+        // Set map height to 2/3 of its width
+        function setMapHeight() {
+            var mapContainer = document.querySelector('.map-container');
+            if (mapContainer) {
+                var width = mapContainer.offsetWidth;
+                var height = Math.round(width * 2 / 3);
+                mapContainer.style.height = height + 'px';
+            }
+        }
+    
+        setMapHeight();
+        window.addEventListener('resize', setMapHeight);
 });
 </script>
-{% endblock javascripts %}
+{% endblock extra_js %}

@@ -1,0 +1,249 @@
+{% extends 'layouts/renter_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Hóa đơn - Khách thuê{% endblock %}
+
+{% block extra_css %}
+<style>
+    .bills-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+        border-left: 4px solid;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    .stat-card.total { border-left-color: #6c757d; }
+    .stat-card.unpaid { border-left-color: #dc3545; }
+    .stat-card.paying { border-left-color: #ffc107; }
+    .stat-card.paid { border-left-color: #28a745; }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .filter-bar {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .bill-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s;
+        border-left: 4px solid #6c757d;
+    }
+    .bill-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    .bill-card.status-DaTT { border-left-color: #28a745; }
+    .bill-card.status-DangTT { border-left-color: #ffc107; }
+    .bill-card.status-QuaHan { border-left-color: #dc3545; }
+    .bill-card.status-ChuaTT { border-left-color: #6c757d; }
+    
+    .badge-status {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .debt-alert {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        border-radius: 10px;
+        padding: 1rem;
+        color: white;
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="bills-header">
+        <h1 class="mb-0">
+            <span class="fas fa-file-invoice-dollar me-3"></span>
+            Hóa đơn của tôi
+        </h1>
+        <p class="mb-0 mt-2 opacity-75">Quản lý tất cả hóa đơn thuê nhà</p>
+    </div>
+
+    <!-- Debt Alert -->
+    {% if total_debt > 0 %}
+    <div class="debt-alert">
+        <div class="d-flex align-items-center">
+            <span class="fas fa-exclamation-triangle fa-2x me-3"></span>
+            <div>
+                <h5 class="mb-0">Tổng công nợ: {{ total_debt|floatformat:0|intcomma }} VNĐ</h5>
+                <small>Vui lòng thanh toán để tránh ảnh hưởng đến hợp đồng</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card total">
+                <div class="stat-number">{{ bill_stats.total }}</div>
+                <div class="stat-label">
+                    <span class="fas fa-file-alt me-1"></span>Tổng hóa đơn
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card unpaid">
+                <div class="stat-number text-danger">{{ bill_stats.unpaid }}</div>
+                <div class="stat-label">
+                    <span class="fas fa-times-circle me-1"></span>Chưa thanh toán
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card paying">
+                <div class="stat-number text-warning">{{ bill_stats.paying }}</div>
+                <div class="stat-label">
+                    <span class="fas fa-clock me-1"></span>Đang thanh toán
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card paid">
+                <div class="stat-number text-success">{{ bill_stats.paid }}</div>
+                <div class="stat-label">
+                    <span class="fas fa-check-circle me-1"></span>Đã thanh toán
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Lọc theo trạng thái</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">Tất cả</option>
+                    <option value="ChuaTT" {% if status_filter == 'ChuaTT' %}selected{% endif %}>Chưa thanh toán</option>
+                    <option value="DangTT" {% if status_filter == 'DangTT' %}selected{% endif %}>Đang thanh toán</option>
+                    <option value="DaTT" {% if status_filter == 'DaTT' %}selected{% endif %}>Đã thanh toán</option>
+                    <option value="QuaHan" {% if status_filter == 'QuaHan' %}selected{% endif %}>Quá hạn</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                {% if status_filter %}
+                <a href="{% url 'renter_bills' %}" class="btn btn-secondary w-100">
+                    <span class="fas fa-times me-1"></span>Xóa lọc
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Bills List -->
+    {% if bills %}
+        {% for bill in bills %}
+        <div class="bill-card status-{{ bill.status }}">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h5 class="mb-2">
+                        <span class="fas fa-file-invoice me-2 text-primary"></span>
+                        {{ bill.ten }}
+                    </h5>
+                    <div class="text-muted small">
+                        <span class="fas fa-home me-1"></span>
+                        {{ bill.house.ten }}
+                        {% if bill.house.loc %}
+                        - {{ bill.house.loc.diachi }}
+                        {% endif %}
+                    </div>
+                    <div class="text-muted small mt-1">
+                        <span class="fas fa-calendar me-1"></span>
+                        Ngày tạo: {{ bill.ngay_tao|date:"d/m/Y" }}
+                        <span class="mx-2">|</span>
+                        <span class="fas fa-calendar-check me-1"></span>
+                        Hạn: {{ bill.duedate|date:"d/m/Y" }}
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="fw-bold text-primary" style="font-size: 1.5rem;">
+                        {{ bill.TONG_CONG|floatformat:0|intcomma }}
+                    </div>
+                    <div class="text-muted small">VNĐ</div>
+                    {% if bill.CONG_NO > 0 %}
+                    <div class="text-danger small mt-1">
+                        <span class="fas fa-exclamation-circle me-1"></span>
+                        Còn nợ: {{ bill.CONG_NO|floatformat:0|intcomma }} VNĐ
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 text-end">
+                    {% if bill.status == 'DaTT' %}
+                        <span class="badge bg-success badge-status mb-2">
+                            <i class="fas fa-check-circle me-1"></i>Đã thanh toán
+                        </span>
+                    {% elif bill.status == 'DangTT' %}
+                        <span class="badge bg-warning text-dark badge-status mb-2">
+                            <i class="fas fa-clock me-1"></i>Đang thanh toán
+                        </span>
+                    {% elif bill.status == 'QuaHan' %}
+                        <span class="badge bg-danger badge-status mb-2">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Quá hạn
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary badge-status mb-2">
+                            <i class="fas fa-times-circle me-1"></i>Chưa thanh toán
+                        </span>
+                    {% endif %}
+                    <div>
+                        <a href="{% url 'bill_detail' bill.id %}" class="btn btn-primary">
+                            <span class="fas fa-eye me-1"></span>Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <span class="fas fa-inbox fa-3x text-muted mb-3 d-block"></span>
+            <h5 class="text-muted">Chưa có hóa đơn nào</h5>
+            <p class="text-muted">Hóa đơn của bạn sẽ xuất hiện tại đây</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
