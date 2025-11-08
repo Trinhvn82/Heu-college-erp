@@ -20,7 +20,8 @@
             <div class="card-body p-4">
                 <div class="alert alert-info mb-4">
                     <span class="fas fa-info-circle me-2"></span>
-                    Vui lòng nhập mật khẩu mới cho tài khoản <strong>{{ user.username }}</strong>
+                    {% load user_display %}
+                    Vui lòng nhập mật khẩu mới cho tài khoản <strong>{% display_name user %}</strong>
                 </div>
 
                 <form method="POST" id="changePasswordForm">

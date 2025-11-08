@@ -60,6 +60,18 @@
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important; /* Đổ bóng mạnh hơn */
     cursor: pointer;
 }
+/* Giảm khoảng cách dọc giữa tabs và nội dung từng tab */
+#locationTabs { margin-bottom: 0 !important; }
+.tab-content { margin-top: 0 !important; }
+#locationTabContent .tab-pane { padding-top: 0; }
+#locationTabContent #map { padding-top: 0; }
+#locationTabContent #map .card { margin-top: 0 !important; }
+#locationTabContent #map .card-body { padding-top: 0 !important; }
+#locationTabContent #map h5 { margin-top: 0; margin-bottom: 0 !important; }
+/* Thu nhỏ khoảng trống trên cùng khi chuyển sang tab Bản đồ */
+@media (min-width: 576px) {
+    #locationTabContent #map .map-container { margin-top: .25rem; }
+}
 </style>
 {% endblock extra_css %}
 
@@ -74,58 +86,246 @@
 {% endblock %}
 
 {% block content %}
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-light shadow-sm bg-white">
-                    <div class="card-body">
-                        <h2 class="h5 mb-4 border-bottom pb-2 text-primary">
-                            <span class="fas fa-building me-2"></span> Danh Sách Nhà Trọ Tại {{ loc.diachi }}
-                        </h2>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-body text-white p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ loc.diachi }}
+                    </h2>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-location-dot me-2"></i>{{ loc.xp.ten }}, {{ loc.xp.tp }}
+                    </p>
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'edit_loc_secure' loc.id %}" class="btn btn-light mb-2">
+                        <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                    </a>
+                    <a href="{% url 'bill_list_secure' loc_id=loc.id %}" class="btn btn-light">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Hóa đơn
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-1" id="locationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="houses-tab" data-bs-toggle="tab" data-bs-target="#houses" type="button" role="tab">
+                <i class="fas fa-home me-2"></i>Danh sách nhà ({{ houses|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="gallery-tab" data-bs-toggle="tab" data-bs-target="#gallery" type="button" role="tab">
+                <i class="fas fa-images me-2"></i>Hình ảnh ({{ files|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="map-tab" data-bs-toggle="tab" data-bs-target="#map" type="button" role="tab">
+                <i class="fas fa-map me-2"></i>Bản đồ
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="locationTabContent">
+        <!-- Houses Tab -->
+        <div class="tab-pane fade show active" id="houses" role="tabpanel">
+            <div class="card border-light shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building me-2 text-primary"></i>Danh sách nhà trọ
+                        </h5>
+                        <a href="{% url 'create_house_secure' loc.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-2"></i>Thêm nhà mới
+                        </a>
+                    </div>
                         <div class="row">
                             {% for house in houses %}
                             <div class="col-md-6 mb-3">
 
-                                <a href="{% url 'edit_house' loc.id house.id %}" 
-                                class="text-decoration-none d-block card-link-item">
-
-                                    <div class="card h-100 p-3 shadow-sm border-{% if house.current_renter %}success{% else %}warning{% endif %}">
-
-                                        <h6 class="text-{% if house.current_renter %}success{% else %}warning{% endif %} mb-2">
-                                            <span class="fas fa-tag me-2"></span> **{{ house.ten|default:"[Phòng/Nhà kh ông tên]" }}**
-                                        </h6>
+                          <a href="{% url 'view_house_secure' house.id %}" class="text-decoration-none d-block">
+                             <div class="card h-100 shadow-sm border-{% if house.current_renter %}success{% else %}warning{% endif %}" 
+                                 style="border-width: 3px !important; transition: all 0.3s; cursor: pointer;">
+                                <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <h5 class="text-{% if house.current_renter %}success{% else %}warning{% endif %} mb-0">
+                                                <i class="fas fa-home me-2"></i>{{ house.ten|default:"[Phòng chưa đặt tên]" }}
+                                            </h5>
+                                            <span class="badge bg-{% if house.current_renter %}success{% else %}warning{% endif %}">
+                                                {% if house.current_renter %}Đang thuê{% else %}Trống{% endif %}
+                                            </span>
+                                        </div>
                                         
-                                        <ul class="list-unstyled small mb-0">
-                                            <li><span class="fas fa-dollar-sign me-2"></span> Giá thuê: **{{ house.permonth|intcomma }} triệu VNĐ**</li>
-                                            <li><span class="fas fa-ruler-combined me-2"></span> Diện tích: **{{ house.dientich }} m²**</li>
-                                            
-                                            {% if house.current_renter %}
-                                                <li class="mt-2 text-success">
-                                                    <span class="fas fa-user-check me-2"></span> **Người thuê hiện tại:** <span class="fw-bold">{{ house.current_renter.hoten }}</span>
-                                                </li>
-                                                <li class="small text-success">
-                                                    <span class="fas fa-phone me-2"></span> SĐT: {{ house.current_renter.sdt }} 
-                                                    (Thuê từ: {{ house.active_contract.rent_from|date:"d/m/Y" }})
-                                                </li>
-                                                <!-- Upload Modal -->
-                                                <li class="mt-2 text-warning">
-                                                    <span class="fas fa-door-open me-2"></span> **Tình trạng:** ĐANG TRỐNG
-                                                </li>
-                                            {% endif %}
-
-                                        </ul>
-
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Giá thuê</small>
+                                                <strong class="text-danger">{{ house.permonth|intcomma }} VNĐ</strong>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block">Diện tích</small>
+                                                <strong>{{ house.dientich }} m²</strong>
+                                            </div>
+                                        </div>
+                                        
+                                        {% if house.current_renter %}
+                                        <div class="border-top pt-2">
+                                            <small class="text-muted d-block">Người thuê</small>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-circle text-success me-2"></i>
+                                                <div>
+                                                    <strong class="d-block">{{ house.current_renter.hoten }}</strong>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-phone me-1"></i>{{ house.current_renter.sdt }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="mt-3 d-flex gap-2">
+                                            <a href="{% url 'view_house_secure' house.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="Chi tiết" onclick="event.stopPropagation();">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'edit_house_secure' loc.id house.id %}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Sửa" onclick="event.stopPropagation();">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'hr_list_secure' house.id %}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Hợp đồng ({{ house.contract_count|default:0 }})" onclick="event.stopPropagation();">
+                                                <i class="fas fa-file-contract"></i>
+                                            </a>
+                                        </div>
+                                        </div>
                                     </div>
                                 </a>
                             </div>
                             {% empty %}
                             <div class="col-12">
-                                <div class="alert alert-info">Vị trí này chưa có căn nhà/phòng trọ nào được liệt kê.</div>
+                                <div class="alert alert-info text-center">
+                                    <i class="fas fa-home fa-3x mb-3 opacity-50"></i>
+                                    <p class="mb-0">Chưa có nhà trọ nào. Hãy thêm nhà mới!</p>
+                                </div>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Gallery Tab -->
+        <div class="tab-pane fade" id="gallery" role="tabpanel">
+            <div class="card border-light shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="mb-0">
+                            <i class="fas fa-images me-2 text-primary"></i>Hình ảnh địa điểm
+                        </h5>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                            <i class="fas fa-upload me-2"></i>Tải ảnh lên
+                        </button>
+                    </div>
+                    
+                    {% if files %}
+                    <div class="row g-3">
+                        {% for file in files %}
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card h-100 gallery-item">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal-{{ file.id }}">
+                                    <img src="{{ file.file.url }}" class="gallery-img card-img-top rounded" 
+                                         alt="{{ file.mota|default:file.ten }}">
+                                </a>
+                                <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                    <div class="gallery-label small text-truncate">{{ file.mota|default:file.ten }}</div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'download_file' file.id %}" class="btn btn-outline-secondary" title="Tải xuống">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        {% if perms.sms.delete_uploadedfile or file.user == user %}
+                                        <button type="button" class="btn btn-outline-danger confirm-delete-btn"
+                                                data-delete-url="{% url 'delete_file_loc_secure' loc.id file.id %}"
+                                                data-file-name="{{ file.mota|default:file.ten }}"
+                                                title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Modal per item (old UI style) -->
+                        <div class="modal fade" id="imageModal-{{ file.id }}" tabindex="-1" aria-labelledby="imageModalLabel-{{ file.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" style="max-width: 66.67vw; margin: 1.75rem auto;">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="imageModalLabel-{{ file.id }}">{{ file.mota|default:"Ảnh Vị trí" }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-0">
+                                        <div class="modal-image-container">
+                                            {% with extension=file.file.name|lower|slice:"-4:" %}
+                                                {% if extension == '.pdf' %}
+                                                    <div class="text-center p-4">
+                                                        <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                                                        <h5>{{ file.mota|default:"Tài liệu PDF" }}</h5>
+                                                        <p class="mb-4">Nhấn vào nút bên dưới để xem PDF</p>
+                                                        <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank">
+                                                            <i class="fas fa-external-link-alt me-2"></i>Mở PDF
+                                                        </a>
+                                                    </div>
+                                                {% else %}
+                                                    <img src="{{ file.file.url }}" class="modal-image rounded" alt="{{ file.mota|default:file.ten }}">
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-images fa-5x text-muted mb-4" style="opacity: 0.3;"></i>
+                        <h5 class="text-muted mb-3">Chưa có hình ảnh</h5>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                            <i class="fas fa-upload me-2"></i>Tải ảnh đầu tiên
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Tab -->
+        <div class="tab-pane fade" id="map" role="tabpanel">
+            <div id="mapStart"></div>
+            <div class="card border-light shadow-sm mt-0">
+                <div class="card-body pt-0">
+                    <!-- Tiêu đề bản đồ được ẩn để giảm khoảng trắng -->
+                    <!-- <h5 class="mb-0"><i class="fas fa-map me-2 text-primary"></i>Bản đồ vị trí: {{ loc.diachi }}</h5> -->
+                    <div class="map-container shadow-lg">
+                        <iframe 
+                            style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border: 0 !important;"
+                            frameborder="0" 
+                            allowfullscreen="" 
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            src="https://maps.google.com/maps?q={{ loc.diachi|urlencode }}, {{ loc.xp.ten|urlencode }}, {{ loc.xp.tp|urlencode }}&t=&z=15&ie=UTF8&iwloc=&output=embed">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Confirm Delete Modal -->
             <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
@@ -157,7 +357,7 @@
                             <h5 class="modal-title" id="uploadFileModalLabel">Tải lên</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form id="uploadFileForm" action="{% url 'upload_file_loc' loc.id %}" method="post" enctype="multipart/form-data">
+                        <form id="uploadFileForm" action="{% url 'upload_file_loc_secure' loc.id %}" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="modal-body">
                                 <div class="mb-3">
@@ -182,191 +382,31 @@
         </div>
 
 
-        <div class="row">
-            <div class="col-12 mb-4">
-                <div class="card border-light shadow-sm">
-                    <div class="card-body">
-                        <h2 class="h5 mb-4 border-bottom pb-2"><span class="fas fa-images me-2"></span> Thư Viện Ảnh</h2>
-                        
-                        <div class="row">
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <button type="button" class="btn btn-primary w-100 animate-up-2" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#uploadFileModal">
-                                            <span class="fas fa-upload me-2"></span> Tải lên
-                                    </button>
-                                </div>
-                            </div>
-
-                            {% for file in files %}
-                                {% with file_name=file.file.name|lower %}
-                                    
-                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-                                        <div class="card border-0 shadow-sm h-100 gallery-item">
-                                            <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal-{{ file.id }}">
-                                                <img src="{{ file.file.url }}" 
-                                                     class="card-img-top gallery-img rounded" 
-                                                     alt="{{ file.mota }}">
-                                            </a>
-
-                                            <div class="card-body p-2 d-flex align-items-center">
-                                                <div class="gallery-label small text-truncate flex-grow-1 me-2" style="cursor:pointer;">
-                                                    {{ file.mota|default:"Ảnh vị trí" }}
-                                                </div>
-
-                                                <div class="d-flex align-items-center flex-shrink-0">
-                                                    <!-- Short download button on the right -->
-                                                    <a href="{% url 'download_file' file.id %}" class="btn btn-sm btn-outline-secondary me-2 flex-shrink-0" title="Tải" role="button">
-                                                        <span class="fas fa-download"></span>
-                                                    </a>
-
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-link text-dark dropdown-toggle m-0 p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <span class="icon icon-sm"><span class="fas fa-ellipsis-h icon-dark"></span></span>
-                                                        </button>
-                                                        <div class="dropdown-menu dashboard-dropdown dropdown-menu-end mt-2">
-                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#imageModal-{{ file.id }}">
-                                                                <span class="fas fa-eye me-2"></span> Xem
-                                                            </a>
-                                                            <div class="dropdown-divider"></div>
-                                                            {% if perms.sms.delete_uploadedfile or file.user == user %}
-                                                                <button type="button" class="dropdown-item text-danger confirm-delete-btn"
-                                                                        data-delete-url="{% url 'delete_file_loc' loc.id file.id %}"
-                                                                        data-file-name="{{ file.mota|default:file.file.name }}">
-                                                                    <span class="fas fa-trash-alt me-2"></span> Xóa
-                                                                </button>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="modal fade" id="imageModal-{{ file.id }}" tabindex="-1" aria-labelledby="imageModalLabel-{{ file.id }}" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered" style="max-width: 66.67vw; margin: 1.75rem auto;">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="imageModalLabel-{{ file.id }}">
-                                                        {{ file.mota|default:"Ảnh Vị trí" }}
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body p-0">
-                                                    <div class="modal-image-container">
-                                                        {% with extension=file.file.name|lower|slice:"-4:" %}
-                                                            {% if extension == '.pdf' %}
-                                                                <div class="text-center p-4">
-                                                                    <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
-                                                                    <h5>{{ file.mota|default:"Tài liệu PDF" }}</h5>
-                                                                    <p class="mb-4">Nhấn vào nút bên dưới để xem PDF</p>
-                                                                    <a href="{{ file.file.url }}" class="btn btn-primary" target="_blank">
-                                                                        <i class="fas fa-external-link-alt me-2"></i>Mở PDF
-                                                                    </a>
-                                                                </div>
-                                                            {% else %}
-                                                                <img src="{{ file.file.url }}" class="modal-image rounded" alt="{{ file.mota }}">
-                                                            {% endif %}
-                                                        {% endwith %}
-                                                    </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                {% endwith %}
-                            {% empty %}
-                                <div class="col-12">
-                                    <div class="alert alert-warning py-4 text-center">
-                                        <span class="fas fa-camera fa-3x mb-3"></span>
-                                        <h5 class="mb-2 text-body">Vị trí này chưa có ảnh nào.</h5>
-                                        <p class="mb-0 text-body">Hãy tải lên ảnh để làm cho thông tin nhà trọ trở nên trực quan hơn.</p>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 mb-4">
-                <div class="card border-light shadow-sm">
-                    <div class="card-body">
-                        <h2 class="h5 mb-4 border-bottom pb-2"><span class="fas fa-map-marker-alt me-2"></span> Bản đồ Vị trí: {{ loc.diachi }}</h2>
-                        
-                        <div class="map-container shadow-lg">
-                            <iframe 
-                                style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; border: 0 !important;"
-                                frameborder="0" 
-                                allowfullscreen="" 
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"
-                                src="https://maps.google.com/maps?q={{ loc.diachi|urlencode }}, {{ loc.xp.ten|urlencode }}, {{ loc.xp.tp|urlencode }}&t=&z=15&ie=UTF8&iwloc=&output=embed">
-                            </iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+<!-- Legacy generic modals removed: using per-item image modals and single #uploadFileModal above -->
 
 {% endblock content %}
 
-{% load static %}
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    function showModal(element) {
-        // Tìm modal gần nhất
-        const galleryItem = element.closest('.gallery-item');
-        const modalId = galleryItem.querySelector('[data-bs-target]').getAttribute('data-bs-target');
-        const modal = new bootstrap.Modal(document.querySelector(modalId));
-        
-        // Nếu là PDF, điều chỉnh kích thước modal
-        const imgElement = galleryItem.querySelector('.gallery-img');
-        if (imgElement && imgElement.getAttribute('src').toLowerCase().endsWith('.pdf')) {
-            const modalDialog = document.querySelector(modalId).querySelector('.modal-dialog');
-            modalDialog.style.maxWidth = '80vw';  // Mở rộng modal cho PDF
-        }
-        
-        modal.show();
-    }
 
-    // Thêm sự kiện double click cho ảnh
-    document.querySelectorAll('.gallery-img').forEach(function(item) {
-        item.addEventListener('dblclick', function() {
-            showModal(this);
-        });
-    });
-
-    // Thêm sự kiện double click cho label
-    document.querySelectorAll('.gallery-label').forEach(function(label) {
-        label.addEventListener('dblclick', function() {
-            showModal(this);
-        });
-    });
-
-    // Reset upload form when modal closes
-    var uploadModalEl = document.getElementById('uploadFileModal');
-    if (uploadModalEl) {
-        uploadModalEl.addEventListener('hidden.bs.modal', function (event) {
-            var f = document.getElementById('uploadFileForm');
-            if (f) f.reset();
+    // Handle upload modal form reset
+    const uploadFileModal = document.getElementById('uploadFileModal');
+    if (uploadFileModal) {
+        uploadFileModal.addEventListener('hidden.bs.modal', function () {
+            const form = document.getElementById('uploadFileForm');
+            if (form) form.reset();
         });
     }
 
     // Confirm delete via Bootstrap modal
-    var confirmModalEl = document.getElementById('confirmDeleteModal');
+    const confirmModalEl = document.getElementById('confirmDeleteModal');
     if (confirmModalEl) {
-        var confirmModal = new bootstrap.Modal(confirmModalEl);
+        const confirmModal = new bootstrap.Modal(confirmModalEl);
         document.querySelectorAll('.confirm-delete-btn').forEach(function(btn) {
             btn.addEventListener('click', function(e) {
-                var url = btn.getAttribute('data-delete-url');
-                var fname = btn.getAttribute('data-file-name') || '';
+                const url = btn.getAttribute('data-delete-url');
+                const fname = btn.getAttribute('data-file-name') || '';
                 document.getElementById('confirmDeleteForm').setAttribute('action', url);
                 document.getElementById('confirmDeleteFileName').textContent = fname;
                 confirmModal.show();
@@ -374,18 +414,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-        // Set map height to 2/3 of its width
-        function setMapHeight() {
-            var mapContainer = document.querySelector('.map-container');
-            if (mapContainer) {
-                var width = mapContainer.offsetWidth;
-                var height = Math.round(width * 2 / 3);
-                mapContainer.style.height = height + 'px';
-            }
-        }
-    
-        setMapHeight();
-        window.addEventListener('resize', setMapHeight);
+    // Keep the active tab content close to the tabs by scrolling to the tabs on tab change
+    const tabsEl = document.getElementById('locationTabs');
+    if (tabsEl) {
+        tabsEl.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (btn) {
+            btn.addEventListener('shown.bs.tab', function (e) {
+                // Nếu chuyển sang tab Bản đồ, cuộn sát đến đầu map để loại cảm giác khoảng trắng
+                const targetId = e.target.getAttribute('data-bs-target');
+                if (targetId === '#map') {
+                    const anchor = document.getElementById('mapStart') || document.getElementById('map');
+                    if (anchor) {
+                        anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } else {
+                    // Các tab khác: đảm bảo tabs luôn ở sát đầu viewport
+                    tabsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    }
+    // Initialize Bootstrap tooltips for icon-only action buttons
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 });
 </script>
 {% endblock extra_js %}

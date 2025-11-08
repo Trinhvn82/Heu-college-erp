@@ -221,14 +221,10 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if 'loc' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'loc_list' %}">
-                                <span class="fas fa-map-marker-alt me-1"></span>Vị trí
+                                <span class="fas fa-map-marker-alt me-1"></span>Vị trí + Nhà
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if 'house' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'houses' %}">
-                                <span class="fas fa-house me-1"></span>Nhà
-                            </a>
-                        </li>
+                        {# Mục 'Nhà' được ẩn vì đã quản lý nhà trong trang Vị trí #}
                         <li class="nav-item">
                             <a class="nav-link {% if 'renter' in request.resolver_match.url_name and 'renter_dashboard' not in request.resolver_match.url_name %}active{% endif %}" href="{% url 'renter_list' %}">
                                 <span class="fas fa-users me-1"></span>Khách thuê
@@ -262,8 +258,9 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
+                            {% load user_display %}
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="fas fa-user-circle me-1"></span>{{ user.username }}
+                                <span class="fas fa-user-circle me-1"></span>{% display_name user %}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{% url 'changepwd' %}">
@@ -480,6 +477,58 @@
                 // no-op
             }
         });
+
+        // Handle session timeout for landlord/admin pages
+        // Detect inactivity and warn user before session expires
+        (function() {
+            let lastActivity = Date.now();
+            const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes for landlords/admin
+            const WARNING_TIME = 5 * 60 * 1000; // Warn 5 minutes before timeout
+            let warningShown = false;
+            
+            // Update last activity on any user interaction
+            ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(event) {
+                document.addEventListener(event, function() {
+                    lastActivity = Date.now();
+                    warningShown = false;
+                }, true);
+            });
+            
+            // Check for timeout periodically
+            setInterval(function() {
+                const timeSinceLastActivity = Date.now() - lastActivity;
+                
+                // Show warning before timeout
+                if (!warningShown && timeSinceLastActivity > (SESSION_TIMEOUT - WARNING_TIME)) {
+                    warningShown = true;
+                    if (confirm('Phiên làm việc sắp hết hạn. Nhấn OK để tiếp tục làm việc.')) {
+                        // User clicked OK - refresh activity
+                        lastActivity = Date.now();
+                        warningShown = false;
+                        // Ping server to keep session alive
+                        fetch(window.location.href, { 
+                            method: 'HEAD',
+                            credentials: 'same-origin'
+                        }).catch(function() {});
+                    }
+                }
+                
+                // Force logout if timeout exceeded
+                if (timeSinceLastActivity > SESSION_TIMEOUT + 60000) { // 1 minute grace period
+                    window.location.href = '/accounts/logout/';
+                }
+            }, 60000); // Check every 60 seconds
+            
+            // Handle form submissions after timeout
+            document.addEventListener('submit', function(e) {
+                const timeSinceLastActivity = Date.now() - lastActivity;
+                if (timeSinceLastActivity > SESSION_TIMEOUT) {
+                    e.preventDefault();
+                    alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = '/accounts/login/';
+                }
+            }, true);
+        })();
     </script>
 
     {% block extra_js %}{% endblock %}

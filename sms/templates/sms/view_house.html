@@ -1,0 +1,315 @@
+{% extends "layouts/rental_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Chi tiết nhà trọ{% endblock %}
+
+{% block extra_css %}
+<style>
+    .house-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+    
+    .info-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .info-row {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1rem 1.5rem;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .info-value {
+        color: #212529;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .amenity-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        margin: 0.3rem;
+        display: inline-block;
+    }
+    
+    .badge-yes {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .badge-no {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .contract-card {
+        border-left: 4px solid #28a745;
+        background: #f8f9fa;
+    }
+    
+    .contract-card.inactive {
+        border-left-color: #6c757d;
+        opacity: 0.7;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Địa điểm</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'view_loc_secure' house.loc.id %}">{{ house.loc.diachi }}</a></li>
+            <li class="breadcrumb-item active">{{ house.ten }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="house-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h2 class="mb-2">
+                    <i class="fas fa-home me-2"></i>
+                    {{ house.ten }}
+                </h2>
+                <p class="mb-1">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    {{ house.loc.diachi }}, {{ house.loc.xp.ten }}, {{ house.loc.xp.tp }}
+                </p>
+            </div>
+            {% if is_owner %}
+            <a href="{% url 'edit_house_secure' house.loc.id house.id %}" class="btn btn-light">
+                <i class="fas fa-edit me-2"></i>Chỉnh sửa
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Cột trái: Thông tin nhà -->
+        <div class="col-lg-6">
+            <!-- Thông tin cơ bản -->
+            <div class="info-card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thông tin cơ bản
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="info-row">
+                        <div class="info-label">Tên nhà</div>
+                        <div class="info-value">{{ house.ten }}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Diện tích</div>
+                        <div class="info-value">{{ house.dientich }} m²</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Giá thuê/tháng</div>
+                        <div class="info-value text-danger">{{ house.permonth|intcomma }} VNĐ</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Tiền cọc</div>
+                        <div class="info-value">{{ house.deposit|intcomma }} VNĐ</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Giá điện</div>
+                        <div class="info-value">{{ house.electric|intcomma }} VNĐ/kWh</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Giá nước</div>
+                        <div class="info-value">{{ house.water|intcomma }} VNĐ/m³</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tiện nghi -->
+            <div class="info-card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Tiện nghi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <span class="amenity-badge {% if house.kitchen %}badge-yes{% else %}badge-no{% endif %}">
+                        <i class="fas fa-utensils me-2"></i>
+                        Bếp {% if house.kitchen %}✓{% else %}✗{% endif %}
+                    </span>
+                    <span class="amenity-badge {% if house.wc %}badge-yes{% else %}badge-no{% endif %}">
+                        <i class="fas fa-toilet me-2"></i>
+                        WC {% if house.wc %}✓{% else %}✗{% endif %}
+                    </span>
+                    <span class="amenity-badge {% if house.aircondition %}badge-yes{% else %}badge-no{% endif %}">
+                        <i class="fas fa-wind me-2"></i>
+                        Điều hòa {% if house.aircondition %}✓{% else %}✗{% endif %}
+                    </span>
+                    <span class="amenity-badge {% if house.wifi %}badge-yes{% else %}badge-no{% endif %}">
+                        <i class="fas fa-wifi me-2"></i>
+                        Wifi {% if house.wifi %}✓{% else %}✗{% endif %}
+                    </span>
+                    <span class="amenity-badge {% if house.washingmachine %}badge-yes{% else %}badge-no{% endif %}">
+                        <i class="fas fa-tshirt me-2"></i>
+                        Máy giặt {% if house.washingmachine %}✓{% else %}✗{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Hợp đồng & Hóa đơn -->
+        <div class="col-lg-6">
+            <div id="contracts"></div>
+            <!-- Hợp đồng hiện tại -->
+            {% if active_contract %}
+            <div class="info-card contract-card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-contract me-2"></i>
+                        Hợp đồng hiện tại
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ active_contract.renter.hoten }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-id-card me-1"></i>
+                                CCCD: {{ active_contract.renter.cccd }}
+                            </small>
+                        </div>
+                        <span class="badge bg-success">Đang ở</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">Ngày bắt đầu</small>
+                            <div class="fw-bold">{{ active_contract.ngaybd|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Ngày kết thúc</small>
+                            <div class="fw-bold">{{ active_contract.ngaykt|date:"d/m/Y" }}</div>
+                        </div>
+                    </div>
+                    {% if active_contract.ghichu %}
+                    <div class="mt-3">
+                        <small class="text-muted">Ghi chú</small>
+                        <p class="mb-0">{{ active_contract.ghichu }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="info-card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-door-open fa-3x text-warning mb-3"></i>
+                    <h5 class="text-muted">Nhà trống</h5>
+                    <p class="text-muted mb-0">Hiện tại chưa có người thuê</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Lịch sử hợp đồng -->
+            <div class="info-card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Lịch sử hợp đồng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if contract_history %}
+                    <div class="list-group list-group-flush">
+                        {% for contract in contract_history %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ contract.renter.hoten }}</strong>
+                                    <small class="d-block text-muted">
+                                        {{ contract.ngaybd|date:"d/m/Y" }} - {{ contract.ngaykt|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if contract.active %}success{% else %}secondary{% endif %}">
+                                    {% if contract.active %}Đang ở{% else %}Đã trả{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">Chưa có lịch sử</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Hóa đơn gần đây -->
+            {% if is_owner %}
+            <div class="info-card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+                        Hóa đơn gần đây
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_bills %}
+                    <div class="list-group list-group-flush">
+                        {% for bill in recent_bills %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Tháng {{ bill.thang }}/{{ bill.nam }}</strong>
+                                    <small class="d-block text-muted">
+                                        {{ bill.tongtien|intcomma }} VNĐ
+                                    </small>
+                                </div>
+                                <span class="badge bg-{% if bill.status == 1 %}success{% elif bill.status == 2 %}warning{% else %}danger{% endif %}">
+                                    {% if bill.status == 1 %}Đã thanh toán
+                                    {% elif bill.status == 2 %}Đang thanh toán
+                                    {% else %}Chưa thanh toán{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">Chưa có hóa đơn</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="text-center mt-4">
+        <a href="{% url 'view_loc_secure' house.loc.id %}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại địa điểm
+        </a>
+        {% if is_owner %}
+        <a href="{% url 'bill_list_secure' loc_id=house.loc.id %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-file-invoice-dollar me-2"></i>Xem hóa đơn
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

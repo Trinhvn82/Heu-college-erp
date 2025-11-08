@@ -208,7 +208,7 @@
                         
                         <div
                             id="hr-timeline-wrapper"
-                            hx-get="{% url 'hr_list_partial' id %}"
+                            hx-get="{% url 'hr_list_partial_secure' id %}"
                             hx-trigger="refresh-hr-list"
                             hx-swap="innerHTML"
                         >
@@ -229,7 +229,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="createHRForm" method="post" action="{% url 'create_hr' id %}">
+            <form id="createHRForm" method="post" action="{% url 'create_hr_secure' id %}">
                 {% csrf_token %}
                 <div class="modal-body">
                     <div class="row">

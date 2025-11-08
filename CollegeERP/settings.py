@@ -56,6 +56,14 @@ SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
 RENTER_SESSION_TIMEOUT = 600   # 10 minutes for renters
 OWNER_SESSION_TIMEOUT = 1800   # 30 minutes for owners and admin
 
+# Hashids Configuration for URL ID Obfuscation
+HASHIDS_SALT = '3n821tz@-e98qd96+h_=+hgo1uv1*0d2@dfko#_ft@11pmu-secret-salt'  # Change this in production!
+HASHIDS_MIN_LENGTH = 8  # Minimum length of encoded IDs
+HASHIDS_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'  # Allowed characters
+
+# CSRF Configuration
+CSRF_FAILURE_VIEW = 'sms.csrf_views.csrf_failure'  # Custom CSRF failure handler
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -112,6 +120,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # required by django-allauth
     'sms.middleware.DynamicSessionTimeoutMiddleware',  # Must be after AuthenticationMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

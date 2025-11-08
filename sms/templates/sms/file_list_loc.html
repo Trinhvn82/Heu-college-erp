@@ -66,7 +66,7 @@
             <div class="col-12">
                 <div class="card card-body bg-white border-light shadow-sm">
                     <h2 class="h5 mb-4">Tải lên Ảnh / Tài liệu vị trí</h2>
-                    <form action="{% url 'upload_file_loc' loc.id %}" enctype="multipart/form-data" method="post">
+                    <form action="{% url 'upload_file_loc_secure' loc.id %}" enctype="multipart/form-data" method="post">
                         {% csrf_token %}
                         <div class="row align-items-end">
                             <div class="col-md-5 mb-3">

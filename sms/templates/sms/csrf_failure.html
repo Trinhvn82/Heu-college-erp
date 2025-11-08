@@ -1,0 +1,65 @@
+{% extends "layouts/landing.html" %}
+
+{% block title %}Phiên làm việc hết hạn{% endblock %}
+
+{% block content %}
+<section class="vh-100 d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6 text-center">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <div class="mb-4">
+                            <span class="fas fa-clock fa-4x text-warning"></span>
+                        </div>
+                        
+                        <h1 class="h3 mb-3 fw-bold">Phiên làm việc hết hạn</h1>
+                        
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ message }}
+                        </div>
+                        
+                        {% if no_cookie %}
+                        <p class="text-muted mb-4">
+                            Hệ thống yêu cầu bật cookies để đảm bảo bảo mật. 
+                            Vui lòng kiểm tra cài đặt trình duyệt của bạn.
+                        </p>
+                        {% else %}
+                        <p class="text-muted mb-4">
+                            Để bảo vệ tài khoản của bạn, hệ thống tự động đăng xuất sau một thời gian không hoạt động.
+                        </p>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-3">
+                            <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Đăng nhập lại
+                            </a>
+                            
+                            <button onclick="window.history.back()" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Quay lại
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Thời gian phiên làm việc: 30 phút (chủ nhà) / 10 phút (người thuê)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Auto redirect to login after 5 seconds
+    setTimeout(function() {
+        window.location.href = "{% url 'login' %}";
+    }, 5000);
+</script>
+{% endblock %}

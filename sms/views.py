@@ -82,12 +82,12 @@ def get_object_or_forbidden(model, user, error_message, **kwargs):
         # Check ownership based on model type
         if model == Location:
             if obj.chu_id != user.id:
-                messages.error(user, error_message or "Bạn không có quyền truy cập vị trí này")
+                messages.error(getattr(user, 'request', None) or user, error_message or "Bạn không có quyền truy cập vị trí này")
                 return None, redirect('loc_list')
         
         elif model == House:
             if obj.loc.chu_id != user.id:
-                messages.error(user, error_message or "Bạn không có quyền truy cập nhà này")
+                messages.error(getattr(user, 'request', None) or user, error_message or "Bạn không có quyền truy cập nhà này")
                 return None, redirect('loc_list')
         
         elif model == Renter:
@@ -96,12 +96,12 @@ def get_object_or_forbidden(model, user, error_message, **kwargs):
             if not Renter.objects.filter(
                 Q(chu_id=user.id) | Q(houserenter__house__loc__chu=user)
             ).filter(id=obj.id).exists():
-                messages.error(user, error_message or "Bạn không có quyền truy cập khách thuê này")
+                messages.error(getattr(user, 'request', None) or user, error_message or "Bạn không có quyền truy cập khách thuê này")
                 return None, redirect('renter_list')
         
         elif model == HouseRenter:
             if obj.house.loc.chu_id != user.id:
-                messages.error(user, error_message or "Bạn không có quyền truy cập hợp đồng này")
+                messages.error(getattr(user, 'request', None) or user, error_message or "Bạn không có quyền truy cập hợp đồng này")
                 return None, redirect('loc_list')
         
         elif model == Hoadon:
@@ -114,7 +114,7 @@ def get_object_or_forbidden(model, user, error_message, **kwargs):
                 pass
             
             if not is_landlord and not is_renter:
-                messages.error(user, error_message or "Bạn không có quyền truy cập hóa đơn này")
+                messages.error(getattr(user, 'request', None) or user, error_message or "Bạn không có quyền truy cập hóa đơn này")
                 # Redirect based on user type
                 try:
                     if user.renter:
@@ -125,13 +125,13 @@ def get_object_or_forbidden(model, user, error_message, **kwargs):
         
         elif model == Thanhtoan:
             if obj.hoadon.house.loc.chu_id != user.id:
-                messages.error(user, error_message or "Bạn không có quyền truy cập thanh toán này")
+                messages.error(getattr(user, 'request', None) or user, error_message or "Bạn không có quyền truy cập thanh toán này")
                 return None, redirect('invoice_search')
         
         return obj, None
         
     except Http404:
-        messages.error(user, "Không tìm thấy dữ liệu yêu cầu")
+        messages.error(getattr(user, 'request', None) or user, "Không tìm thấy dữ liệu yêu cầu")
         # Return to appropriate list view
         if model == Location:
             return None, redirect('loc_list')
@@ -164,11 +164,106 @@ def validate_location_access(request, loc_id):
     )
 
 
+def get_object_or_forbidden(model, request, error_message, **kwargs):
+    """
+    Get object and validate ownership. Returns object or redirects with error message.
+    
+    Args:
+        model: Django model class
+        request: Current HttpRequest object
+        error_message: Message to display if access denied
+        **kwargs: Query parameters (must include 'id' or 'pk')
+    
+    Returns:
+        Tuple of (object, None) if valid, or (None, redirect_response) if invalid
+    """
+    try:
+        obj = get_object_or_404(model, **kwargs)
+        user = request.user
+        
+        # Superuser has access to everything
+        if user.is_superuser:
+            return obj, None
+        
+        # Check ownership based on model type
+        if model == Location:
+            if obj.chu_id != user.id:
+                messages.error(request, error_message or "Bạn không có quyền truy cập vị trí này")
+                return None, redirect('loc_list')
+        
+        elif model == House:
+            if obj.loc.chu_id != user.id:
+                messages.error(request, error_message or "Bạn không có quyền truy cập nhà này")
+                return None, redirect('loc_list')
+        
+        elif model == Renter:
+            from django.db.models import Q
+            # Renter must belong to user or have contract in user's house
+            if not Renter.objects.filter(
+                Q(chu_id=user.id) | Q(houserenter__house__loc__chu=user)
+            ).filter(id=obj.id).exists():
+                messages.error(request, error_message or "Bạn không có quyền truy cập khách thuê này")
+                return None, redirect('renter_list')
+        
+        elif model == HouseRenter:
+            if obj.house.loc.chu_id != user.id:
+                messages.error(request, error_message or "Bạn không có quyền truy cập hợp đồng này")
+                return None, redirect('loc_list')
+        
+        elif model == Hoadon:
+            # Check if user is landlord or renter of this bill
+            is_landlord = obj.house.loc.chu_id == user.id
+            is_renter = False
+            try:
+                is_renter = obj.renter and obj.renter.user_id == user.id
+            except (AttributeError, Renter.DoesNotExist):
+                pass
+            
+            if not is_landlord and not is_renter:
+                messages.error(request, error_message or "Bạn không có quyền truy cập hóa đơn này")
+                # Redirect based on user type
+                try:
+                    if user.renter:
+                        return None, redirect('/renter/dashboard/')
+                except (AttributeError, Renter.DoesNotExist):
+                    pass
+                return None, redirect('invoice_search')
+        
+        elif model == Thanhtoan:
+            if obj.hoadon.house.loc.chu_id != user.id:
+                messages.error(request, error_message or "Bạn không có quyền truy cập thanh toán này")
+                return None, redirect('invoice_search')
+        
+        return obj, None
+        
+    except Http404:
+        messages.error(request, "Không tìm thấy dữ liệu yêu cầu")
+        # Return to appropriate list view
+        if model == Location:
+            return None, redirect('loc_list')
+        elif model in [House, HouseRenter, Hoadon, Thanhtoan]:
+            return None, redirect('loc_list')
+        elif model == Renter:
+            return None, redirect('renter_list')
+        else:
+            return None, redirect('index')
+
+
+def validate_location_access(request, loc_id):
+    """Validate location access and return (location, None) or (None, error_response)"""
+    return get_object_or_forbidden(
+        Location, 
+        request,
+        f"Bạn không có quyền truy cập vị trí ID {loc_id}",
+        id=loc_id
+    )
+
+
 def validate_house_access(request, house_id):
     """Validate house access and return (house, None) or (None, error_response)"""
     return get_object_or_forbidden(
         House,
-        request.user,
+        request,
         f"Bạn không có quyền truy cập nhà ID {house_id}",
         id=house_id
     )
@@ -178,7 +273,7 @@ def validate_renter_access(request, renter_id):
     """Validate renter access and return (renter, None) or (None, error_response)"""
     return get_object_or_forbidden(
         Renter,
-        request.user,
+        request,
         f"Bạn không có quyền truy cập khách thuê ID {renter_id}",
         id=renter_id
     )
@@ -188,7 +283,7 @@ def validate_contract_access(request, hr_id):
     """Validate house-renter contract access and return (contract, None) or (None, error_response)"""
     return get_object_or_forbidden(
         HouseRenter,
-        request.user,
+        request,
         f"Bạn không có quyền truy cập hợp đồng ID {hr_id}",
         id=hr_id
     )
@@ -198,7 +293,7 @@ def validate_bill_access(request, bill_id):
     """Validate bill access and return (bill, None) or (None, error_response)"""
     return get_object_or_forbidden(
         Hoadon,
-        request.user,
+        request,
         f"Bạn không có quyền truy cập hóa đơn ID {bill_id}",
         id=bill_id
     )
@@ -208,7 +303,7 @@ def validate_payment_access(request, payment_id):
     """Validate payment access and return (payment, None) or (None, error_response)"""
     return get_object_or_forbidden(
         Thanhtoan,
-        request.user,
+        request,
         f"Bạn không có quyền truy cập thanh toán ID {payment_id}",
         id=payment_id
     )
@@ -344,18 +439,17 @@ def renter_list(request):
     if request.user.is_superuser:
         renters = Renter.objects.all().order_by('hoten')
     else:
-        # Renter được gán trực tiếp cho chủ (chu_id) hoặc có hợp đồng tại nhà thuộc chủ đó
-        renters = (
-            Renter.objects.filter(
-                Q(chu_id=request.user.id) | Q(houserenter__house__loc__chu=request.user)
-            )
-            .distinct()
-            .order_by('hoten')
-        )
+        # Chỉ hiển thị renter do chủ nhà này tạo ra
+        renters = Renter.objects.filter(chu_id=request.user.id).order_by('hoten')
+    
     if request.method == "POST":
             query_name = request.POST.get('name', None)
             if query_name:
-                renters = Renter.objects.filter(hoten__contains=query_name).order_by('hoten')
+                # Lọc search theo chủ nhà
+                if request.user.is_superuser:
+                    renters = Renter.objects.filter(hoten__contains=query_name).order_by('hoten')
+                else:
+                    renters = Renter.objects.filter(chu_id=request.user.id, hoten__contains=query_name).order_by('hoten')
                 messages.success(request, "Ket qua tim kiem voi ten co chua: " + query_name)
 #                return render(request, 'product-search.html', {"results":results})
 
@@ -1849,6 +1943,40 @@ def renter_locations(request):
     return render(request, 'sms/renter_locations.html', context)
 
 @login_required
+def renter_contracts(request):
+    """Trang xem tất cả hợp đồng của renter"""
+    try:
+        renter = Renter.objects.get(user=request.user)
+    except Renter.DoesNotExist:
+        messages.error(request, "Bạn chưa được liên kết với tài khoản khách thuê.")
+        return redirect('renter_landing')
+    
+    # Lấy tất cả hợp đồng của renter
+    contracts = HouseRenter.objects.filter(
+        renter=renter,
+        house__isnull=False
+    ).select_related(
+        'house',
+        'house__loc',
+        'house__loc__chu'
+    ).order_by('-active', '-rent_from')
+    
+    # Thống kê
+    total_contracts = contracts.count()
+    active_contracts = contracts.filter(active=True).count()
+    expired_contracts = contracts.filter(active=False).count()
+    
+    context = {
+        'renter': renter,
+        'contracts': contracts,
+        'total_contracts': total_contracts,
+        'active_contracts': active_contracts,
+        'expired_contracts': expired_contracts,
+    }
+    
+    return render(request, 'sms/renter_contracts.html', context)
+
+@login_required
 @permission_required('sms.view_lop',raise_exception=True)
 def lop_list_guardian(request):
 
@@ -2790,7 +2918,6 @@ def create_loc(request):
             for error in forms.errors:
                 print(error)
                 messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
-
         return redirect("loc_list")
     else:
         forms = CreateLoc()
@@ -2954,8 +3081,16 @@ def create_renter(request):
         #     messages.error(request, "Email người thuê đã tồn tại!")
         #     return redirect("renter_list")
         if forms.is_valid():
-            renter = forms.save()
+            # Save renter but ensure optional fields default safely to avoid DB NOT NULL issues
+            renter = forms.save(commit=False)
+            # Defensive defaults: if form omits optional fields, set to empty string instead of None
+            renter.sdt = renter.sdt or ""
+            renter.cccd = renter.cccd or ""
+            renter.mst = renter.mst or ""
+            renter.ghichu = renter.ghichu or ""
             renter.chu_id = request.user.id
+            renter.save()
+            # Generate renter code after we have an ID
             renter.ma = "NT"+str(request.user.id)+str(renter.id).zfill(3)
             renter.save()
         messages.success(request, "Tạo mới người thuê thành công!")
@@ -3120,7 +3255,6 @@ def edit_loc(request, loc_id):
 
     if request.method == "POST":
         edit_forms = CreateLoc(request.POST, request.FILES or None, instance=loc)
-
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit Location Info Successfully!")
@@ -4257,6 +4391,54 @@ def upload_file_hv(request, hv_id):
     return render(request, "sms/file_list_hv.html", context)
 
 @login_required
+def view_house(request, house_id):
+    """Xem chi tiết nhà trọ (read-only)"""
+    house = get_object_or_404(House, id=house_id)
+    
+    # Kiểm tra quyền: chỉ chủ nhà của location hoặc người thuê hiện tại
+    is_owner = house.loc.chu == request.user
+    is_current_renter = False
+    
+    try:
+        renter = request.user.renter
+        active_contract = HouseRenter.objects.filter(
+            house=house, 
+            renter=renter,
+            active=True
+        ).first()
+        is_current_renter = active_contract is not None
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    if not (is_owner or is_current_renter):
+        messages.error(request, "Bạn không có quyền xem nhà trọ này")
+        return redirect('home')
+    
+    # Lấy hợp đồng hiện tại
+    active_contract = HouseRenter.objects.filter(
+        house=house, 
+        active=True
+    ).select_related('renter').first()
+    
+    # Lấy lịch sử hợp đồng
+    contract_history = HouseRenter.objects.filter(
+        house=house
+    ).select_related('renter').order_by('-active', '-rent_from')
+    
+    # Lấy hóa đơn gần nhất
+    recent_bills = Hoadon.objects.filter(house=house).order_by('-ngay_tao')[:5]
+    
+    context = {
+        'house': house,
+        'active_contract': active_contract,
+        'contract_history': contract_history,
+        'recent_bills': recent_bills,
+        'is_owner': is_owner,
+        'is_current_renter': is_current_renter,
+    }
+    return render(request, "sms/view_house.html", context)
+
+@login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
 def view_loc(request, loc_id):
     # Validate location access
@@ -4269,7 +4451,7 @@ def view_loc(request, loc_id):
     # ----------------------------------------------------
     
     # 1. Lấy tất cả các House thuộc Location này
-    houses = House.objects.filter(loc_id=loc_id) 
+    houses = House.objects.filter(loc_id=loc_id)
 
     # 2. Lấy thông tin người thuê hiện tại (Active Renter) cho từng nhà
     for house in houses:
@@ -4282,6 +4464,11 @@ def view_loc(request, loc_id):
         # Gán bản ghi active và thông tin người thuê vào đối tượng house
         house.active_contract = active_renter_record
         house.current_renter = active_renter_record.renter if active_renter_record else None
+        # Đếm số hợp đồng của nhà này
+        try:
+            house.contract_count = HouseRenter.objects.filter(house=house).count()
+        except Exception:
+            house.contract_count = 0
 
     # ----------------------------------------------------
 
@@ -4294,6 +4481,7 @@ def view_loc(request, loc_id):
     'loc': loc,
     'files': files,
     'houses': houses, # <--- BIẾN MỚI
+    'is_owner': loc.chu == request.user,
     }
     return render(request, "sms/view_loc.html", context)
 
@@ -4465,7 +4653,7 @@ def create_hr(request, id):
                 return render(request, 'sms/fragments/_hr_timeline_list.html', {'hrs': hrs, 'id': id})
             
             # Normal request: chuyển hướng về trang hiện tại
-            return redirect('hr_list', id)
+            return redirect('hr_list_secure', id)
         else:
             # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
             messages.error(request, 'Lỗi: Dữ liệu nhập không hợp lệ. Vui lòng kiểm tra lại Form.')
@@ -4497,6 +4685,11 @@ def create_hr(request, id):
 
 @login_required
 def hr_list(request, id):
+    # Block renter access
+    renter_block = block_renter_access(request)
+    if renter_block:
+        return renter_block
+    
     # Validate house access
     house, error_response = validate_house_access(request, id)
     if error_response:
@@ -4526,7 +4719,7 @@ def hr_list(request, id):
             
             messages.success(request, 'Thêm hợp đồng thuê mới thành công!')
             # Quay lại danh sách hợp đồng của nhà hiện tại
-            return redirect('hr_list', id)
+            return redirect('hr_list_secure', id)
         else:
             # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
             messages.error(request, 'Lỗi: Dữ liệu nhập không hợp lệ. Vui lòng kiểm tra lại Form.')
@@ -4550,6 +4743,11 @@ def hr_list(request, id):
 
 @login_required
 def hr_list_partial(request, id):
+    # Block renter access
+    renter_block = block_renter_access(request)
+    if renter_block:
+        return renter_block
+    
     # Validate house access
     house, error_response = validate_house_access(request, id)
     if error_response:
@@ -4572,7 +4770,7 @@ def hr_toggle_active(request, hr_id: int):
 
     if request.method != 'POST':
         messages.error(request, 'Phương thức không hợp lệ.')
-        return redirect('hr_list', house_id)
+        return redirect('hr_list_secure', house_id)
 
     if not contract.active:
         # Activate this contract and deactivate any other active contracts for the same house
@@ -4591,7 +4789,7 @@ def hr_toggle_active(request, hr_id: int):
         hrs = HouseRenter.objects.filter(house_id=house_id).order_by('-rent_from','-id')
         return render(request, 'sms/fragments/_hr_timeline_list.html', { 'hrs': hrs, 'id': house_id })
     # Fallback full page redirect
-    return redirect('hr_list', house_id)
+    return redirect('hr_list_secure', house_id)
 
 @login_required
 def hr_delete(request, hr_id: int):
@@ -4606,7 +4804,7 @@ def hr_delete(request, hr_id: int):
 
     if request.method != 'POST':
         messages.error(request, 'Phương thức không hợp lệ.')
-        return redirect('hr_list', house_id)
+        return redirect('hr_list_secure', house_id)
 
     # Delete without invoice restriction per updated requirement
     contract.delete()
@@ -4618,7 +4816,53 @@ def hr_delete(request, hr_id: int):
         response = render(request, 'sms/fragments/_hr_timeline_list.html', { 'hrs': hrs, 'id': house_id })
         response["HX-Trigger"] = json.dumps({"showToast": {"message": msg, "level": "success"}})
         return response
-    return redirect('hr_list', house_id)
+    return redirect('hr_list_secure', house_id)
+
+# ----------------------------
+# Secure Contract-related views
+# ----------------------------
+from django.shortcuts import get_object_or_404
+
+def contract_detail(request, contract_id: int):
+    """Display details of a single HouseRenter contract (hashid-based route).
+
+    Uses validate_contract_access for authorization.
+    """
+    contract, error_response = validate_contract_access(request, contract_id)
+    if error_response:
+        return error_response
+    return render(request, 'sms/contract_detail.html', {
+        'contract': contract,
+        'house': contract.house,
+        'renter': contract.renter,
+        'segment': 'contract_detail'
+    })
+
+
+def house_contracts(request, house_id: int):
+    """List contracts for a given house (hashid-based route)."""
+    # Lazy import to avoid top-of-file changes
+    from .models import House, HouseRenter as HR
+    house = get_object_or_404(House, pk=house_id)
+
+    if not request.user.is_authenticated:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden('Authentication required')
+
+    # Basic ownership check: owner of location or staff
+    owner_id = getattr(getattr(house, 'loc', None), 'chu_id', None)
+    if not (request.user.is_staff or owner_id == request.user.id):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden('Not allowed to view contracts for this house')
+
+    contracts = HR.objects.filter(house=house).order_by('-rent_from', '-id')
+    active_contract = contracts.filter(active=True).first()
+    return render(request, 'sms/house_contracts.html', {
+        'house': house,
+        'contracts': contracts,
+        'active_contract': active_contract,
+        'segment': 'house_contracts'
+    })
 
 @login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
@@ -5027,6 +5271,10 @@ def add_nsuser(request, id):
         username=ns.ma,
         password=ns.ma + '@123654'
     )
+    # Set họ tên để hiển thị thay vì username
+    name_parts = ns.hoten.strip().split(maxsplit=1)
+    user.last_name = name_parts[0] if name_parts else ''
+    user.first_name = name_parts[1] if len(name_parts) > 1 else ''
     user.save()
     ns.user = user
     ns.save()
@@ -6223,7 +6471,10 @@ def mark_notification_read(request, notification_id):
 @login_required
 def add_bill_comment(request, bill_id):
     """Thêm bình luận cho Hóa đơn (chủ nhà hoặc khách thuê liên quan)"""
-    hoadon = get_object_or_404(Hoadon, id=bill_id)
+    # Validate bill access using the helper that handles both int and hashid
+    hoadon, error_response = validate_bill_access(request, bill_id)
+    if error_response:
+        return error_response
 
     is_landlord = hoadon.house.loc.chu_id == request.user.id
     is_renter = False
@@ -6231,9 +6482,6 @@ def add_bill_comment(request, bill_id):
         is_renter = hoadon.renter and hoadon.renter.user_id == request.user.id
     except (AttributeError, Renter.DoesNotExist):
         pass
-
-    if not (request.user.is_superuser or is_landlord or is_renter):
-        return HttpResponse("Unauthorized", status=403)
 
     if request.method == 'POST':
         form = BillCommentForm(request.POST)
@@ -6273,9 +6521,7 @@ def add_bill_comment(request, bill_id):
                     'is_landlord': is_landlord,
                 })
 
-    return redirect('bill_detail', bill_id=bill_id)
-    
-    return redirect('notifications_list')
+    return redirect('bill_detail', bill_id=hoadon.id)
 
 
 @login_required

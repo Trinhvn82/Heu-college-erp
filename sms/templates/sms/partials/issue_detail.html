@@ -100,7 +100,7 @@
 
         {% if is_landlord and issue.status != 'resolved' and issue.status != 'pending_confirmation' %}
         <div class="col-12">
-          <form method="post" action="{% url 'change_issue_status' issue.id %}">
+          <form method="post" action="{% url 'change_issue_status_secure' issue.id %}">
             {% csrf_token %}
             <div class="input-group">
               <select name="status" class="form-select">
@@ -155,8 +155,8 @@
 
       <!-- Comment form -->
       <form method="post" 
-            action="{% url 'add_issue_comment' issue.id %}"
-            hx-post="{% url 'add_issue_comment' issue.id %}"
+            action="{% url 'add_issue_comment_secure' issue.id %}"
+            hx-post="{% url 'add_issue_comment_secure' issue.id %}"
             hx-target="#commentsList"
             hx-swap="beforeend"
          hx-on::after-request="this.reset()"
@@ -212,14 +212,14 @@
 </div>
 <div class="modal-footer">
   {% if is_landlord and issue.status != 'resolved' and issue.status != 'pending_confirmation' %}
-    <a href="{% url 'resolve_issue' issue.id %}" class="btn btn-success">
+  <a href="{% url 'resolve_issue_secure' issue.id %}" class="btn btn-success">
       <i class="fas fa-check me-1"></i>Đánh dấu đã xử lý
     </a>
   {% endif %}
   
   {% if is_renter and issue.status == 'pending_confirmation' %}
-    <form method="post" action="{% url 'renter_confirm_issue' issue.id %}" style="display: inline;"
-          hx-post="{% url 'renter_confirm_issue' issue.id %}"
+    <form method="post" action="{% url 'renter_confirm_issue_secure' issue.id %}" style="display: inline;"
+      hx-post="{% url 'renter_confirm_issue_secure' issue.id %}"
           hx-swap="none"
           hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('issueModal')).hide(); setTimeout(() => { window.location.reload(); }, 500); }">
       {% csrf_token %}
@@ -246,8 +246,8 @@
     <h6 class="text-warning mb-3">
       <i class="fas fa-times-circle me-2"></i>Lý do từ chối
     </h6>
-    <form method="post" action="{% url 'renter_confirm_issue' issue.id %}"
-          hx-post="{% url 'renter_confirm_issue' issue.id %}"
+    <form method="post" action="{% url 'renter_confirm_issue_secure' issue.id %}"
+      hx-post="{% url 'renter_confirm_issue_secure' issue.id %}"
           hx-swap="none"
           hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('issueModal')).hide(); setTimeout(() => { window.location.reload(); }, 500); }">
       {% csrf_token %}

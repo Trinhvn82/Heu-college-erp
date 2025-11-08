@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from . import views, views_report, views_htmx
 from django.contrib import admin
 from info.views import *
@@ -11,6 +11,10 @@ from htmx_patterns.views.gv_lmh import view_gv_lmh_search, view_gv_lmh
 from htmx_patterns.views.notifications import live_tester, make_notification
 from sms.tasks import create_tbs
 from . import views as sms_views
+from sms.utils.hashid_converter import HashidConverter
+
+# Register custom URL converter for hashids (encoded integer IDs)
+register_converter(HashidConverter, 'hashid')
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -18,6 +22,7 @@ urlpatterns = [
     path('renter/dashboard/', views.renter_dashboard, name='renter_dashboard'),
     path('renter/bills/', views.renter_bills, name='renter_bills'),
     path('renter/locations/', views.renter_locations, name='renter_locations'),
+    path('renter/contracts/', views.renter_contracts, name='renter_contracts'),
     #path('alllop/', views.lop_list, name='lop_list'),
     #path('', views.index, name='t_clas'),
     path('teacher/<slug:teacher_id>/<int:choice>/Classes/',
@@ -123,17 +128,25 @@ urlpatterns = [
     path('EditLop-new/<int:lop_id>/', views.edit_lop_new, name='edit_lop_new'),
     path('Lophk-list/<int:lop_id>/<int:lhk_id>/', views.lophk_list, name='lophk_list'),
 
-    path('allloc/', views.loc_list, name='loc_list'),
-    path('CreateLoc/', views.create_loc, name='create_loc'),
-    path('EditLoc/<int:loc_id>/', views.edit_loc, name='edit_loc'),
+     path('allloc/', views.loc_list, name='loc_list'),
+     path('CreateLoc/', views.create_loc, name='create_loc'),
+     path('EditLoc/<int:loc_id>/', views.edit_loc, name='edit_loc'),
+     # Secure Location CRUD (parallel)
+     path('EditLoc/<hashid:loc_id>/', views.edit_loc, name='edit_loc_secure'),
 
-    path('allhouse/<int:loc_id>/', views.house_list, name='house_list'),
-    path('CreateHouse/<int:loc_id>/', views.create_house, name='create_house'),
-    path('EditHouse/<int:loc_id>/<int:house_id>/', views.edit_house, name='edit_house'),
+     path('allhouse/<int:loc_id>/', views.house_list, name='house_list'),
+     path('CreateHouse/<int:loc_id>/', views.create_house, name='create_house'),
+     path('EditHouse/<int:loc_id>/<int:house_id>/', views.edit_house, name='edit_house'),
+     # Secure House CRUD (parallel)
+     path('allhouse/<hashid:loc_id>/', views.house_list, name='house_list_secure'),
+     path('CreateHouse/<hashid:loc_id>/', views.create_house, name='create_house_secure'),
+     path('EditHouse/<hashid:loc_id>/<hashid:house_id>/', views.edit_house, name='edit_house_secure'),
 
-    path('CreateRenter/', views.create_renter, name='create_renter'),
-    path('EditRenter/<int:renter_id>/', views.edit_renter, name='edit_renter'),
-    path('allRenter/', views.renter_list, name='renter_list'),
+     path('CreateRenter/', views.create_renter, name='create_renter'),
+     path('EditRenter/<int:renter_id>/', views.edit_renter, name='edit_renter'),
+     path('allRenter/', views.renter_list, name='renter_list'),
+     # Secure Renter CRUD (parallel)
+     path('EditRenter/<hashid:renter_id>/', views.edit_renter, name='edit_renter_secure'),
 
     #path('allhouserenter/<int:loc_id>/', views.houserenter_list, name='houserenter_list'),
     #path('CreateHouseRenter/<int:loc_id>/', views.create_houserenter, name='create_houserenter'),
@@ -141,7 +154,11 @@ urlpatterns = [
 
     path('CreateSinhvien/', views.create_sv, name='create_sv'),
     path('EditSinhvien/<int:sv_id>/', views.edit_sv, name='edit_sv'),
+     # Secure Student edit (parallel)
+     path('EditSinhvien/<hashid:sv_id>/', views.edit_sv, name='edit_sv_secure'),
     path('detailsSinhvien/<int:sv_id>/<int:opt>/', views.details_sv, name='details_sv'),
+     # Secure Student details (parallel)
+     path('detailsSinhvien/<hashid:sv_id>/<int:opt>/', views.details_sv, name='details_sv_secure'),
     path('CreateGiaovien/', views.create_gv, name='create_gv'),
     path('EditGiaovien/<int:gv_id>/', views.edit_gv, name='edit_gv'),
     path('detailsGiaovien/<int:gv_id>/', views.details_gv, name='details_gv'),
@@ -150,11 +167,15 @@ urlpatterns = [
     path('EditTtgv/<int:lop_id>/<int:lopmh_id>/<int:gv_id>/', views.edit_ttgv, name='edit_ttgv'),
     path('CreateCtdt/', views.create_ctdt, name='create_ctdt'),
     path('<int:teacher_id>/', views.single_teacher, name='single_teacher'),
+     # Secure Teacher detail (parallel)
+     path('<hashid:teacher_id>/', views.single_teacher, name='single_teacher_secure'),
     path('hs81/<int:lop_id>/', views.single_hs81lop, name='single_hs81lop'),
     path('lop81-lst/<int:lop_id>/', views.lop81_lst, name='lop81-lst'),
     path('diemdanh/<int:lh_id>', views.diemdanh_lop ,name='diemdanh_list'),
     path('registration/', views.create_teacher, name='create_teacher'),
     path('edit/<int:pk>', views.edit_teacher, name='edit_teacher'),
+     # Secure Teacher edit (parallel)
+     path('edit/<hashid:pk>', views.edit_teacher, name='edit_teacher_secure'),
     path('alldiem/<int:lop_id>/', views.diem_lop, name='diem-lop_list'),
     path('diemlmh/<int:lmh_id>/', views.diem_lmh, name='diem-lmh'),
     path('diemlmh-lst/<int:lmh_id>/', views.diem_lmh_lst, name='diem-lmh-lst'),
@@ -169,6 +190,8 @@ urlpatterns = [
     path('lop81-hk/<int:lop_id>/<int:hk_ma>/', views.lop81_hk, name='lop81-hk'),
     path('lophp-hk/<int:lop_id>/<int:hk_ma>/', views.lophp_hk, name='lophp-hk'),
     path('delete/<int:teacher_id>', views.delete_teacher, name='delete_teacher'),
+     # Secure Teacher delete (parallel)
+     path('delete/<hashid:teacher_id>', views.delete_teacher, name='delete_teacher_secure'),
     path('react', views.react, name='react'),
 
     path('upload/', views.upload_file, name='upload_file'),
@@ -176,8 +199,12 @@ urlpatterns = [
     path('upload-sv/<int:hv_id>/', views.upload_file_hv, name='upload_file_hv'),
     path('upload-lmh/<int:lmh_id>/', views.upload_file_lmh, name='upload_file_lmh'),
 
-    path('upload-loc/<int:loc_id>/', views.upload_file_loc, name='upload_file_loc'),
-     path('view-loc/<int:loc_id>/', views.view_loc, name='view_loc'),
+     path('upload-loc/<int:loc_id>/', views.upload_file_loc, name='upload_file_loc'),
+      path('view-loc/<int:loc_id>/', views.view_loc, name='view_loc'),
+      # Secure Location file/view routes
+      path('upload-loc/<hashid:loc_id>/', views.upload_file_loc, name='upload_file_loc_secure'),
+      path('view-loc/<hashid:loc_id>/', views.view_loc, name='view_loc_secure'),
+      path('view-house/<hashid:house_id>/', views.view_house, name='view_house_secure'),
      path('houses/', views.houses, name='houses'),
      path('houses/partial/', views.houses_partial, name='houses_partial'),
      path('create-hr/<int:id>/', views.create_hr, name='create_hr'),
@@ -185,6 +212,18 @@ urlpatterns = [
      path('hr-list-partial/<int:id>/', views.hr_list_partial, name='hr_list_partial'),
      path('hr-toggle-active/<int:hr_id>/', views.hr_toggle_active, name='hr_toggle_active'),
      path('hr-delete/<int:hr_id>/', views.hr_delete, name='hr_delete'),
+          # Secure HR/Contract routes
+          path('create-hr/<hashid:id>/', views.create_hr, name='create_hr_secure'),
+          path('hr-list/<hashid:id>/', views.hr_list, name='hr_list_secure'),
+          path('hr-list-partial/<hashid:id>/', views.hr_list_partial, name='hr_list_partial_secure'),
+          path('hr-toggle-active/<hashid:hr_id>/', views.hr_toggle_active, name='hr_toggle_active_secure'),
+          path('hr-delete/<hashid:hr_id>/', views.hr_delete, name='hr_delete_secure'),
+                # Contract detail & listing (new secure routes)
+                path('contract/<hashid:contract_id>/', views.contract_detail, name='contract_detail_secure'),
+                path('house/<hashid:house_id>/contracts/', views.house_contracts, name='house_contracts_secure'),
+                # Legacy naming aliases on same hash paths
+                path('contract/<hashid:contract_id>/', views.contract_detail, name='contract_detail'),
+                path('house/<hashid:house_id>/contracts/', views.house_contracts, name='house_contracts'),
   #  path('upload-house/<int:house_id>/', views.upload_file_house, name='upload_file_house'),
 
     path('hoclai-lmh/<int:lmh_id>/', views.hoclai_list, name='hoclai_list'),
@@ -197,6 +236,7 @@ urlpatterns = [
     path('delete-file-hv/<int:hv_id>/<int:file_id>/', views.delete_file_hv, name='delete_file_hv'),
     path('delete-file-lmh/<int:lmh_id>/<int:file_id>/', views.delete_file_lmh, name='delete_file_lmh'),
      path('delete-file-loc/<int:loc_id>/<int:file_id>/', views.delete_file_loc, name='delete_file_loc'),
+     path('delete-file-loc/<hashid:loc_id>/<hashid:file_id>/', views.delete_file_loc, name='delete_file_loc_secure'),
     path('download-temp1/', views.download_file1, name='download_file1'),
     path('download-temp2/', views.download_file2, name='download_file2'),
 
@@ -212,10 +252,17 @@ urlpatterns = [
 
     path('add-hv/<int:id>/', add_hvuser, name='add_hv'),
     path('resetpwd-hv/<int:hv_id>/', reset_pwd_hv, name='reset_pwd_hv'),
+     # Secure student user actions (parallel)
+     path('add-hv/<hashid:id>/', add_hvuser, name='add_hv_secure'),
+     path('resetpwd-hv/<hashid:hv_id>/', reset_pwd_hv, name='reset_pwd_hv_secure'),
 
     path('add-renter/<int:id>/', add_renteruser, name='add_renter'),
     path('toggle-renter/<int:renter_id>/', toggle_renter_status, name='toggle_renter_status'),
     path('resetpwd-renter/<int:renter_id>/', reset_pwd_renter, name='reset_pwd_renter'),
+     # Secure renter actions
+     path('add-renter/<hashid:id>/', add_renteruser, name='add_renter_secure'),
+     path('toggle-renter/<hashid:renter_id>/', toggle_renter_status, name='toggle_renter_status_secure'),
+     path('resetpwd-renter/<hashid:renter_id>/', reset_pwd_renter, name='reset_pwd_renter_secure'),
 
     path('changepwd/', user_changepwd, name='changepwd'),
  
@@ -228,22 +275,17 @@ urlpatterns = [
     path("search-lh/", views_htmx.search_lh, name='search-lh'),
     path('get-lichhoc/', views_htmx.get_lichhoc, name='get-lichhoc'),
 
-    #bill
-    path('location/<int:loc_id>/bills/', views.bill_list_view, name='bill_list'),
-    path('house/<int:house_id>/create-bill/', views.create_bill_view, name='create_bill'),
-    path('bill/<int:bill_id>/detail/', views.bill_detail_view, name='bill_detail'),
-     path('bill/<int:bill_id>/comment/', sms_views.add_bill_comment, name='add_bill_comment'),
-    path('bill/<int:bill_id>/update/', views.update_bill_view, name='update_bill'),
-    # bill payment
-    path('bill/<int:bill_id>/add-payment/', views.add_payment, name='add_payment'),
-    # path('payment/<int:payment_id>/update/', views.update_payment_view, name='update_payment'),
-
-    # 3. Xác nhận Thanh toán
-    path('payment/confirm/<int:payment_id>/', views.confirm_payment_view, name='confirm_payment'),
-    
-    # 4. Xóa Thanh toán
-    path('payment/delete/<int:payment_id>/', views.delete_payment_view, name='delete_payment'),
-    path('bill/<int:bill_id>/upload-file/', views.upload_bill_file, name='upload_bill_file'),
+     #bill
+    # DEPRECATED integer-ID routes (Phase 2): kept commented for reference
+    # path('location/<int:loc_id>/bills/', views.bill_list_view, name='bill_list'),
+    # path('house/<int:house_id>/create-bill/', views.create_bill_view, name='create_bill'),
+    # path('bill/<int:bill_id>/detail/', views.bill_detail_view, name='bill_detail'),
+    # path('bill/<int:bill_id>/comment/', sms_views.add_bill_comment, name='add_bill_comment'),
+    # path('bill/<int:bill_id>/update/', views.update_bill_view, name='update_bill'),
+    # path('bill/<int:bill_id>/add-payment/', views.add_payment, name='add_payment'),
+    # path('payment/confirm/<int:payment_id>/', views.confirm_payment_view, name='confirm_payment'),
+    # path('payment/delete/<int:payment_id>/', views.delete_payment_view, name='delete_payment'),
+    # path('bill/<int:bill_id>/upload-file/', views.upload_bill_file, name='upload_bill_file'),
      # invoice search
      path('invoices/search/', views.invoice_search, name='invoice_search'),
      path('invoices/export-excel/', views.invoice_export_excel, name='invoice_export_excel'),
@@ -251,22 +293,70 @@ urlpatterns = [
     #path('bill/<int:bill_id>/excel/', views.generate_bill_excel, name='generate_bill_excel'),
     path('bill/<int:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf'),
 
+     # Secure (encoded ID) routes — now canonical
+     # Bills (encoded bill_id)
+     path('bill/<hashid:bill_id>/detail/', views.bill_detail_view, name='bill_detail_secure'),
+     path('bill/<hashid:bill_id>/update/', views.update_bill_view, name='update_bill_secure'),
+     path('bill/<hashid:bill_id>/add-payment/', views.add_payment, name='add_payment_secure'),
+     path('bill/<hashid:bill_id>/upload-file/', views.upload_bill_file, name='upload_bill_file_secure'),
+     path('bill/<hashid:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf_secure'),
+     path('bill/<hashid:bill_id>/comment/', views.add_bill_comment, name='add_bill_comment_secure'),
+     # Backward-compatibility aliases (hashid paths with legacy names)
+     path('bill/<hashid:bill_id>/detail/', views.bill_detail_view, name='bill_detail'),
+     path('bill/<hashid:bill_id>/update/', views.update_bill_view, name='update_bill'),
+     path('bill/<hashid:bill_id>/add-payment/', views.add_payment, name='add_payment'),
+     path('bill/<hashid:bill_id>/upload-file/', views.upload_bill_file, name='upload_bill_file'),
+     path('bill/<hashid:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf'),
+     path('bill/<hashid:bill_id>/comment/', views.add_bill_comment, name='add_bill_comment'),
+     # Payment (encoded payment_id)
+     path('payment/confirm/<hashid:payment_id>/', views.confirm_payment_view, name='confirm_payment_secure'),
+     path('payment/delete/<hashid:payment_id>/', views.delete_payment_view, name='delete_payment_secure'),
+     # Backward-compatibility aliases (hashid paths with legacy names)
+     path('payment/confirm/<hashid:payment_id>/', views.confirm_payment_view, name='confirm_payment'),
+     path('payment/delete/<hashid:payment_id>/', views.delete_payment_view, name='delete_payment'),
+     # Location/House (encoded)
+     path('location/<hashid:loc_id>/bills/', views.bill_list_view, name='bill_list_secure'),
+     path('house/<hashid:house_id>/create-bill/', views.create_bill_view, name='create_bill_secure'),
+     # Legacy names on hashid paths
+     path('location/<hashid:loc_id>/bills/', views.bill_list_view, name='bill_list'),
+     path('house/<hashid:house_id>/create-bill/', views.create_bill_view, name='create_bill'),
+
      # Notifications & Issues
      path('notifications/list/', sms_views.notifications_list, name='notifications_list'),
      path('notifications/badge/', sms_views.notification_badge, name='notification_badge'),
-     path('notifications/<int:notification_id>/read/', sms_views.mark_notification_read, name='mark_notification_read'),
+     # Integer notification route deprecated in favor of hashid
+     # path('notifications/<int:notification_id>/read/', sms_views.mark_notification_read, name='mark_notification_read'),
      # Renter issues
      path('renter/issues/', sms_views.renter_issue_list, name='renter_issues'),
      path('issues/report/', sms_views.renter_report_issue, name='renter_report_issue'),
      # Landlord issues
      path('issues/', sms_views.issue_list, name='issue_list'),
-     path('issues/<int:issue_id>/', sms_views.issue_detail, name='issue_detail'),
-     path('issues/<int:issue_id>/modal/', sms_views.issue_detail_modal, name='issue_detail_modal'),
-     path('issues/<int:issue_id>/comment/', sms_views.add_issue_comment, name='add_issue_comment'),
-     path('issues/<int:issue_id>/status/', sms_views.change_issue_status, name='change_issue_status'),
-     path('issues/<int:issue_id>/resolve/', sms_views.resolve_issue, name='resolve_issue'),
-     path('issues/<int:issue_id>/confirm/', sms_views.renter_confirm_issue, name='renter_confirm_issue'),
+     # Keep integer Issue routes temporarily for backward compatibility with old notifications (to be removed later)
+     path('issues/<int:issue_id>/', sms_views.issue_detail, name='issue_detail_int_deprecated'),
+     path('issues/<int:issue_id>/modal/', sms_views.issue_detail_modal, name='issue_detail_modal_int_deprecated'),
+     path('issues/<int:issue_id>/comment/', sms_views.add_issue_comment, name='add_issue_comment_int_deprecated'),
+     path('issues/<int:issue_id>/status/', sms_views.change_issue_status, name='change_issue_status_int_deprecated'),
+     path('issues/<int:issue_id>/resolve/', sms_views.resolve_issue, name='resolve_issue_int_deprecated'),
+     path('issues/<int:issue_id>/confirm/', sms_views.renter_confirm_issue, name='renter_confirm_issue_int_deprecated'),
      path('issues/bulk-status/', sms_views.bulk_change_issue_status, name='bulk_change_issue_status'),
+
+     # Secure (encoded) Issue/Notification routes
+     path('notifications/<hashid:notification_id>/read/', sms_views.mark_notification_read, name='mark_notification_read_secure'),
+     # Legacy name alias
+     path('notifications/<hashid:notification_id>/read/', sms_views.mark_notification_read, name='mark_notification_read'),
+     path('issues/<hashid:issue_id>/', sms_views.issue_detail, name='issue_detail_secure'),
+     path('issues/<hashid:issue_id>/modal/', sms_views.issue_detail_modal, name='issue_detail_modal_secure'),
+     path('issues/<hashid:issue_id>/comment/', sms_views.add_issue_comment, name='add_issue_comment_secure'),
+     path('issues/<hashid:issue_id>/status/', sms_views.change_issue_status, name='change_issue_status_secure'),
+     path('issues/<hashid:issue_id>/resolve/', sms_views.resolve_issue, name='resolve_issue_secure'),
+     path('issues/<hashid:issue_id>/confirm/', sms_views.renter_confirm_issue, name='renter_confirm_issue_secure'),
+     # Legacy names on hashid paths (so reverse('issue_detail') uses hashid)
+     path('issues/<hashid:issue_id>/', sms_views.issue_detail, name='issue_detail'),
+     path('issues/<hashid:issue_id>/modal/', sms_views.issue_detail_modal, name='issue_detail_modal'),
+     path('issues/<hashid:issue_id>/comment/', sms_views.add_issue_comment, name='add_issue_comment'),
+     path('issues/<hashid:issue_id>/status/', sms_views.change_issue_status, name='change_issue_status'),
+     path('issues/<hashid:issue_id>/resolve/', sms_views.resolve_issue, name='resolve_issue'),
+     path('issues/<hashid:issue_id>/confirm/', sms_views.renter_confirm_issue, name='renter_confirm_issue'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

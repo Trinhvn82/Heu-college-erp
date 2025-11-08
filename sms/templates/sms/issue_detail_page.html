@@ -127,7 +127,7 @@
 
                                 {% if is_landlord and issue.status != 'resolved' and issue.status != 'pending_confirmation' %}
                                 <div class="col-12">
-                                    <form method="post" action="{% url 'change_issue_status' issue.id %}">
+                                    <form method="post" action="{% url 'change_issue_status_secure' issue.id %}">
                                         {% csrf_token %}
                                         <div class="input-group">
                                             <select name="status" class="form-select">
@@ -181,9 +181,9 @@
                             </div>
 
                             <!-- Comment form -->
-                            <form method="post" 
-                                  action="{% url 'add_issue_comment' issue.id %}"
-                                  hx-post="{% url 'add_issue_comment' issue.id %}"
+                    <form method="post" 
+                        action="{% url 'add_issue_comment_secure' issue.id %}"
+                        hx-post="{% url 'add_issue_comment_secure' issue.id %}"
                                   hx-target="#commentsList"
                                   hx-swap="beforeend"
                                   hx-on::after-request="this.reset()"
@@ -242,13 +242,13 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             {% if is_landlord and issue.status != 'resolved' and issue.status != 'pending_confirmation' %}
-                                <a href="{% url 'resolve_issue' issue.id %}" class="btn btn-success">
+                                <a href="{% url 'resolve_issue_secure' issue.id %}" class="btn btn-success">
                                     <i class="fas fa-check me-1"></i>Đánh dấu đã xử lý
                                 </a>
                             {% endif %}
                             
                             {% if is_renter and issue.status == 'pending_confirmation' %}
-                                <a href="{% url 'renter_confirm_issue' issue.id %}" class="btn btn-success me-2">
+                                <a href="{% url 'renter_confirm_issue_secure' issue.id %}" class="btn btn-success me-2">
                                     <i class="fas fa-check-circle me-1"></i>Xác nhận đã xong
                                 </a>
                                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
@@ -276,7 +276,7 @@
                 <h5 class="modal-title">Báo cáo chưa xong</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" action="{% url 'change_issue_status' issue.id %}">
+            <form method="post" action="{% url 'change_issue_status_secure' issue.id %}">
                 {% csrf_token %}
                 <input type="hidden" name="status" value="rejected">
                 <div class="modal-body">

@@ -1,0 +1,35 @@
+{% extends 'layouts/renter_base.html' %}
+{% load humanize %}
+{% block title %}Hợp đồng thuê{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'house_contracts' house.id %}">Hợp đồng</a></li>
+<li class="breadcrumb-item active">Chi tiết</li>
+{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h3 class="h5 mb-3"><span class="fas fa-file-signature me-2"></span>Hợp đồng thuê</h3>
+    <div class="row">
+      <div class="col-md-6">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between"><span>Nhà:</span><strong>{{ house.ten }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Khách thuê:</span><strong>{{ renter.hoten }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Bắt đầu:</span><span>{{ contract.rent_from|date:'d/m/Y' }}</span></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Kết thúc:</span><span>{{ contract.rent_to|date:'d/m/Y'|default:'-' }}</span></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Trạng thái:</span>
+            {% if contract.active %}<span class="badge bg-success">Đang hiệu lực</span>{% else %}<span class="badge bg-secondary">Hết hiệu lực</span>{% endif %}
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-6">
+        <div class="alert alert-light text-dark">
+          <div><strong>Ghi chú:</strong></div>
+          <div>{{ contract.ghichu|default:'Không có' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

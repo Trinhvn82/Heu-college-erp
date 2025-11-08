@@ -44,7 +44,7 @@
             <tr class="cursor-pointer"
                 data-bs-toggle="modal" 
                 data-bs-target="#issueDetailModal"
-                hx-get="{% url 'issue_detail' i.id %}"
+                hx-get="{% url 'issue_detail_secure' i.id %}"
                 hx-target="#issueDetailModal .modal-content"
                 hx-swap="innerHTML"
                 style="cursor: pointer;">
@@ -70,7 +70,7 @@
               </td>
               <td class="text-end" onclick="event.stopPropagation();">
                 {% if i.status != 'resolved' and i.status != 'pending_confirmation' %}
-                  <a class="btn btn-sm btn-outline-success" href="{% url 'resolve_issue' i.id %}">
+                  <a class="btn btn-sm btn-outline-success" href="{% url 'resolve_issue_secure' i.id %}">
                     <span class="fas fa-check me-1"></span>Xử lý xong
                   </a>
                 {% elif i.status == 'pending_confirmation' %}

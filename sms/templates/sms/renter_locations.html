@@ -176,14 +176,22 @@
                             {% if house.renter_contract %}
                             <div class="mt-2 pt-2 border-top">
                                 <div class="small">
-                                    <span class="fas fa-file-contract me-1 text-success"></span>
-                                    Hợp đồng: 
-                                    {{ house.renter_contract.rent_from|date:"d/m/Y" }} - {{ house.renter_contract.rent_to|date:"d/m/Y" }}
                                     {% if house.renter_contract.active %}
-                                        <span class="badge bg-success ms-2">Đang hiệu lực</span>
+                                        <span class="fas fa-file-contract me-1 text-success"></span>
+                                        Hợp đồng: 
+                                        {{ house.renter_contract.rent_from|date:"d/m/Y" }} - {{ house.renter_contract.rent_to|date:"d/m/Y" }}
+                                        <span class="badge bg-success ms-2">Đang thuê</span>
                                     {% else %}
-                                        <span class="badge bg-secondary ms-2">Đã kết thúc</span>
+                                        <span class="fas fa-door-open me-1 text-muted"></span>
+                                        <span class="badge bg-secondary ms-2">Còn trống</span>
                                     {% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="mt-2 pt-2 border-top">
+                                <div class="small">
+                                    <span class="fas fa-door-open me-1 text-muted"></span>
+                                    <span class="badge bg-secondary ms-2">Còn trống</span>
                                 </div>
                             </div>
                             {% endif %}

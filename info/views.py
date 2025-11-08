@@ -455,9 +455,13 @@ def add_gvuser(request, id):
     
     user = User.objects.create_user(
         username="gv_"+gv.ma,
-        first_name = gv.hoten,
         password=gv.ma + '@123654'
     )
+    # Set họ tên để hiển thị thay vì username
+    name_parts = gv.hoten.strip().split(maxsplit=1)
+    user.last_name = name_parts[0] if name_parts else ''
+    user.first_name = name_parts[1] if len(name_parts) > 1 else ''
+    
     if Group.objects.filter(name = 'GVTG').exists():
         gr =  Group.objects.get(name = 'GVTG')
     else:
@@ -483,9 +487,13 @@ def add_hvuser(request, id):
     
     user = User.objects.create_user(
         username="hv_"+sv.msv,
-        first_name = sv.hoten,
         password=sv.msv + '@123654'
     )
+    # Set họ tên để hiển thị thay vì username
+    name_parts = sv.hoten.strip().split(maxsplit=1)
+    user.last_name = name_parts[0] if name_parts else ''
+    user.first_name = name_parts[1] if len(name_parts) > 1 else ''
+    
     if Group.objects.filter(name = 'HV').exists():
         gr =  Group.objects.get(name = 'HV')
     else:
@@ -577,9 +585,12 @@ def add_nsuser(request, id):
     
     user = User.objects.create_user(
         username="ns_" +ns.ma,
-        first_name = ns.hoten,
         password=ns.ma + '@123654'
     )
+    # Set họ tên để hiển thị thay vì username
+    name_parts = ns.hoten.strip().split(maxsplit=1)
+    user.last_name = name_parts[0] if name_parts else ''
+    user.first_name = name_parts[1] if len(name_parts) > 1 else ''
     user.save()
     ns.user = user
     ns.save()
@@ -610,6 +621,12 @@ def add_renteruser(request, id):
     import string
     
     renter = Renter.objects.get(id = id)
+    
+    # Generate ma if not exists (auto-generate ID)
+    if not renter.ma:
+        renter.ma = "NT" + str(renter.chu_id or 0) + str(renter.id).zfill(3)
+        renter.save()
+    
     # Check if username already exists
     if User.objects.filter(username=renter.ma).exists():
         messages.error(request, 'Username đã tồn tại')
@@ -622,15 +639,36 @@ def add_renteruser(request, id):
     
     user = User.objects.create_user(
         username=renter.ma,
-        first_name = renter.hoten,
         password=password
     )
+    # Set họ tên để hiển thị thay vì username
+    name_parts = renter.hoten.strip().split(maxsplit=1)
+    user.last_name = name_parts[0] if name_parts else ''
+    user.first_name = name_parts[1] if len(name_parts) > 1 else ''
+    
+    # Set email if available
+    if renter.email:
+        user.email = renter.email
+    
     user.save()
     renter.user = user
     renter.init_pwd = password  # Save initial password
     renter.save()
     
-    messages.success(request, f"Tạo tài khoản cho {renter.hoten} thành công! Username: {renter.ma}, Password: {password}")
+    # Send login info email if renter has email
+    if renter.email:
+        try:
+            from sms.utils.send_login_info import send_login_info_email
+            email_sent = send_login_info_email(user, password)
+            if email_sent:
+                messages.success(request, f"Tạo tài khoản cho {renter.hoten} thành công! Thông tin đăng nhập đã được gửi qua email {renter.email}")
+            else:
+                messages.success(request, f"Tạo tài khoản cho {renter.hoten} thành công! Username: {renter.ma}, Password: {password} (Không thể gửi email)")
+        except Exception as e:
+            messages.success(request, f"Tạo tài khoản cho {renter.hoten} thành công! Username: {renter.ma}, Password: {password} (Lỗi gửi email)")
+    else:
+        messages.success(request, f"Tạo tài khoản cho {renter.hoten} thành công! Username: {renter.ma}, Password: {password}")
+    
     return redirect("renter_list")
 
 @login_required

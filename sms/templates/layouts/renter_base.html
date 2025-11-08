@@ -149,13 +149,18 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'renter_bills' %}active{% endif %}" href="{% url 'renter_bills' %}">
-                            <span class="fas fa-file-invoice-dollar me-1"></span>Hóa đơn
+                        <a class="nav-link {% if request.resolver_match.url_name == 'renter_locations' %}active{% endif %}" href="{% url 'renter_locations' %}">
+                            <span class="fas fa-map-marked-alt me-1"></span>Địa điểm
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'renter_locations' %}active{% endif %}" href="{% url 'renter_locations' %}">
-                            <span class="fas fa-map-marked-alt me-1"></span>Địa điểm
+                        <a class="nav-link {% if request.resolver_match.url_name == 'renter_contracts' %}active{% endif %}" href="{% url 'renter_contracts' %}">
+                            <span class="fas fa-file-contract me-1"></span>Hợp đồng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'renter_bills' %}active{% endif %}" href="{% url 'renter_bills' %}">
+                            <span class="fas fa-file-invoice-dollar me-1"></span>Hóa đơn
                         </a>
                     </li>
                     <li class="nav-item">
@@ -181,8 +186,9 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
+                            {% load user_display %}
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="fas fa-user-circle me-1"></span>{{ user.username }}
+                                <span class="fas fa-user-circle me-1"></span>{% display_name user %}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{% url 'changepwd' %}">
@@ -319,6 +325,58 @@
                 // ignore
             }
         });
+
+        // Handle session timeout for authenticated pages
+        // Detect inactivity and warn user before session expires
+        (function() {
+            let lastActivity = Date.now();
+            const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes for renters
+            const WARNING_TIME = 2 * 60 * 1000; // Warn 2 minutes before timeout
+            let warningShown = false;
+            
+            // Update last activity on any user interaction
+            ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(event) {
+                document.addEventListener(event, function() {
+                    lastActivity = Date.now();
+                    warningShown = false;
+                }, true);
+            });
+            
+            // Check for timeout periodically
+            setInterval(function() {
+                const timeSinceLastActivity = Date.now() - lastActivity;
+                
+                // Show warning before timeout
+                if (!warningShown && timeSinceLastActivity > (SESSION_TIMEOUT - WARNING_TIME)) {
+                    warningShown = true;
+                    if (confirm('Phiên làm việc sắp hết hạn. Nhấn OK để tiếp tục làm việc.')) {
+                        // User clicked OK - refresh activity
+                        lastActivity = Date.now();
+                        warningShown = false;
+                        // Ping server to keep session alive
+                        fetch(window.location.href, { 
+                            method: 'HEAD',
+                            credentials: 'same-origin'
+                        }).catch(function() {});
+                    }
+                }
+                
+                // Force logout if timeout exceeded
+                if (timeSinceLastActivity > SESSION_TIMEOUT + 30000) { // 30s grace period
+                    window.location.href = '/accounts/logout/';
+                }
+            }, 30000); // Check every 30 seconds
+            
+            // Handle form submissions after timeout
+            document.addEventListener('submit', function(e) {
+                const timeSinceLastActivity = Date.now() - lastActivity;
+                if (timeSinceLastActivity > SESSION_TIMEOUT) {
+                    e.preventDefault();
+                    alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
+                    window.location.href = '/accounts/login/';
+                }
+            }, true);
+        })();
     </script>
 
     {% block extra_js %}{% endblock %}

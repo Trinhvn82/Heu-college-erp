@@ -257,7 +257,12 @@ class Renter(models.Model):
         unique_together = ('ma',)
 
     def __str__(self):
-        return self.hoten + " - " + self.cccd
+        # Gracefully handle possible None values to avoid TypeError
+        hoten = self.hoten or ""  # hoten is required but defensive fallback
+        cccd = self.cccd or ""    # cccd may be null
+        if cccd:
+            return f"{hoten} - {cccd}"
+        return hoten
 
 
 class Hoadon(models.Model):

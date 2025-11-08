@@ -1,5 +1,6 @@
 {% extends "layouts/rental_base.html" %}
 {% load static %}
+{% load user_display %}
 
 {% block title %}Danh sách Khách thuê{% endblock %}
 
@@ -44,9 +45,10 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>#</th>
-                                <th>Mã</th>
+                                <th>ID</th>
                                 <th>Họ tên</th>
                                 <th>SDT</th>
+                                <th>CCCD</th>
                                 <th>Thông tin User</th>
                                 <th>Tác nghiệp</th>
                             </tr>
@@ -56,19 +58,26 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>
+                                    {% if renter.ma %}
+                                        <span class="badge bg-primary">{{ renter.ma }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
                                 {% if renter.user %}
-                                    <span class="font-weight-bold text-success">{{ renter.ma }}</span>
+                                    <span class="font-weight-bold text-success">{{ renter.hoten }}</span>
                                 {%else%}
-                                    <span class="font-weight-bold">{{ renter.ma }}</span>
+                                    <span class="font-weight-bold">{{ renter.hoten }}</span>
                                 {%endif%}
 
                                 </td>
-                                <td>{{ renter.hoten }}</td>
                                 <td>{{ renter.sdt }}</td>
+                                <td>{{ renter.cccd }}</td>
                                 <td>
                                     {% if renter.user %}
                                     <div class="small">
-                                        <strong>Username:</strong> {{ renter.ma }}
+                                        <strong>ID:</strong> {{ renter.user.username }}
                                         {% if not renter.user.is_active %}
                                             <span class="badge bg-danger">Đã khóa</span>
                                         {% endif %}
@@ -87,8 +96,8 @@
                                             </span>
                                         </button>
                                         <div class="dropdown-menu dashboard-dropdown dropdown-menu-left mt-2">
-                                            <a class="dropdown-item edit_item"
-                                               href="{% url 'edit_renter' renter.id%}">
+                                                          <a class="dropdown-item edit_item"
+                                                              href="{% url 'edit_renter_secure' renter.id%}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
                                                     <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z"/>
                                                   </svg>
@@ -96,14 +105,14 @@
                                             </a>
                                             {% if renter.user %}
                                             <a class="dropdown-item edit_item"
-                                                href="{% url 'reset_pwd_renter' renter.id%}">
+                                                href="{% url 'reset_pwd_renter_secure' renter.id%}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
                                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
                                                   </svg>
                                                  <span></span>Reset Password
                                             </a>
                                             <a class="dropdown-item edit_item"
-                                                href="{% url 'toggle_renter_status' renter.id%}">
+                                                href="{% url 'toggle_renter_status_secure' renter.id%}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lock" viewBox="0 0 16 16">
                                                     <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m0 5.996V14H3s-1 0-1-1 1-4 6-4c.564 0 1.077.038 1.544.107a4.524 4.524 0 0 0-.803.918A10.46 10.46 0 0 0 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664zM9 13a1 1 0 0 1 1-1v-1a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm3-3a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1"/>
                                                 </svg>
@@ -111,7 +120,7 @@
                                             </a>
                                             {%else%}
                                             <a class="dropdown-item edit_item"
-                                                href="{% url 'add_renter' renter.id%}">
+                                                href="{% url 'add_renter_secure' renter.id%}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
                                                     <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
                                                   </svg>

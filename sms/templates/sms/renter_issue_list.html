@@ -71,7 +71,7 @@
           <tr class="cursor-pointer" 
               data-bs-toggle="modal" 
               data-bs-target="#issueDetailModal"
-              hx-get="{% url 'issue_detail' i.id %}"
+              hx-get="{% url 'issue_detail_secure' i.id %}"
               hx-target="#issueDetailModal .modal-content"
               hx-swap="innerHTML"
               style="cursor: pointer;">

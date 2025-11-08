@@ -51,8 +51,9 @@
                             </a>
                         </li>
                         <li class="nav-item dropdown">
+                            {% load user_display %}
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="fas fa-user me-1"></span>{{ user.username }}
+                                <span class="fas fa-user me-1"></span>{% display_name user %}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{% url 'changepwd' %}">
@@ -124,6 +125,32 @@
                 // ignore
             }
         });
+
+        // Handle session timeout - refresh page when form is focused after long inactivity
+        // This ensures fresh CSRF token is loaded
+        (function() {
+            let lastActivity = Date.now();
+            const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+            
+            // Update last activity on any user interaction
+            ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(function(event) {
+                document.addEventListener(event, function() {
+                    lastActivity = Date.now();
+                }, true);
+            });
+            
+            // Check for timeout when form elements are focused
+            document.addEventListener('focusin', function(e) {
+                if (e.target.matches('input, textarea, select')) {
+                    const timeSinceLastActivity = Date.now() - lastActivity;
+                    if (timeSinceLastActivity > SESSION_TIMEOUT) {
+                        // Session likely expired, reload page to get fresh CSRF token
+                        console.log('Session timeout detected, refreshing page...');
+                        window.location.reload();
+                    }
+                }
+            }, true);
+        })();
     </script>
 
     {% block extra_js %}{% endblock %}

@@ -33,13 +33,13 @@
                                 <td>{{ teacher.sub_type }}</td>
                                 <td>{{ teacher.joining_date }}</td>
                                 <td>
-                                    <a href="{% url 'single_teacher' teacher.id %}">
+                                    <a href="{% url 'single_teacher_secure' teacher.id %}">
                                         <button type="button" class="btn btn-primary">Details</button>
                                     </a>
-                                    <a href="{% url 'edit_teacher' teacher.id %}">
+                                    <a href="{% url 'edit_teacher_secure' teacher.id %}">
                                         <button type="button" class="btn btn-info"><i class="fa fa-edit"></i></button>
                                     </a>
-                                    <a href="{% url 'delete_teacher' teacher.id %}">
+                                    <a href="{% url 'delete_teacher_secure' teacher.id %}">
                                         <button type="button" class="btn btn-danger">X</button>
                                     </a>
                                 </td>

@@ -1,5 +1,6 @@
 {% extends 'layouts/renter_base.html' %}
 {% load humanize %}
+{% load id_encoder %}
 {% block title %}Thông báo{% endblock %}
 
 {% block breadcrumb_items %}
@@ -27,8 +28,9 @@
                 </div>
               </div>
               {% if n.target_url %}
-                <button class="btn btn-sm btn-primary issue-modal-btn" 
-                        data-notification-id="{{ n.id }}"
+    <button class="btn btn-sm btn-primary issue-modal-btn" 
+      data-notification-id="{{ n.id }}"
+      data-notification-hash="{{ n.id|encode_id }}"
                         data-target-url="{{ n.target_url }}">
                   <i class="fas fa-eye me-1"></i>Xem
                 </button>
@@ -48,8 +50,9 @@
                 </div>
               </div>
               {% if n.target_url %}
-                <button class="btn btn-sm btn-outline-secondary issue-modal-btn" 
-                        data-notification-id="{{ n.id }}"
+    <button class="btn btn-sm btn-outline-secondary issue-modal-btn" 
+      data-notification-id="{{ n.id }}"
+      data-notification-hash="{{ n.id|encode_id }}"
                         data-target-url="{{ n.target_url }}">
                   <i class="fas fa-external-link-alt me-1"></i>Mở lại
                 </button>
@@ -93,18 +96,19 @@ document.addEventListener('click', function(e) {
   console.log('Button clicked:', btn);
   
   const notificationId = btn.dataset.notificationId;
+  const notificationHash = btn.dataset.notificationHash;
   const targetUrl = btn.dataset.targetUrl;
   
   console.log('Notification ID:', notificationId, 'Target URL:', targetUrl);
   
   // Check if it's an issue or bill
-  const issueMatch = targetUrl.match(/\/issues\/(\d+)\//);
-  const billMatch = targetUrl.match(/\/bill\/(\d+)\/detail\//);
+  const issueMatch = targetUrl.match(/\/issues\/([A-Za-z0-9]+)\//);
+  const billMatch = targetUrl.match(/\/bill\/([A-Za-z0-9]+)\/detail\//);
   
   if (issueMatch) {
     const issueId = issueMatch[1];
     console.log('Issue ID extracted:', issueId);
-    loadIssueModal(issueId, notificationId);
+    loadIssueModal(issueId, notificationId, notificationHash);
   } else if (billMatch) {
     // For bills, just navigate to the page (no modal for now)
     const billId = billMatch[1];
@@ -117,7 +121,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-function loadIssueModal(issueId, notificationId) {
+function loadIssueModal(issueId, notificationId, notificationHash) {
   console.log('Loading modal for issue:', issueId);
   
   const modalElement = document.getElementById('issueModal');
@@ -129,7 +133,7 @@ function loadIssueModal(issueId, notificationId) {
     return;
   }
   
-  // Build modal URL
+  // Build modal URL (works with int or hashid)
   const modalUrl = `/sms/issues/${issueId}/modal/`;
   console.log('Fetching from:', modalUrl);
   
@@ -157,9 +161,9 @@ function loadIssueModal(issueId, notificationId) {
       console.log('HTML received, length:', html.length);
       modalContent.innerHTML = html;
       
-      // Mark notification as read
-      if (notificationId) {
-        fetch(`/sms/notifications/${notificationId}/read/?modal=1`, {
+      // Mark notification as read using secure hashid route when available
+      if (notificationHash) {
+        fetch(`/sms/notifications/${notificationHash}/read/?modal=1`, {
           method: 'GET',
           headers: {
             'X-Requested-With': 'XMLHttpRequest'

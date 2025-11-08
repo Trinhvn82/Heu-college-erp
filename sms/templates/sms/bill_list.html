@@ -23,7 +23,7 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                 {% for house in houses %}
-                    <li><a class="dropdown-item" href="{% url 'create_bill' house_id=house.id %}">
+                    <li><a class="dropdown-item" href="{% url 'create_bill_secure' house_id=house.id %}">
                         <span class="fas fa-file-invoice me-2"></span> {{ house.ten|default:"[Nhà không tên]" }}
                     </a></li>
                 {% empty %}
@@ -82,10 +82,10 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <a class="btn btn-sm btn-outline-info" title="Xem chi tiết" href="{% url 'bill_detail' bill_id=bill.id %}">
+                                        <a class="btn btn-sm btn-outline-info" title="Xem chi tiết" href="{% url 'bill_detail_secure' bill_id=bill.id %}">
                                             <span class="fas fa-eye"></span>
                                         </a>
-                                        <a class="btn btn-sm btn-outline-secondary" title="Cập nhật" href="{% url 'update_bill' bill_id=bill.id %}">
+                                        <a class="btn btn-sm btn-outline-secondary" title="Cập nhật" href="{% url 'update_bill_secure' bill_id=bill.id %}">
                                             <span class="fas fa-pen"></span>
                                         </a>
                                     </div>
