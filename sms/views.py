@@ -6213,21 +6213,21 @@ Trân trọng,
 Ban quản lý
 """
         
-        email = EmailMessage(
-            subject=subject,
-            body=message,
-            from_email=settings.EMAIL_HOST_USER,
-            to=[hoadon.renter.email],
-        )
-        
-        # Đính kèm PDF
-        pdf_filename = f'HoaDon_{hoadon.house.ten}_{hoadon.duedate.strftime("%Y%m")}.pdf'
-        email.attach(pdf_filename, pdf_content, 'application/pdf')
-        
-        # Gửi email
-        email.send(fail_silently=False)
-        
-        logger.info(f"Đã gửi email hóa đơn {hoadon.id} tới {hoadon.renter.email}")
+        if getattr(settings, 'SEND_OWNER_EMAIL_NOTIFICATIONS', True):
+            email = EmailMessage(
+                subject=subject,
+                body=message,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[hoadon.renter.email],
+            )
+            # Đính kèm PDF
+            pdf_filename = f'HoaDon_{hoadon.house.ten}_{hoadon.duedate.strftime("%Y%m")}.pdf'
+            email.attach(pdf_filename, pdf_content, 'application/pdf')
+            # Gửi email
+            email.send(fail_silently=False)
+            logger.info(f"Đã gửi email hóa đơn {hoadon.id} tới {hoadon.renter.email}")
+        else:
+            logger.info(f"Không gửi email hóa đơn {hoadon.id} do cấu hình tắt gửi mail")
         return True
         
     except Exception as e:
@@ -6705,7 +6705,8 @@ def renter_report_issue(request):
                     try:
                         from django.core.mail import send_mail
                         from django.conf import settings
-                        send_mail(
+                        if getattr(settings, 'SEND_OWNER_EMAIL_NOTIFICATIONS', True):
+                            send_mail(
                             subject=f'Sự cố mới: {issue.title}',
                             message=f'{renter.hoten} đã báo sự cố tại {issue.house.ten}:\n\n{issue.description}',
                             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -6789,7 +6790,8 @@ def change_issue_status(request, issue_id):
                 try:
                     from django.core.mail import send_mail
                     from django.conf import settings
-                    send_mail(
+                    if getattr(settings, 'SEND_OWNER_EMAIL_NOTIFICATIONS', True):
+                        send_mail(
                         subject=f'Cập nhật sự cố: {issue.title}',
                         message=f'Sự cố tại {issue.house.ten} đã chuyển sang trạng thái: {status_text}.\n\n{issue.description}',
                         from_email=settings.DEFAULT_FROM_EMAIL,
@@ -6844,7 +6846,8 @@ def resolve_issue(request, issue_id):
             try:
                 from django.core.mail import send_mail
                 from django.conf import settings
-                send_mail(
+                if getattr(settings, 'SEND_OWNER_EMAIL_NOTIFICATIONS', True):
+                    send_mail(
                     subject=f'Xác nhận sự cố đã xử lý: {issue.title}',
                     message=f'Chủ nhà đã đánh dấu sự cố tại {issue.house.ten} là đã xử lý.\n\nVui lòng vào hệ thống để kiểm tra và xác nhận.\n\n{issue.description}',
                     from_email=settings.DEFAULT_FROM_EMAIL,
@@ -6939,7 +6942,8 @@ def renter_confirm_issue(request, issue_id):
                 try:
                     from django.core.mail import send_mail
                     from django.conf import settings
-                    send_mail(
+                    if getattr(settings, 'SEND_OWNER_EMAIL_NOTIFICATIONS', True):
+                        send_mail(
                         subject=f'Sự cố cần xử lý lại: {issue.title}',
                         message=f'Khách thuê {issue.renter.hoten} cho biết sự cố tại {issue.house.ten} chưa được xử lý xong.\n\nLý do: {rejection_note}\n\n{issue.description}',
                         from_email=settings.DEFAULT_FROM_EMAIL,
@@ -7181,7 +7185,8 @@ def add_issue_comment(request, issue_id):
                     try:
                         from django.core.mail import send_mail
                         from django.conf import settings
-                        send_mail(
+                        if getattr(settings, 'SEND_OWNER_EMAIL_NOTIFICATIONS', True):
+                            send_mail(
                             subject=f'Bình luận mới: {issue.title}',
                             message=f'{request.user.username} đã bình luận:\n\n{comment.comment}',
                             from_email=settings.DEFAULT_FROM_EMAIL,
