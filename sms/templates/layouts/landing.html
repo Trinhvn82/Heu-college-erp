@@ -32,6 +32,7 @@
 </head>
 
 <body>
+    {% block header_nav %}
     <!-- Simple Header for Landing -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
@@ -77,6 +78,7 @@
             </div>
         </div>
     </nav>
+    {% endblock header_nav %}
 
     <!-- Main Content -->
     {% block content %}{% endblock %}
@@ -130,7 +132,8 @@
         // This ensures fresh CSRF token is loaded
         (function() {
             let lastActivity = Date.now();
-            const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
+            // Landing page (unauthenticated or generic) uses owner timeout baseline (5 minutes)
+            const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
             
             // Update last activity on any user interaction
             ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(function(event) {

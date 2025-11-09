@@ -75,15 +75,7 @@
 </style>
 {% endblock extra_css %}
 
-{% block breadcrumb %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'index1' %}"><i class="fas fa-home"></i></a></li>
-        <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Vị trí</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ loc.diachi }}</li>
-    </ol>
-</nav>
-{% endblock %}
+{# Breadcrumb removed #}
 
 {% block content %}
 <div class="container-fluid py-4">

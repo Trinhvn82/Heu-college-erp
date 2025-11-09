@@ -30,15 +30,15 @@ class HTMXLoginRequiredMiddleware:
 
 class DynamicSessionTimeoutMiddleware:
     """
-    Middleware để set timeout khác nhau cho chủ nhà và renter.
-    - Renter: Timeout ngắn hơn (10 phút mặc định)
-    - Chủ nhà: Timeout dài hơn (30 phút mặc định)
+    Middleware thiết lập thời gian hết hạn phiên khác nhau:
+    - Renter: 2 phút (cấu hình qua RENTER_SESSION_TIMEOUT)
+    - Chủ nhà/Admin: 5 phút (cấu hình qua OWNER_SESSION_TIMEOUT)
     """
     def __init__(self, get_response):
         self.get_response = get_response
         # Timeout values in seconds
-        self.renter_timeout = getattr(settings, 'RENTER_SESSION_TIMEOUT', 600)  # 10 minutes
-        self.owner_timeout = getattr(settings, 'OWNER_SESSION_TIMEOUT', 1800)  # 30 minutes
+        self.renter_timeout = getattr(settings, 'RENTER_SESSION_TIMEOUT', 120)  # 2 minutes
+        self.owner_timeout = getattr(settings, 'OWNER_SESSION_TIMEOUT', 300)  # 5 minutes
         
     def __call__(self, request):
         # Set timeout dựa vào loại user

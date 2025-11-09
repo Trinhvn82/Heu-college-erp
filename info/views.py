@@ -704,70 +704,104 @@ def user_changepwd(request):
 
 def signup(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        fname = request.POST["fname"]
-        lname = request.POST["lname"]
-        email = request.POST["email"]
-        pass1 = request.POST["pass1"]
-        pass2 = request.POST["pass2"]
+        username = request.POST.get("username", "").strip()
+        fname = request.POST.get("fname", "").strip()
+        lname = request.POST.get("lname", "").strip()
+        email = request.POST.get("email", "").strip()
+        pass1 = request.POST.get("pass1", "")
+        pass2 = request.POST.get("pass2", "")
 
-        if User.objects.filter(username=username):
-            messages.error(request, "Username already exist! Please try some other username.")
-            return redirect('signup')
-        
-        if User.objects.filter(email=email).exists():
-            messages.error(request, "Email Already Registered!!")
-            return redirect('signup')
-        
-        if len(username)>20:
-            messages.error(request, "Username must be under 20 charcters!!")
-            return redirect('signup')
-        
-        if pass1 != pass2:
-            messages.error(request, "Passwords didn't matched!!")
-            return redirect('signup')
-        
-        if not username.isalnum():
-            messages.error(request, "Username must be Alpha-Numeric!!")
-            return redirect('signup')
-        
+        field_errors = {}
+
+        # Validate inputs and collect errors (no redirect so we can keep values)
+        if not username:
+            field_errors.setdefault('username', []).append("Vui lòng nhập tên đăng nhập.")
+        elif len(username) > 20:
+            field_errors.setdefault('username', []).append("Tên đăng nhập tối đa 20 ký tự.")
+        elif not username.isalnum():
+            field_errors.setdefault('username', []).append("Tên đăng nhập chỉ gồm chữ và số.")
+        elif User.objects.filter(username=username).exists():
+            field_errors.setdefault('username', []).append("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác.")
+
+        if not email:
+            field_errors.setdefault('email', []).append("Vui lòng nhập email.")
+        elif User.objects.filter(email=email).exists():
+            field_errors.setdefault('email', []).append("Email đã được đăng ký.")
+
+        if not pass1 or not pass2:
+            field_errors.setdefault('pass1', []).append("Vui lòng nhập mật khẩu và xác nhận mật khẩu.")
+        elif pass1 != pass2:
+            field_errors.setdefault('pass2', []).append("Mật khẩu xác nhận không khớp.")
+
+        if field_errors:
+            # Show a general error message and re-render with filled values and inline errors
+            messages.error(request, "Vui lòng kiểm tra các lỗi phía dưới và thử lại.")
+            context = {
+                'form_data': {
+                    'username': username,
+                    'fname': fname,
+                    'lname': lname,
+                    'email': email,
+                },
+                'field_errors': field_errors,
+            }
+            return render(request, "sms/signup.html", context)
+
+        # Create user
         myuser = User.objects.create_user(username, email, pass1)
-        myuser.fname = fname
-        myuser.lname = lname
-        # myuser.is_active = False
+        # Lưu họ tên (ưu tiên set vào first_name/last_name chuẩn của Django)
+        try:
+            myuser.first_name = fname
+            myuser.last_name = lname
+        except Exception:
+            pass
+        # Giữ tương thích với các thuộc tính tuỳ biến nếu có
+        try:
+            myuser.fname = fname
+            myuser.lname = lname
+        except Exception:
+            pass
         myuser.is_active = False
         myuser.save()
-        messages.success(request, "Your Account has been created succesfully!! Please check your email to confirm your email address in order to activate your account.")
-        
+        messages.success(request, "Tạo tài khoản thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.")
+
         # Welcome Email
-        subject = "Welcome to fiftybit Django Login!!"
-        message = "Hello " + myuser.first_name + "!! \n" + "Welcome to fiftybit!! \nThank you for visiting our website\n. We have also sent you a confirmation email, please confirm your email address. \n\nThanking You\nShovit Nepal"        
-        from_email = settings.EMAIL_HOST_USER
-        to_list = [myuser.email]
-        send_mail(subject, message, from_email, to_list, fail_silently=True)
-        
+        # subject = "Welcome to OpenApps!!"
+        # message = (
+        #     "Hello " + (myuser.first_name or username) + "!! \n"
+        #     + "Welcome to OpenApps!! \nThank you for visiting our website\n. "
+        #     + "We have also sent you a confirmation email, please confirm your email address. "
+        #     + "\n\nThanking You\nShovit Nepal"
+        # )
+        # from_email = settings.EMAIL_HOST_USER
+        # to_list = [myuser.email]
+        # send_mail(subject, message, from_email, to_list, fail_silently=True)
+
         # Email Address Confirmation Email
         current_site = get_current_site(request)
-        email_subject = "Confirm your Email @ FiftyBit - Django Login!!"
+        email_subject = "Xác nhận email của bạn và kích hoạt tài khoản"
         message2 = render_to_string('sms/email_confirmation.html',{
-            
-            'name': myuser.first_name,
+            'name': myuser.first_name or username,
             'domain': "http://127.0.0.1:8000",
             'uid': urlsafe_base64_encode(force_bytes(myuser.pk)),
             'token': generate_token.make_token(myuser)
         })
         email = EmailMessage(
-        email_subject,
-        message2,
-        settings.EMAIL_HOST_USER,
-        [myuser.email],
+            email_subject,
+            message2,
+            settings.EMAIL_HOST_USER,
+            [myuser.email],
         )
-        send_mail(email_subject, message2, from_email, to_list, fail_silently=True)
-        
-        return redirect('signup')
-        
-        
+        email.send(fail_silently=True)
+
+        return redirect('signup_success')
+
     return render(request, "sms/signup.html")
+
+
+def signup_success(request):
+    """Trang hướng dẫn người dùng kiểm tra email sau khi đăng ký"""
+    return render(request, "sms/signup_success.html")
 
 
 def activate(request,uidb64,token):

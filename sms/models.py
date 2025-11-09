@@ -398,53 +398,14 @@ class Thanhtoan(models.Model):
     def __str__(self):
         return self.ten
 
-# ==========================
-# Notifications & Issues
-# ==========================
-
-class Notification(models.Model):
-    TYPE_CHOICES = (
-        ('bill_created', 'Bill Created'),
-        ('payment_submitted', 'Payment Submitted'),
-        ('issue_reported', 'Issue Reported'),
-        ('issue_resolved', 'Issue Resolved'),
-        ('bill_commented', 'Bill Commented'),
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    title = models.CharField(max_length=200)
-    message = models.TextField(blank=True, null=True)
-    type = models.CharField(max_length=32, choices=TYPE_CHOICES)
-    target_url = models.CharField(max_length=255, blank=True, null=True)
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.title} -> {self.user}"
-
-
-class IssueReport(models.Model):
-    STATUS_CHOICES = (
-        ('new', 'Mới'),
-        ('in_progress', 'Đang xử lý'),
-        ('resolved', 'Đã xử lý'),
-    )
-    house = models.ForeignKey(House, on_delete=models.CASCADE, related_name='issues')
-    renter = models.ForeignKey(Renter, on_delete=models.CASCADE, related_name='issues')
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    resolved_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.house.ten} - {self.title} ({self.get_status_display()})"
+"""NOTE:
+Legacy duplicate definitions of Notification and IssueReport removed.
+The authoritative versions are defined later in this file (see near bottom
+around the Issue tracking section) and match current migrations:
+ - sms.migrations.0021_notification_issuereport
+Keeping a single source of truth avoids RuntimeWarning: model already registered
+and prevents related_name clashes with third-party apps (e.g. django-notifications-hq).
+"""
 
 class SvStatus(models.Model):
     ma = models.IntegerField(default= 1)

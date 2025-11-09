@@ -43,24 +43,11 @@
                         {{ form.as_p }}
                         <button class="btn btn-success w-100" type="submit">Đăng nhập</button>
                     </form>
-                    <script>
-                      document.querySelector('form').addEventListener('submit', function(e) {
-                        var spinner = document.getElementById('loading-spinner');
-                        spinner.style.display = 'flex';
-                        var submitForm = () => {
-                          document.querySelector('form').submit();
-                        };
-                        e.preventDefault();
-                        setTimeout(function() {
-                          submitForm();
-                        }, 1500);
-                      });
-                    </script>
                 </div>
             </div>
         </div>
     </div>
-  </main>
+</main>
 {% endblock %}
 
 {% block extra_js %}
@@ -83,7 +70,3 @@
   });
 </script>
 {% endblock %}
-
-  </body>
-
-</html>

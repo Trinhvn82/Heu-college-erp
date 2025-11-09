@@ -311,6 +311,7 @@ def validate_payment_access(request, payment_id):
 
 #@login_required
 def index(request):
+    """Main entry point - redirects to welcome page after login"""
     if not request.user.is_authenticated:
         return redirect("renter_landing")
     
@@ -330,12 +331,135 @@ def index(request):
     elif request.user.is_internalstaff:
         return redirect("lop_list")
     else:
-        # Check if user is a landlord (has locations)
+        # Landlords go to welcome page after login
         if Location.objects.filter(chu=request.user).exists():
-            return redirect("loc_list")
+            return redirect("welcome_page")
         return redirect("renter_landing")
 
-    #return render(request, 'info/logout.html')
+
+@login_required
+def welcome_page(request):
+    """Welcome page shown after successful login"""
+    # Redirect renters to their dashboard
+    try:
+        if request.user.renter:
+            return redirect("renter_dashboard")
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    # Get quick stats for landlords
+    context = {
+        'total_locations': Location.objects.filter(chu=request.user).count(),
+        'total_houses': House.objects.filter(loc__chu=request.user).count(),
+        'total_renters': Renter.objects.filter(chu_id=request.user.id).count(),
+    }
+    
+    return render(request, 'sms/welcome.html', context)
+
+
+@login_required
+def home_dashboard(request):
+    """Main dashboard with feature blocks"""
+    # Block renter access
+    try:
+        if request.user.renter:
+            messages.warning(request, "Bạn không có quyền truy cập trang này.")
+            return redirect("renter_dashboard")
+    except (AttributeError, Renter.DoesNotExist):
+        pass
+    
+    from django.db.models import Q, Count
+    from datetime import datetime, timedelta
+    
+    # Calculate statistics
+    locations = Location.objects.filter(chu=request.user)
+    houses = House.objects.filter(loc__chu=request.user)
+    renters = Renter.objects.filter(chu_id=request.user.id)
+    
+    # Active contracts (rent_to is None or in the future)
+    active_contracts = HouseRenter.objects.filter(
+        house__loc__chu=request.user
+    ).filter(
+        Q(rent_to__isnull=True) | Q(rent_to__gte=timezone.now().date())
+    ).count()
+    
+    # Occupied houses
+    occupied_houses = houses.filter(
+        houserenter__rent_to__isnull=True
+    ).distinct().count()
+    
+    # Pending bills (status = ChuaTT or QuaHan)
+    pending_bills = Hoadon.objects.filter(
+        house__loc__chu=request.user,
+        status__in=['ChuaTT', 'QuaHan']
+    ).count()
+    
+    # Pending issues
+    pending_issues = IssueReport.objects.filter(
+        house__loc__chu=request.user,
+        status__in=['new', 'in_progress']
+    ).count()
+    
+    # Unread notifications
+    try:
+        unread_notifications = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).count()
+    except:
+        unread_notifications = 0
+    
+    # Recent activities (last 10)
+    recent_activities = []
+    
+    # Recent bills
+    recent_bills = Hoadon.objects.filter(
+        house__loc__chu=request.user
+    ).order_by('-ngay_tao')[:3]
+    
+    for bill in recent_bills:
+        recent_activities.append({
+            'icon': 'fa-file-invoice',
+            'color': 'warning',
+            'title': f'Hóa đơn {bill.house.ten}',
+            'description': f'{bill.ten} - {bill.get_status_display()}',
+            'time': bill.ngay_tao
+        })
+    
+    # Recent issues
+    recent_issues = IssueReport.objects.filter(
+        house__loc__chu=request.user
+    ).order_by('-created_at')[:3]
+    
+    for issue in recent_issues:
+        recent_activities.append({
+            'icon': 'fa-tools',
+            'color': 'danger',
+            'title': f'Sự cố: {issue.title}',
+            'description': f'{issue.house.ten} - {issue.get_status_display()}',
+            'time': issue.created_at
+        })
+    
+    # Sort by time
+    recent_activities.sort(key=lambda x: x['time'], reverse=True)
+    recent_activities = recent_activities[:10]
+    
+    context = {
+        'current_date': timezone.now(),
+        'stats': {
+            'total_locations': locations.count(),
+            'total_houses': houses.count(),
+            'occupied_houses': occupied_houses,
+            'total_renters': renters.count(),
+            'active_contracts': active_contracts,
+            'pending_bills': pending_bills,
+            'pending_issues': pending_issues,
+            'unread_notifications': unread_notifications,
+        },
+        'recent_activities': recent_activities,
+    }
+    
+    return render(request, 'sms/home_dashboard.html', context)
 
 # Teacher Views
 
@@ -1917,9 +2041,9 @@ def renter_locations(request):
     
     locations = Location.objects.filter(
         id__in=location_ids
-    ).select_related('chu').prefetch_related('house_set')
+    ).select_related('chu', 'xp').prefetch_related('house_set')
     
-    # Thêm thông tin hợp đồng cho mỗi location
+    # Thêm thông tin hợp đồng và files cho mỗi location
     for loc in locations:
         houses = House.objects.filter(
             loc=loc,
@@ -1934,6 +2058,19 @@ def renter_locations(request):
             ).order_by('-rent_from').first()
         
         loc.renter_houses = houses
+        
+        # Lấy files đính kèm của location
+        files = UploadedFile.objects.filter(link_id=loc.id, type=1)
+        for file in files:
+            file.ten = file.file.name.split("/")[-1]
+        loc.files = files
+        # Địa chỉ đầy đủ (dùng cho Google Maps)
+        try:
+            # Địa chỉ theo định dạng giống trang chủ nhà: "diachi, xa-phuong, tinh-thanh"
+            full_parts = [p for p in [loc.diachi, getattr(loc.xp, 'ten', ''), getattr(loc.xp, 'tp', '')] if p]
+            loc.full_address = ', '.join(full_parts)
+        except Exception:
+            loc.full_address = loc.diachi or ''
     
     context = {
         'renter': renter,
@@ -4439,6 +4576,45 @@ def view_house(request, house_id):
     return render(request, "sms/view_house.html", context)
 
 @login_required
+def renter_view_house(request, house_id: int):
+    """Trang chi tiết nhà cho renter (read-only, giao diện renter). 
+    Chỉ cho phép khi người dùng là renter có hợp đồng với căn nhà này (bất kỳ trạng thái).
+    """
+    house = get_object_or_404(House.objects.select_related('loc', 'loc__xp'), id=house_id)
+
+    # Lấy renter từ user
+    try:
+        renter = Renter.objects.get(user=request.user)
+    except Renter.DoesNotExist:
+        messages.error(request, "Bạn chưa được liên kết với tài khoản khách thuê.")
+        return redirect('renter_landing')
+
+    # Kiểm tra quan hệ hợp đồng giữa renter và house
+    any_contract = HouseRenter.objects.filter(house=house, renter=renter).exists()
+    if not any_contract:
+        messages.error(request, "Bạn không có quyền xem phòng này.")
+        return redirect('renter_locations')
+
+    # Hợp đồng hiện tại của renter với căn nhà này
+    active_contract = HouseRenter.objects.filter(
+        house=house, renter=renter, active=True
+    ).select_related('renter').first()
+
+    # Lịch sử hợp đồng của CHÍNH renter này với căn nhà
+    contract_history = HouseRenter.objects.filter(
+        house=house, renter=renter
+    ).select_related('renter').order_by('-active', '-rent_from')
+
+    context = {
+        'house': house,
+        'active_contract': active_contract,
+        'contract_history': contract_history,
+        'is_owner': False,
+        'is_current_renter': active_contract is not None,
+    }
+    return render(request, "sms/renter_view_house.html", context)
+
+@login_required
 #@permission_required('sms.add_uploadedfile',raise_exception=True)
 def view_loc(request, loc_id):
     # Validate location access
@@ -5655,58 +5831,24 @@ def update_bill_view(request, bill_id):
         return HttpResponseForbidden("Bạn không có quyền sửa hóa đơn này")
     loc_id = house.loc.id 
 
-    # TÌM CHỈ SỐ CŨ (Lấy hóa đơn ngay trước hóa đơn đang sửa)
-    # Lấy hóa đơn có ID nhỏ hơn hóa đơn hiện tại gần nhất (hóa đơn kỳ trước)
-    last_bill = Hoadon.objects.filter(house=house, id__lt=bill_id).order_by('-id').first()
-    
-    # Chỉ số cũ là của hóa đơn trước đó
-    chi_so_dien_cu = last_bill.chi_so_dien_moi if last_bill else Decimal(0)
-    chi_so_nuoc_cu = last_bill.chi_so_nuoc_moi if last_bill else Decimal(0)
-    
-    tien_thue_co_dinh = Decimal(house.permonth) 
+    # NOTE: Meter reading fields (chi_so_dien_*, chi_so_nuoc_*) were removed from the Hoadon model.
+    # The previous logic attempted to access these legacy attributes causing AttributeError.
+    # Update now only saves the direct cost components provided in the form.
 
     if request.method == 'POST':
-        form = CreateHoaDonForm(request.POST, request.FILES, instance=bill, house=house) 
+        form = CreateHoaDonForm(request.POST, request.FILES, instance=bill, house=house)
         if form.is_valid():
-            
-            # LẤY DỮ LIỆU SẠCH TỪ FORM
-            dien_moi = form.cleaned_data['chi_so_dien_moi']
-            nuoc_moi = form.cleaned_data['chi_so_nuoc_moi']
-            tien_khac_input = form.cleaned_data['tien_khac']
-            
-            # --- LOGIC TÍNH TOÁN (Lặp lại để cập nhật) ---
-            so_dien = dien_moi - chi_so_dien_cu
-            so_nuoc = nuoc_moi - chi_so_nuoc_cu
-            
-            tien_dien = so_dien * DON_GIA_DIEN
-            tien_nuoc = so_nuoc * DON_GIA_NUOC
-            
-            # LƯU HÓA ĐƠN
             updated_bill = form.save(commit=False)
-            
-            # Cập nhật các giá trị đã tính toán
-            updated_bill.tienthuenha = tien_thue_co_dinh 
-            updated_bill.chi_so_dien_cu = chi_so_dien_cu 
-            updated_bill.chi_so_nuoc_cu = chi_so_nuoc_cu 
-            updated_bill.chi_so_dien_moi = dien_moi
-            updated_bill.chi_so_nuoc_moi = nuoc_moi
-            updated_bill.tiendien = tien_dien
-            updated_bill.tiennuoc = tien_nuoc
-            updated_bill.tienkhac = tien_khac_input
-            
-            updated_bill.save() # Kích hoạt logic tự động tính TONG_CONG, CONG_NO
-            
+            # Ensure house stays consistent (defensive)
+            updated_bill.house = house
+            updated_bill.save()  # Model save() recalculates TONG_CONG, CONG_NO, status
             messages.success(request, f"Đã cập nhật Hóa đơn {bill.ten} thành công! Tổng tiền mới: {updated_bill.TONG_CONG:,} VNĐ.")
-            
-            return redirect('bill_list', loc_id=loc_id) 
+            return redirect('bill_list', loc_id=loc_id)
         else:
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"Lỗi ở trường '{field}': {error}")
-            
     else:
-        # GET request: LOAD DỮ LIỆU TỪ HÓA ĐƠN
-        # Form sẽ điền sẵn dữ liệu cũ từ instance=bill
         form = CreateHoaDonForm(instance=bill, house=house)
         
     context = {
@@ -5714,9 +5856,6 @@ def update_bill_view(request, bill_id):
         'house': house,
         'loc_id': loc_id,
         'bill': bill, # Đặt biến 'bill' để template biết đang ở chế độ update
-        'dien_cu': chi_so_dien_cu,
-        'nuoc_cu': chi_so_nuoc_cu,
-        'tien_thue': tien_thue_co_dinh
     }
     return render(request, 'sms/create_bill.html', context)
 

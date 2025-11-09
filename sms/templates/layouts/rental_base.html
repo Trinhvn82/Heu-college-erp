@@ -77,6 +77,17 @@
             .main-navbar .navbar-nav .nav-link {
                 color: white !important;
                 padding: 0.75rem 1rem !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                width: 100% !important;
+                justify-content: flex-start !important;
+            }
+            .main-navbar .navbar-nav .nav-link .fas,
+            .main-navbar .navbar-nav .nav-link .far {
+                flex-shrink: 0 !important;
+                width: 1.5em !important;
+                text-align: center !important;
+                margin-right: 0.5rem !important;
             }
             .main-navbar .navbar-nav .nav-link:hover {
                 background-color: rgba(255,255,255,0.2) !important;
@@ -203,7 +214,7 @@
     <!-- Main Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark main-navbar">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="/">
+            <a class="navbar-brand" href="{% url 'home_dashboard' %}">
                 <span class="fas fa-building me-2"></span>
                 Quản lý Nhà trọ
             </a>
@@ -214,6 +225,11 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if user.is_authenticated %}
                         {# Menu cho Landlord/Admin - hiển thị mặc định #}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'home_dashboard' %}active{% endif %}" href="{% url 'home_dashboard' %}">
+                                <span class="fas fa-home me-1"></span>Trang chủ
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'rental_dashboard' %}active{% endif %}" href="{% url 'rental_dashboard' %}">
                                 <span class="fas fa-chart-line me-1"></span>Dashboard
@@ -236,8 +252,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'issue_list' %}active{% endif %}" href="{% url 'issue_list' %}">
-                                <span class="fas fa-wrench me-1"></span>Sự cố
+                            <a class="nav-link {% if 'issue' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'issue_list' %}">
+                                <span class="fas fa-tools me-1"></span>Sự cố
                             </a>
                         </li>
                     {% endif %}
@@ -288,19 +304,7 @@
     <!-- Main Content -->
     <div class="content-wrapper">
         <div class="container-fluid px-4">
-            <!-- Breadcrumb -->
-            {% block breadcrumb %}
-            <div class="breadcrumb-custom">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/"><span class="fas fa-home"></span></a></li>
-                        {% block breadcrumb_items %}
-                        <li class="breadcrumb-item active">Trang</li>
-                        {% endblock %}
-                    </ol>
-                </nav>
-            </div>
-            {% endblock %}
+            {# Breadcrumb removed per request: landlord pages simplified #}
 
             <!-- Toast Notifications -->
             {% if messages %}
@@ -478,54 +482,113 @@
             }
         });
 
-        // Handle session timeout for landlord/admin pages
-        // Detect inactivity and warn user before session expires
+        // Handle session timeout with 5s confirm window (landlord/admin)
         (function() {
             let lastActivity = Date.now();
-            const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes for landlords/admin
-            const WARNING_TIME = 5 * 60 * 1000; // Warn 5 minutes before timeout
-            let warningShown = false;
-            
+            const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes for landlords/admin
+            const CONFIRM_WINDOW = 5; // seconds to wait for confirmation
+            const CHECK_INTERVAL = 1000;
+            let promptActive = false;
+            let autoLogoutTimer = null;
+            let countdownTimer = null;
+
             // Update last activity on any user interaction
             ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(event) {
                 document.addEventListener(event, function() {
                     lastActivity = Date.now();
-                    warningShown = false;
+                    if (promptActive) {
+                        try { clearTimeout(autoLogoutTimer); clearInterval(countdownTimer); } catch(e){}
+                        hideTimeoutModal(true);
+                    }
                 }, true);
             });
-            
-            // Check for timeout periodically
+
+            // Periodically check for timeout and show confirm window
             setInterval(function() {
                 const timeSinceLastActivity = Date.now() - lastActivity;
-                
-                // Show warning before timeout
-                if (!warningShown && timeSinceLastActivity > (SESSION_TIMEOUT - WARNING_TIME)) {
-                    warningShown = true;
-                    if (confirm('Phiên làm việc sắp hết hạn. Nhấn OK để tiếp tục làm việc.')) {
-                        // User clicked OK - refresh activity
-                        lastActivity = Date.now();
-                        warningShown = false;
-                        // Ping server to keep session alive
-                        fetch(window.location.href, { 
-                            method: 'HEAD',
-                            credentials: 'same-origin'
-                        }).catch(function() {});
+                if (!promptActive && timeSinceLastActivity >= SESSION_TIMEOUT) {
+                    showTimeoutModal();
+                }
+            }, CHECK_INTERVAL);
+
+            function showTimeoutModal(){
+                if (promptActive) return;
+                promptActive = true;
+
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                <div class="modal fade" id="sessionTimeoutModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Phiên làm việc sắp hết hạn</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Phiên làm việc của bạn đã hết hạn do không hoạt động.</p>
+                        <p class="mb-0">Tự động đăng xuất sau <strong id="timeoutCountdown">${CONFIRM_WINDOW}</strong> giây...</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" id="staySignedInBtn">Tiếp tục làm việc</button>
+                        <a href="/accounts/logout/" class="btn btn-danger">Đăng xuất</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+                const modalEl = wrapper.firstElementChild;
+                document.body.appendChild(modalEl);
+
+                const bsModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+                bsModal.show();
+
+                // Countdown + auto-logout (robust: deadline-based to avoid timer throttling)
+                const countdownEl = modalEl.querySelector('#timeoutCountdown');
+                const deadlineAt = Date.now() + (CONFIRM_WINDOW * 1000);
+                countdownTimer = setInterval(() => {
+                    const msLeft = Math.max(0, deadlineAt - Date.now());
+                    const secsLeft = Math.ceil(msLeft / 1000);
+                    if (countdownEl) countdownEl.textContent = String(secsLeft);
+                    if (msLeft <= 0) {
+                        try { clearInterval(countdownTimer); } catch(e){}
+                        // Use replace to avoid creating extra history entry
+                        window.location.replace('/accounts/logout/');
                     }
+                }, 250);
+
+                // Stay signed-in handler
+                const stayBtn = modalEl.querySelector('#staySignedInBtn');
+                if (stayBtn) {
+                    stayBtn.addEventListener('click', function(){
+                        try { clearTimeout(autoLogoutTimer); clearInterval(countdownTimer); } catch(e){}
+                        lastActivity = Date.now();
+                        fetch(window.location.href, { method: 'HEAD', credentials: 'same-origin' }).catch(()=>{});
+                        hideTimeoutModal(true);
+                    });
                 }
-                
-                // Force logout if timeout exceeded
-                if (timeSinceLastActivity > SESSION_TIMEOUT + 60000) { // 1 minute grace period
-                    window.location.href = '/accounts/logout/';
-                }
-            }, 60000); // Check every 60 seconds
-            
-            // Handle form submissions after timeout
+
+                modalEl.addEventListener('hidden.bs.modal', function(){
+                    try { clearTimeout(autoLogoutTimer); clearInterval(countdownTimer); } catch(e){}
+                    modalEl.remove();
+                    promptActive = false;
+                });
+
+                const closeBtn = modalEl.querySelector('.btn-close');
+                if (closeBtn) closeBtn.addEventListener('click', function(evt){ evt.preventDefault(); const btn = modalEl.querySelector('#staySignedInBtn'); if (btn) btn.click(); });
+            }
+
+            function hideTimeoutModal(){
+                const modalEl = document.getElementById('sessionTimeoutModal');
+                if (!modalEl) { promptActive = false; return; }
+                const bs = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                bs.hide();
+            }
+
+            // Block stale form submissions after timeout
             document.addEventListener('submit', function(e) {
                 const timeSinceLastActivity = Date.now() - lastActivity;
                 if (timeSinceLastActivity > SESSION_TIMEOUT) {
                     e.preventDefault();
-                    alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
-                    window.location.href = '/accounts/login/';
+                    showTimeoutModal();
                 }
             }, true);
         })();

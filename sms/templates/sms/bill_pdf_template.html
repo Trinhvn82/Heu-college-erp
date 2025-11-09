@@ -1,10 +1,11 @@
+{% load vn_date_filters %}
+{% load humanize %}
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Hóa đơn Thanh toán - {{ hoadon.ten }}</title>
     <style>
-        /* CSS DÀNH RIÊNG CHO PDF */
         body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 0; }
         .container { width: 800px; margin: 20px auto; border: 1px solid #ccc; padding: 20px; }
         h1 { font-size: 16pt; border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-bottom: 20px; text-align: center; }
@@ -20,12 +21,12 @@
 <body>
     <div class="container">
         <h1>HÓA ĐƠN THUÊ NHÀ - {{ hoadon.ten }}</h1>
-        
-        <p><strong>Ngày tạo:</strong> {{ hoadon.ngaytao|date:"d/m/Y" }}</p>
+
+        <p><strong>Ngày tạo:</strong> {{ hoadon.ngay_tao|date:"d/m/Y" }}</p>
         <p><strong>Ngày hết hạn:</strong> {{ hoadon.duedate|date:"d/m/Y" }}</p>
         <p><strong>Nhà trọ:</strong> {{ hoadon.house.ten|default:"N/A" }} - {{ hoadon.house.loc.diachi }}</p>
         {% if nguoi_thue %}
-        <p><strong>Người thuê:</strong> {{ nguoi_thue.hoten }} - SĐT: {{ nguoi_thue.sdt }}</p>
+        <p><strong>Người thuê:</strong> {{ nguoi_thue.hoten }}{% if nguoi_thue.sdt %} - SĐT: {{ nguoi_thue.sdt }}{% endif %}</p>
         {% endif %}
 
         <h2>Chi tiết chi phí</h2>
@@ -33,36 +34,25 @@
             <thead>
                 <tr>
                     <th>Mục</th>
-                    <th class="right-align">Chỉ số Cũ</th>
-                    <th class="right-align">Chỉ số Mới</th>
-                    <th class="right-align">Đơn vị</th>
                     <th class="right-align">Thành tiền (VNĐ)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>Tiền Điện</td>
-                    <td class="right-align">{{ hoadon.chi_so_dien_cu|intcomma }}</td>
-                    <td class="right-align">{{ hoadon.chi_so_dien_moi|intcomma }}</td>
-                    <td class="right-align">{{ hoadon.chi_so_dien_moi|sub:hoadon.chi_so_dien_cu|intcomma }}</td>
-                    <td class="right-align">{{ hoadon.tiendien|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.tiendien|vn_currency }} VNĐ</td>
                 </tr>
                 <tr>
                     <td>Tiền Nước</td>
-                    <td class="right-align">{{ hoadon.chi_so_nuoc_cu|intcomma }}</td>
-                    <td class="right-align">{{ hoadon.chi_so_nuoc_moi|intcomma }}</td>
-                    <td class="right-align">{{ hoadon.chi_so_nuoc_moi|sub:hoadon.chi_so_nuoc_cu|intcomma }}</td>
-                    <td class="right-align">{{ hoadon.tiennuoc|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.tiennuoc|vn_currency }} VNĐ</td>
                 </tr>
                 <tr>
                     <td>Tiền thuê nhà</td>
-                    <td colspan="3"></td>
-                    <td class="right-align">{{ hoadon.tienthuenha|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.tienthuenha|vn_currency }} VNĐ</td>
                 </tr>
                 <tr>
                     <td>Chi phí khác</td>
-                    <td colspan="3"></td>
-                    <td class="right-align">{{ hoadon.tienkhac|intcomma }}</td>
+                    <td class="right-align">{{ hoadon.tienkhac|vn_currency }} VNĐ</td>
                 </tr>
             </tbody>
         </table>
@@ -70,19 +60,19 @@
         <h2>Tổng kết Thanh toán</h2>
         <table class="summary-table">
             <tr>
-                <td colspan="4">TỔNG CỘNG PHẢI THU</td>
-                <td class="right-align green">{{ hoadon.TONG_CONG|intcomma }} VNĐ</td>
+                <td>TỔNG CỘNG PHẢI THU</td>
+                <td class="right-align green">{{ hoadon.TONG_CONG|vn_currency }} VNĐ</td>
             </tr>
             <tr>
-                <td colspan="4">Số tiền đã thanh toán</td>
-                <td class="right-align">{{ hoadon.SO_TIEN_DA_TRA|intcomma }} VNĐ</td>
+                <td>Số tiền đã thanh toán</td>
+                <td class="right-align">{{ hoadon.SO_TIEN_DA_TRA|vn_currency }} VNĐ</td>
             </tr>
             <tr>
-                <td colspan="4">CÔNG NỢ (Phải trả thêm)</td>
-                <td class="right-align red">{{ hoadon.CONG_NO|intcomma }} VNĐ</td>
+                <td>CÔNG NỢ (Phải trả thêm)</td>
+                <td class="right-align red">{{ hoadon.CONG_NO|vn_currency }} VNĐ</td>
             </tr>
         </table>
-        
+
         {% if hoadon.qr_code_image %}
         <div style="margin-top: 30px; text-align: center; border: 2px solid #ccc; padding: 15px; border-radius: 8px;">
             <p style="margin-bottom: 10px; font-weight: bold;">QUÉT MÃ ĐỂ THANH TOÁN</p>
@@ -90,13 +80,15 @@
             <p style="margin-top: 10px; font-size: 9pt; color: #666;">Quét mã QR để chuyển khoản trực tiếp đến tài khoản chủ nhà</p>
         </div>
         {% endif %}
-        
-        <p style="margin-top: 50px;">Ký tên Chủ nhà: ..........................</p>
-        <p style="text-align: right;">Ký tên Người thuê: ..........................</p>
-        
+
         {% if hoadon.ghichu %}
-        <p style="margin-top: 30px;">**Ghi chú:** {{ hoadon.ghichu }}</p>
+        <p style="margin-top: 30px; font-weight:bold;">Ghi chú: {{ hoadon.ghichu }}</p>
         {% endif %}
+
+        <div style="margin-top: 40px; display:flex; justify-content:space-between;">
+            <div>Ký tên Chủ nhà: ..........................</div>
+            <div style="text-align:right;">Ký tên Người thuê: ..........................</div>
+        </div>
     </div>
 </body>
 </html>

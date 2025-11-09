@@ -1,8 +1,16 @@
 {% autoescape off %}
 
- Welcome to FiftyBit - Django Login!!
- Hello {{ name }}!!
- Please verify your email by clicking on the following link.
- Confirmation Link: http://{{ domain }}{% url 'activate' uidb64=uid token=token %} 
+
+Chào mừng bạn đến với OpenApps!
+Xin chào {{ name }}!
+
+Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấn vào liên kết bên dưới:
+
+Liên kết xác nhận: http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+
+Nếu bạn không đăng ký tài khoản, vui lòng bỏ qua email này.
+
+Trân trọng,
+Đội ngũ OpenApps
 
  {% endautoescape %}

@@ -1,0 +1,133 @@
+{% extends "layouts/landing.html" %}
+{% load static %}
+
+{% block title %}Chào mừng{% endblock %}
+
+{# Hide top navbar for landlord welcome page #}
+{% block header_nav %}{% endblock header_nav %}
+
+{% block content %}
+<section class="vh-100 d-flex align-items-center justify-content-center bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 text-center">
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-body p-5">
+                        <!-- Welcome Icon -->
+                        <div class="mb-4">
+                            <div class="rounded-circle bg-primary bg-gradient d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                                <i class="fas fa-home fa-4x text-white"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Welcome Message -->
+                        <h1 class="display-4 fw-bold mb-3">
+                            Chào mừng trở lại!
+                        </h1>
+                        
+                        {% load user_display %}
+                        <h2 class="h4 text-muted mb-4">
+                            {% display_name user %}
+                        </h2>
+                        
+                        <p class="lead text-muted mb-4">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Đăng nhập thành công vào hệ thống quản lý nhà trọ
+                        </p>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Quick Stats (if landlord) -->
+                        {% if not user.renter %}
+                        <div class="row g-3 mb-4">
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="h5 mb-0 text-primary">{{ total_locations }}</h3>
+                                    <small class="text-muted">Vị trí</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="h5 mb-0 text-success">{{ total_houses }}</h3>
+                                    <small class="text-muted">Nhà trọ</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded">
+                                    <h3 class="h5 mb-0 text-info">{{ total_renters }}</h3>
+                                    <small class="text-muted">Khách thuê</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Main Action Button -->
+                        <div class="d-grid gap-3">
+                            <a href="{% url 'home_dashboard' %}" class="btn btn-primary btn-lg py-3 rounded-3">
+                                <i class="fas fa-arrow-right me-2"></i>
+                                Vào hệ thống
+                            </a>
+                            
+                            <a href="{% url 'logout' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Đăng xuất
+                            </a>
+                        </div>
+                        
+                        <!-- Tips -->
+                        <div class="mt-4 p-3 bg-light rounded text-start">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-lightbulb text-warning me-2"></i>
+                                Mẹo nhanh:
+                            </h6>
+                            <ul class="small text-muted mb-0">
+                                <li>Phiên làm việc tự động gia hạn khi bạn hoạt động</li>
+                                <li>Thời gian timeout: 5 phút (chủ nhà) / 2 phút (khách thuê)</li>
+                                <li>Bạn sẽ được cảnh báo trước khi phiên hết hạn</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .bg-gradient {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bg-gradient::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 15s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1) rotate(0deg); }
+        50% { transform: scale(1.1) rotate(180deg); }
+    }
+    
+    .card {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

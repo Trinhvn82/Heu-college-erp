@@ -1,6 +1,7 @@
 {% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load humanize %}
+{% load vn_date_filters %}
 
 {% block title %} Danh sách Hóa đơn {% endblock %}
 
@@ -65,9 +66,9 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-wrap">{{ bill.ten }}</td>
-                                <td>{{ bill.TONG_CONG|intcomma }}</td>
-                                <td>{{ bill.SO_TIEN_DA_TRA|intcomma }}</td>
-                                <td>{{ bill.CONG_NO|intcomma }}</td>
+                                <td>{{ bill.TONG_CONG|vn_currency }}</td>
+                                <td>{{ bill.SO_TIEN_DA_TRA|vn_currency }}</td>
+                                <td>{{ bill.CONG_NO|vn_currency }}</td>
                                 <td>{{ bill.duedate|date:"d/m/Y" }}</td>
                                 <td>
                                     {% if bill.status == 'DaTT' %}

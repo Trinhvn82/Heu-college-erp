@@ -1,6 +1,7 @@
 {% extends base_template %}
 {% load static %}
 {% load humanize %}
+{% load vn_date_filters %}
 
 {% block extra_css %}
 <style>
@@ -60,23 +61,23 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex justify-content-between align-items-center bg-light">
                         <strong>TỔNG CỘNG PHẢI THU:</strong>
-                        <strong class="text-success h5">{{ hoadon.TONG_CONG|intcomma }} VNĐ</strong>
+                        <strong class="text-success h5">{{ hoadon.TONG_CONG|vn_currency }} VNĐ</strong>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         Tiền thuê nhà:
-                        <span>{{ hoadon.tienthuenha|intcomma }} VNĐ</span>
+                        <span>{{ hoadon.tienthuenha|vn_currency }} VNĐ</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         Tiền Điện:
-                        <span>{{ hoadon.tiendien|intcomma }} VNĐ (Cũ: {{ hoadon.chi_so_dien_cu }} -> Mới: {{ hoadon.chi_so_dien_moi }})</span>
+                        <span>{{ hoadon.tiendien|vn_currency }} VNĐ</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         Tiền Nước:
-                        <span>{{ hoadon.tiennuoc|intcomma }} VNĐ (Cũ: {{ hoadon.chi_so_nuoc_cu }} -> Mới: {{ hoadon.chi_so_nuoc_moi }})</span>
+                        <span>{{ hoadon.tiennuoc|vn_currency }} VNĐ</span>
                     </li>
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         Chi phí Khác:
-                        <span>{{ hoadon.tienkhac|intcomma }} VNĐ</span>
+                        <span>{{ hoadon.tienkhac|vn_currency }} VNĐ</span>
                     </li>
                 </ul>
                 
@@ -84,11 +85,11 @@
                     <div class="row text-center">
                         <div class="col-md-4">
                             <p class="mb-1 text-muted">Đã trả</p>
-                            <h4 class="text-info">{{ hoadon.SO_TIEN_DA_TRA|intcomma }} VNĐ</h4>
+                            <h4 class="text-info">{{ hoadon.SO_TIEN_DA_TRA|vn_currency }} VNĐ</h4>
                         </div>
                         <div class="col-md-4">
                             <p class="mb-1 text-muted">Công nợ</p>
-                            <h4 class="text-danger">{{ hoadon.CONG_NO|intcomma }} VNĐ</h4>
+                            <h4 class="text-danger">{{ hoadon.CONG_NO|vn_currency }} VNĐ</h4>
                         </div>
                         <div class="col-md-4">
                             <p class="mb-1 text-muted">Trạng thái</p>
@@ -155,7 +156,7 @@
                         <div class="d-flex justify-content-between align-items-center small">
                             <span>
                                 <span class="fas fa-money-bill-alt me-1 text-{{ tt_status_class }}"></span> 
-                                **{{ tt.tientt|intcomma }} VNĐ**
+                                **{{ tt.tientt|vn_currency }} VNĐ**
                                 <span class="badge bg-{% if tt.status == 'Daxn'%}success{% elif tt.status == 'Choxn' %}warning{% else %}secondary{% endif %} text-dark">{%if tt.status == 'Daxn'%}Đã Xác nhận{% elif tt.status == 'Choxn' %}Chờ Xác nhận{% else %}Đã Hủy{% endif %}</span>
                             </span>
                             

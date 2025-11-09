@@ -1,3 +1,5 @@
+# Cấu hình bật/tắt gửi email cho chủ nhà khi có thông báo, sự cố, comment
+SEND_OWNER_EMAIL_NOTIFICATIONS = True  # Đặt False để tắt gửi mail
 """
 Django settings for erptest project.
 
@@ -53,8 +55,8 @@ SESSION_COOKIE_AGE = 1800  # Default 30 minutes (for owners)
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session whenever user is active
 
 # Custom timeout for different user types
-RENTER_SESSION_TIMEOUT = 600   # 10 minutes for renters
-OWNER_SESSION_TIMEOUT = 1800   # 30 minutes for owners and admin
+RENTER_SESSION_TIMEOUT = 120   # 2 minute for renters
+OWNER_SESSION_TIMEOUT = 300   # 5 minutes for owners and admin
 
 # Hashids Configuration for URL ID Obfuscation
 HASHIDS_SALT = '3n821tz@-e98qd96+h_=+hgo1uv1*0d2@dfko#_ft@11pmu-secret-salt'  # Change this in production!
@@ -214,7 +216,7 @@ REST_FRAMEWORK = {
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'vi'  # Vietnamese locale
 
 TIME_ZONE = 'Asia/Bangkok'
 
@@ -223,6 +225,15 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+# Date format configuration for dd/mm/yyyy
+DATE_FORMAT = 'd/m/Y'
+SHORT_DATE_FORMAT = 'd/m/Y'
+DATE_INPUT_FORMATS = [
+    '%d/%m/%Y',  # 25/10/2024
+    '%d-%m-%Y',  # 25-10-2024
+    '%Y-%m-%d',  # 2024-10-25 (ISO format, keep as fallback)
+]
 
 
 # Static files (CSS, JavaScript, Images)
@@ -242,7 +253,7 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/welcome-page/'  # Show welcome page after login
 LOGOUT_REDIRECT_URL = '/'
 
 SITE_ID = 2

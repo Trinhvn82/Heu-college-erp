@@ -18,6 +18,8 @@ register_converter(HashidConverter, 'hashid')
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('welcome-page/', views.welcome_page, name='welcome_page'),
+    path('home/', views.home_dashboard, name='home_dashboard'),
     path('welcome/', views.renter_landing, name='renter_landing'),
     path('renter/dashboard/', views.renter_dashboard, name='renter_dashboard'),
     path('renter/bills/', views.renter_bills, name='renter_bills'),
@@ -267,6 +269,7 @@ urlpatterns = [
     path('changepwd/', user_changepwd, name='changepwd'),
  
     path('signup/', signup, name='signup'),
+    path('signup/success/', signup_success, name='signup_success'),
 
     path('create_tbs/', create_tbs, name='create_tbs'),
 

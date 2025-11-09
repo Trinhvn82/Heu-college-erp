@@ -77,6 +77,17 @@
             .main-navbar .navbar-nav .nav-link {
                 color: white !important;
                 padding: 0.75rem 1rem !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                width: 100% !important;
+                justify-content: flex-start !important;
+            }
+            .main-navbar .navbar-nav .nav-link .fas,
+            .main-navbar .navbar-nav .nav-link .far {
+                flex-shrink: 0 !important;
+                width: 1.5em !important;
+                text-align: center !important;
+                margin-right: 0.5rem !important;
             }
             .main-navbar .navbar-nav .nav-link:hover {
                 background-color: rgba(255,255,255,0.2) !important;
@@ -216,19 +227,7 @@
     <!-- Main Content -->
     <div class="content-wrapper">
         <div class="container-fluid px-4">
-            <!-- Breadcrumb -->
-            {% block breadcrumb %}
-            <div class="breadcrumb-custom">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/renter/dashboard/"><span class="fas fa-home"></span></a></li>
-                        {% block breadcrumb_items %}
-                        <li class="breadcrumb-item active">Trang</li>
-                        {% endblock %}
-                    </ol>
-                </nav>
-            </div>
-            {% endblock %}
+            {# Breadcrumb removed per request: renter pages simplified #}
 
             <!-- Alerts -->
             {% if messages %}
@@ -326,54 +325,132 @@
             }
         });
 
-        // Handle session timeout for authenticated pages
-        // Detect inactivity and warn user before session expires
+        // Handle session timeout with 5s confirm window
+        // When timeout hits, show a confirmation modal. If no response in 5s, auto-logout.
         (function() {
             let lastActivity = Date.now();
-            const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes for renters
-            const WARNING_TIME = 2 * 60 * 1000; // Warn 2 minutes before timeout
-            let warningShown = false;
-            
+            const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes for renters
+            const CONFIRM_WINDOW = 5; // seconds to wait for confirmation
+            const CHECK_INTERVAL = 1000; // check every second for accuracy
+            let promptActive = false;
+            let autoLogoutTimer = null;
+            let countdownTimer = null;
+
             // Update last activity on any user interaction
             ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(event) {
                 document.addEventListener(event, function() {
                     lastActivity = Date.now();
-                    warningShown = false;
+                    // If user interacts while prompt is open, treat as "stay signed in"
+                    if (promptActive) {
+                        try {
+                            clearTimeout(autoLogoutTimer);
+                            clearInterval(countdownTimer);
+                        } catch(e){}
+                        hideTimeoutModal(true);
+                    }
                 }, true);
             });
-            
-            // Check for timeout periodically
+
+            // Periodically check for timeout and show confirm window
             setInterval(function() {
                 const timeSinceLastActivity = Date.now() - lastActivity;
-                
-                // Show warning before timeout
-                if (!warningShown && timeSinceLastActivity > (SESSION_TIMEOUT - WARNING_TIME)) {
-                    warningShown = true;
-                    if (confirm('Phiên làm việc sắp hết hạn. Nhấn OK để tiếp tục làm việc.')) {
-                        // User clicked OK - refresh activity
-                        lastActivity = Date.now();
-                        warningShown = false;
-                        // Ping server to keep session alive
-                        fetch(window.location.href, { 
-                            method: 'HEAD',
-                            credentials: 'same-origin'
-                        }).catch(function() {});
+                if (!promptActive && timeSinceLastActivity >= SESSION_TIMEOUT) {
+                    showTimeoutModal();
+                }
+            }, CHECK_INTERVAL);
+
+            function showTimeoutModal(){
+                if (promptActive) return;
+                promptActive = true;
+
+                // Build modal dynamically
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                <div class="modal fade" id="sessionTimeoutModal" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Phiên làm việc sắp hết hạn</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Phiên làm việc của bạn đã hết hạn do không hoạt động.</p>
+                        <p class="mb-0">Tự động đăng xuất sau <strong id="timeoutCountdown">${CONFIRM_WINDOW}</strong> giây...</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" id="staySignedInBtn">Tiếp tục làm việc</button>
+                        <a href="/accounts/logout/" class="btn btn-danger">Đăng xuất</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+                const modalEl = wrapper.firstElementChild;
+                document.body.appendChild(modalEl);
+
+                const bsModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+                bsModal.show();
+
+                // Countdown + auto-logout (robust: deadline-based to avoid timer throttling)
+                const countdownEl = modalEl.querySelector('#timeoutCountdown');
+                const deadlineAt = Date.now() + (CONFIRM_WINDOW * 1000);
+                countdownTimer = setInterval(() => {
+                    const msLeft = Math.max(0, deadlineAt - Date.now());
+                    const secsLeft = Math.ceil(msLeft / 1000);
+                    if (countdownEl) countdownEl.textContent = String(secsLeft);
+                    if (msLeft <= 0) {
+                        try { clearInterval(countdownTimer); } catch(e){}
+                        // Use replace to avoid creating extra history entry
+                        window.location.replace('/accounts/logout/');
                     }
+                }, 250);
+
+                // Stay signed-in handler
+                const stayBtn = modalEl.querySelector('#staySignedInBtn');
+                if (stayBtn) {
+                    stayBtn.addEventListener('click', function(){
+                        try {
+                            clearTimeout(autoLogoutTimer);
+                            clearInterval(countdownTimer);
+                        } catch(e){}
+                        // Refresh activity and ping server to keep session
+                        lastActivity = Date.now();
+                        fetch(window.location.href, { method: 'HEAD', credentials: 'same-origin' }).catch(()=>{});
+                        hideTimeoutModal(true);
+                    });
                 }
-                
-                // Force logout if timeout exceeded
-                if (timeSinceLastActivity > SESSION_TIMEOUT + 30000) { // 30s grace period
-                    window.location.href = '/accounts/logout/';
+
+                // Cleanup on hide
+                modalEl.addEventListener('hidden.bs.modal', function(){
+                    try {
+                        clearTimeout(autoLogoutTimer);
+                        clearInterval(countdownTimer);
+                    } catch(e){}
+                    modalEl.remove();
+                    promptActive = false;
+                });
+
+                function handleCloseClick(evt){
+                    // Closing the modal without choosing is equivalent to staying signed in
+                    evt.preventDefault();
+                    if (stayBtn) stayBtn.click();
                 }
-            }, 30000); // Check every 30 seconds
-            
-            // Handle form submissions after timeout
+                const closeBtn = modalEl.querySelector('.btn-close');
+                if (closeBtn) closeBtn.addEventListener('click', handleCloseClick);
+            }
+
+            function hideTimeoutModal(reset=false){
+                const modalEl = document.getElementById('sessionTimeoutModal');
+                if (!modalEl) { promptActive = false; return; }
+                const bs = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                bs.hide();
+            }
+
+            // Prevent stale form submissions after timeout
             document.addEventListener('submit', function(e) {
                 const timeSinceLastActivity = Date.now() - lastActivity;
                 if (timeSinceLastActivity > SESSION_TIMEOUT) {
                     e.preventDefault();
-                    alert('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.');
-                    window.location.href = '/accounts/login/';
+                    showTimeoutModal();
                 }
             }, true);
         })();

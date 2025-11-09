@@ -689,7 +689,9 @@ class CreateHoaDonForm(forms.ModelForm):
         widgets = {
             'house': forms.Select(attrs={'class': 'form-control'}),
             'ten': forms.TextInput(attrs={'class': 'form-control'}),
-            'duedate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            # HTML5 date input requires value format YYYY-MM-DD to display on edit
+            # Use format='%Y-%m-%d' so existing dates render correctly in the input
+            'duedate': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'qr_code_image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
         }
@@ -759,29 +761,48 @@ class CreateHoaDonForm(forms.ModelForm):
         # Lưu house vào form để dùng trong clean_renter
         self._house = house
         
+        # Format các trường số tiền với dấu phẩy khi edit (instance có sẵn)
+        if self.instance and self.instance.pk:
+            # Danh sách các trường cần format
+            money_fields = ['tienthuenha', 'tiendien', 'tiennuoc', 'tienkhac']
+            
+            for field_name in money_fields:
+                # Lấy giá trị từ instance
+                value = getattr(self.instance, field_name, None)
+                if value is not None and value != 0:
+                    # Format với dấu phẩy: 1000000 -> "1,000,000"
+                    formatted_value = "{:,}".format(int(value))
+                    # Set initial value cho field
+                    self.fields[field_name].initial = formatted_value
+        
         if house:
             # Lấy TẤT CẢ renter từng có hợp đồng với house này (bất kể active hay không)
             all_contracts = HouseRenter.objects.filter(house=house).select_related('renter')
-            
+
             if all_contracts.exists():
                 # Lấy danh sách renter_id từ tất cả hợp đồng (distinct để tránh trùng)
                 renter_ids = all_contracts.values_list('renter_id', flat=True).distinct()
-                self.fields['renter'].queryset = Renter.objects.filter(id__in=renter_ids).order_by('-id')
-                
+                self.fields['renter'].queryset = (
+                    Renter.objects.filter(id__in=renter_ids)
+                    .order_by('hoten', 'id')
+                )
+
                 # Set default là renter có hợp đồng ACTIVE (nếu có)
                 active_contract = all_contracts.filter(active=True).first()
                 if active_contract:
                     self.fields['renter'].initial = active_contract.renter
                 else:
                     # Nếu không có active, chọn hợp đồng gần nhất
-                    self.fields['renter'].initial = all_contracts.order_by('-rent_from').first().renter
-                
+                    last_contract = all_contracts.order_by('-rent_from').first()
+                    if last_contract:
+                        self.fields['renter'].initial = last_contract.renter
+
                 # Cập nhật help text để người dùng biết
-                self.fields['renter'].help_text = "Danh sách khách thuê từng có hợp đồng với nhà này"
+                self.fields['renter'].help_text = "Danh sách khách thuê (đã/đang) có hợp đồng với nhà này"
             else:
-                # Không có hợp đồng nào, hiển thị tất cả renter của chủ nhà
-                self.fields['renter'].queryset = Renter.objects.filter(chu_id=house.loc.chu_id).order_by('-id')
-                self.fields['renter'].help_text = "Chọn khách thuê (nhà này chưa có hợp đồng nào)"
+                # Không có hợp đồng nào, KHÔNG hiển thị renter khác (đúng yêu cầu: chỉ hiển thị renter có HĐ)
+                self.fields['renter'].queryset = Renter.objects.none()
+                self.fields['renter'].help_text = "Nhà này chưa có hợp đồng nào — bạn có thể để trống trường Khách thuê."
     
 class CreateThanhToanForm(forms.ModelForm):
     # Dùng CharField để xử lý định dạng dấu chấm của JS

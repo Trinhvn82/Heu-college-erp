@@ -52,6 +52,14 @@
                                     <div>
                                         {{ field.label_tag }}
                                         {{ field }}
+                                        {% if field.name == 'renter' and field.field.queryset|length == 0 %}
+                                            <div class="alert alert-warning mt-2 py-2 px-3 small">
+                                                <span class="fas fa-info-circle me-1"></span>
+                                                Chưa có hợp đồng nào cho nhà này. Vào trang
+                                                <a href="{% url 'house_contracts' house_id=house.id %}" class="alert-link">Hợp đồng của nhà</a>
+                                                để tạo trước rồi quay lại.
+                                            </div>
+                                        {% endif %}
                                         {% if field.help_text %}
                                         <small class="form-text text-muted d-block">{{ field.help_text }}</small>
                                         {% endif %}
@@ -80,6 +88,15 @@
     $(document).ready(function() {
         // Áp dụng Select2 cho trường 'xp' (xã/phường)
         $('#id_xp').select2();
+        
+        // Format tất cả các trường tiền khi trang load (quan trọng khi edit)
+        const moneyFields = ['#id_tienthuenha', '#id_tiendien', '#id_tiennuoc', '#id_tienkhac'];
+        moneyFields.forEach(selector => {
+            const field = document.querySelector(selector);
+            if (field && field.value) {
+                formatThousands(field);
+            }
+        });
     });    
 </script>
 <script>

@@ -1,6 +1,7 @@
 {% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load humanize %}
+{% load vn_date_filters %}
 
 {% block title %}Tìm kiếm Hóa đơn{% endblock %}
 
@@ -80,9 +81,9 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h5 mb-0">Kết quả</h2>
             <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-primary">Tổng tiền: {{ aggregates.total_amount|default:0|intcomma }} VNĐ</span>
-              <span class="badge bg-success">Đã thu: {{ aggregates.total_paid|default:0|intcomma }} VNĐ</span>
-              <span class="badge bg-danger">Công nợ: {{ aggregates.total_debt|default:0|intcomma }} VNĐ</span>
+              <span class="badge bg-primary">Tổng tiền: {{ aggregates.total_amount|vn_currency }} VNĐ</span>
+              <span class="badge bg-success">Đã thu: {{ aggregates.total_paid|vn_currency }} VNĐ</span>
+              <span class="badge bg-danger">Công nợ: {{ aggregates.total_debt|vn_currency }} VNĐ</span>
               <a class="btn btn-sm btn-outline-success ms-2" href="/invoices/export-excel/?{{ params }}">
                 <span class="fas fa-file-excel"></span> Xuất Excel
               </a>
@@ -121,9 +122,9 @@
                       {% endif %}
                     </td>
                     <td class="text-wrap">{{ bill.ten }}</td>
-                    <td>{{ bill.TONG_CONG|intcomma }}</td>
-                    <td>{{ bill.SO_TIEN_DA_TRA|intcomma }}</td>
-                    <td>{{ bill.CONG_NO|intcomma }}</td>
+                    <td>{{ bill.TONG_CONG|vn_currency }}</td>
+                    <td>{{ bill.SO_TIEN_DA_TRA|vn_currency }}</td>
+                    <td>{{ bill.CONG_NO|vn_currency }}</td>
                     <td>{{ bill.ngay_tao|date:"d/m/Y H:i" }}</td>
                     <td>{{ bill.duedate|date:"d/m/Y" }}</td>
                     <td>
@@ -141,6 +142,11 @@
                       <a class="btn btn-sm btn-info" href="{% url 'bill_detail_secure' bill_id=bill.id %}">
                         <span class="fas fa-eye me-1"></span>Chi tiết
                       </a>
+                      {% if request.user.id == bill.house.loc.chu_id %}
+                      <a class="btn btn-sm btn-warning ms-1" href="{% url 'update_bill' bill_id=bill.id %}">
+                        <span class="fas fa-edit me-1"></span>Cập nhật
+                      </a>
+                      {% endif %}
                     </td>
                   </tr>
                 {% empty %}

@@ -3,6 +3,9 @@
 
 {% block title %}Đăng ký{% endblock %}
 
+{# Ẩn thanh menu trên cùng cho trang đăng ký chủ nhà #}
+{% block header_nav %}{% endblock %}
+
 {% block extra_css %}
 <style>
     .signup-form {
@@ -13,6 +16,15 @@
 {% endblock %}
 
 {% block content %}
+<div id="loading-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <rect x="20" y="10" width="24" height="44" rx="12" fill="#f8f9fa" stroke="#007bff" stroke-width="2"/>
+        <polygon id="sand" points="32,32 44,44 20,44" fill="#007bff">
+            <animate attributeName="points" values="32,32 44,44 20,44;32,44 44,44 20,44;32,32 44,44 20,44" dur="1.2s" repeatCount="indefinite"/>
+        </polygon>
+    </svg>
+    <div style="margin-top:12px;font-weight:bold;color:#007bff;font-size:1.2rem;">Đang xử lý... <span id="spinner-seconds">0</span> giây</div>
+</div>
 <main class="content">
     {% include 'sms/alerts.html' %}
 
@@ -26,29 +38,47 @@
                         {% csrf_token %}
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                                                        <div class="col-md-6 mb-3">
                                 <label for="username" class="form-label">Tên đăng nhập</label>
-                                <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập" required>
+                                                                <input type="text" class="form-control" id="username" name="username" placeholder="Nhập tên đăng nhập" required value="{{ form_data.username|default:'' }}">
+                                                                {% if field_errors.username %}
+                                                                    <div class="text-danger small mt-1">{{ field_errors.username|join:', ' }}</div>
+                                                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="fname" class="form-label">Họ</label>
-                                <input type="text" class="form-control" id="fname" name="fname" placeholder="Nhập họ" required>
+                                                                <input type="text" class="form-control" id="fname" name="fname" placeholder="Nhập họ" required value="{{ form_data.fname|default:'' }}">
+                                                                {% if field_errors.fname %}
+                                                                    <div class="text-danger small mt-1">{{ field_errors.fname|join:', ' }}</div>
+                                                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="lname" class="form-label">Tên</label>
-                                <input type="text" class="form-control" id="lname" name="lname" placeholder="Nhập tên" required>
+                                                                <input type="text" class="form-control" id="lname" name="lname" placeholder="Nhập tên" required value="{{ form_data.lname|default:'' }}">
+                                                                {% if field_errors.lname %}
+                                                                    <div class="text-danger small mt-1">{{ field_errors.lname|join:', ' }}</div>
+                                                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email" required>
+                                                                <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email" required value="{{ form_data.email|default:'' }}">
+                                                                {% if field_errors.email %}
+                                                                    <div class="text-danger small mt-1">{{ field_errors.email|join:', ' }}</div>
+                                                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="pass1" class="form-label">Mật khẩu</label>
-                                <input type="password" class="form-control" id="id_password1" name="pass1" placeholder="Nhập mật khẩu" required>
+                                                                <input type="password" class="form-control" id="id_password1" name="pass1" placeholder="Nhập mật khẩu" required>
+                                                                {% if field_errors.pass1 %}
+                                                                    <div class="text-danger small mt-1">{{ field_errors.pass1|join:', ' }}</div>
+                                                                {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="pass2" class="form-label">Xác nhận mật khẩu</label>
-                                <input type="password" class="form-control" id="id_password2" name="pass2" placeholder="Nhập lại mật khẩu" required>
+                                                                <input type="password" class="form-control" id="id_password2" name="pass2" placeholder="Nhập lại mật khẩu" required>
+                                                                {% if field_errors.pass2 %}
+                                                                    <div class="text-danger small mt-1">{{ field_errors.pass2|join:', ' }}</div>
+                                                                {% endif %}
                             </div>
 
                             <div class="col-12 mb-3">
@@ -69,7 +99,78 @@
                             <span>Đã có tài khoản? </span>
                             <a href="{% url 'login' %}">Đăng nhập ngay</a>
                         </div>
-                    </form>
+                                        </form>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var spinner = document.getElementById('loading-spinner');
+    var form = document.querySelector('form');
+    var secondsSpan = document.getElementById('spinner-seconds');
+
+    function getCsrfToken() {
+        var el = document.querySelector('input[name=csrfmiddlewaretoken]');
+        return el ? el.value : null;
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        spinner.style.display = 'flex';
+        var startTime = Date.now();
+        var running = true;
+        function updateSeconds() {
+            if (!running) return;
+            var elapsed = Math.floor((Date.now() - startTime) / 1000);
+            secondsSpan.textContent = elapsed;
+            requestAnimationFrame(updateSeconds);
+        }
+        updateSeconds();
+
+        var formData = new FormData(form);
+        var csrf = getCsrfToken();
+
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: csrf ? {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrf
+            } : {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            redirect: 'follow'
+        }).then(function(response) {
+            if (response.redirected) {
+                running = false;
+                window.location.href = response.url;
+                return;
+            }
+            return response.text().then(function(html) {
+                running = false;
+                spinner.style.display = 'none';
+                secondsSpan.textContent = '0';
+                try {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var newForm = doc.querySelector('form');
+                    if (newForm) {
+                        form.parentNode.replaceChild(newForm, form);
+                    } else {
+                        document.documentElement.innerHTML = html;
+                    }
+                } catch (err) {
+                    console.error('Failed to parse response HTML', err);
+                    document.documentElement.innerHTML = html;
+                }
+            });
+        }).catch(function(err) {
+            running = false;
+            spinner.style.display = 'none';
+            secondsSpan.textContent = '0';
+            alert('Đã có lỗi mạng. Vui lòng thử lại.');
+        });
+    });
+});
+</script>
                 </div>
             </div>
         </div>

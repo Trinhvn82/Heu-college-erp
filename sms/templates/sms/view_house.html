@@ -75,14 +75,7 @@
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'loc_list' %}">Địa điểm</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'view_loc_secure' house.loc.id %}">{{ house.loc.diachi }}</a></li>
-            <li class="breadcrumb-item active">{{ house.ten }}</li>
-        </ol>
-    </nav>
+    <!-- Breadcrumb removed -->
 
     <!-- Header -->
     <div class="house-header">

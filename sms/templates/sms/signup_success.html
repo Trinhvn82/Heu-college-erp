@@ -1,0 +1,87 @@
+{% extends "layouts/landing.html" %}
+{% load static %}
+
+{% block title %}Đăng ký thành công{% endblock %}
+
+{# Ẩn thanh menu trên cùng #}
+{% block header_nav %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 3rem 1rem;
+    }
+    .success-icon {
+        font-size: 5rem;
+        color: #28a745;
+        margin-bottom: 1.5rem;
+    }
+    .instruction-box {
+        background: #f8f9fa;
+        border-left: 4px solid #28a745;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    .instruction-box h5 {
+        color: #28a745;
+        margin-bottom: 1rem;
+    }
+    .instruction-box ol {
+        margin-bottom: 0;
+        padding-left: 1.5rem;
+    }
+    .instruction-box li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="container">
+        <div class="success-container text-center">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            
+            <h1 class="h2 mb-3">Đăng ký thành công!</h1>
+            <p class="lead text-muted">
+                Cảm ơn bạn đã đăng ký tài khoản. Chúng tôi đã gửi email xác nhận đến địa chỉ email của bạn.
+            </p>
+
+            <div class="instruction-box text-start">
+                <h5>
+                    <i class="fas fa-envelope-open-text me-2"></i>
+                    Hướng dẫn kích hoạt tài khoản
+                </h5>
+                <ol>
+                    <li>Mở hộp thư email của bạn (kiểm tra cả thư mục <strong>Spam</strong> nếu không thấy)</li>
+                    <li>Tìm email có tiêu đề <strong>"Xác nhận email của bạn và kích hoạt tài khoản"</strong></li>
+                    <li>Nhấp vào liên kết xác nhận trong email</li>
+                    <li>Tài khoản của bạn sẽ được kích hoạt và bạn có thể đăng nhập</li>
+                </ol>
+            </div>
+
+            <div class="alert alert-warning mt-4" style="color: #212529;">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Lưu ý:</strong> Bạn cần xác nhận email trước khi có thể đăng nhập vào hệ thống.
+            </div>
+
+            <div class="mt-4">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Đến trang đăng nhập
+                </a>
+                <a href="{% url 'index' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-home me-2"></i>Về trang chủ
+                </a>
+            </div>
+
+            <div class="mt-4 text-muted small">
+                <p>Bạn không nhận được email? Kiểm tra lại địa chỉ email hoặc liên hệ với quản trị viên.</p>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock content %}

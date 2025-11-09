@@ -2,12 +2,24 @@
 
 {% block title %} Đăng nhập {% endblock %} 
 
+{# Hide top navbar on login page #}
+{% block header_nav %}{% endblock header_nav %}
+
 <!-- Specific Page CSS goes HERE  -->
 {% block extra_css %}{% endblock extra_css %}
 
 {% block content %}
-    {% include 'sms/alerts.html' %}
-    <main>
+        {% include 'sms/alerts.html' %}
+                <div id="loading-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <rect x="20" y="10" width="24" height="44" rx="12" fill="#f8f9fa" stroke="#007bff" stroke-width="2"/>
+                        <polygon id="sand" points="32,32 44,44 20,44" fill="#007bff">
+                            <animate attributeName="points" values="32,32 44,44 20,44;32,44 44,44 20,44;32,32 44,44 20,44" dur="1.2s" repeatCount="indefinite"/>
+                        </polygon>
+                    </svg>
+                    <div style="margin-top:12px;font-weight:bold;color:#007bff;font-size:1.2rem;">Đang xử lý... <span id="spinner-seconds">0</span> giây</div>
+                </div>
+        <main>
 
         <script type="text/javascript">
             function reveal()
@@ -35,16 +47,14 @@
                                         </p>
                                     {% else %}
                                         <p>
-                                            Vui lòng nhập tên đăng nhập và mật khẩu                                   
+                                            Vui lòng nhập tên đăng nhập và mật khẩu
                                         </p>
                                     {% endif %}                                     
                                 </p>    
                                 </div>
 
                             <form method="post" action="" class="mt-4">
-                                
                                 {% csrf_token %} 
-
                                 <!-- Form -->
                                 <div class="form-group mb-4">
                                     <label for="email">Tên đăng nhập</label>
@@ -76,7 +86,90 @@
 
                                 </div>
                                 <button type="submit" name="login" class="btn btn-block btn-primary">Đăng nhập</button>
-                            </form>
+                                                        </form>
+                                                        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var spinner = document.getElementById('loading-spinner');
+                var forms = document.querySelectorAll('form');
+                var secondsSpan = document.getElementById('spinner-seconds');
+
+                function getCsrfToken() {
+                    var el = document.querySelector('input[name=csrfmiddlewaretoken]');
+                    return el ? el.value : null;
+                }
+
+                forms.forEach(function(form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        spinner.style.display = 'flex';
+
+                        // start counter
+                        var startTime = Date.now();
+                        var running = true;
+                        function updateSeconds() {
+                            if (!running) return;
+                            var elapsed = Math.floor((Date.now() - startTime) / 1000);
+                            secondsSpan.textContent = elapsed;
+                            requestAnimationFrame(updateSeconds);
+                        }
+                        updateSeconds();
+
+                        // prepare form data and CSRF
+                        var formData = new FormData(form);
+                        var csrf = getCsrfToken();
+
+                        // send via fetch so we can keep the page alive and show the spinner until server responds
+                        fetch(form.action || window.location.href, {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin',
+                            headers: csrf ? {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': csrf
+                            } : {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            redirect: 'follow'
+                        }).then(function(response) {
+                            // If server redirected (login success), navigate the browser to the final URL
+                            if (response.redirected) {
+                                running = false;
+                                window.location.href = response.url;
+                                return;
+                            }
+                                        // Not redirected: likely login failed and returned the login HTML with errors.
+                                        return response.text().then(function(html) {
+                                            running = false;
+                                            spinner.style.display = 'none';
+                                            secondsSpan.textContent = '0';
+                                            // try to replace the form area with the new HTML
+                                            try {
+                                                var parser = new DOMParser();
+                                                var doc = parser.parseFromString(html, 'text/html');
+                                                var newForm = doc.querySelector('form');
+                                                if (newForm) {
+                                                    form.parentNode.replaceChild(newForm, form);
+                                                } else {
+                                                    // fallback: replace whole body
+                                                    document.documentElement.innerHTML = html;
+                                                }
+                                            } catch (err) {
+                                                console.error('Failed to parse response HTML', err);
+                                                document.documentElement.innerHTML = html;
+                                            }
+                                        });
+                        }).catch(function(err) {
+                            running = false;
+                            console.error('Login request failed', err);
+                            // Hide spinner and restore UI so user can retry
+                            spinner.style.display = 'none';
+                            secondsSpan.textContent = '0';
+                            alert('Đã có lỗi mạng. Vui lòng thử lại.');
+                        });
+                    });
+                });
+            });
+                                                                                                                        </script>
                             
                             <div class="d-flex justify-content-center align-items-center mt-4">
                                 <span class="fw-normal">
