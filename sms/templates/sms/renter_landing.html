@@ -316,6 +316,37 @@
 {% endblock %}
 
 {% block content %}
+<!-- Loader SVG Hourglass -->
+<div id="loading-spinner" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <rect x="20" y="10" width="24" height="44" rx="12" fill="#f8f9fa" stroke="#007bff" stroke-width="2"/>
+                <polygon id="sand" points="32,32 44,44 20,44" fill="#007bff">
+                        <animate attributeName="points" values="32,32 44,44 20,44;32,44 44,44 20,44;32,32 44,44 20,44" dur="1.2s" repeatCount="indefinite"/>
+                </polygon>
+        </svg>
+        <div style="margin-top:12px;font-weight:bold;color:#007bff;font-size:1.2rem;">Đang tải trang... <span id="spinner-seconds">0</span> giây</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var spinner = document.getElementById('loading-spinner');
+    var secondsSpan = document.getElementById('spinner-seconds');
+    spinner.style.display = 'flex';
+    var startTime = Date.now();
+    var running = true;
+    function updateSeconds() {
+        if (!running) return;
+        var elapsed = Math.floor((Date.now() - startTime) / 1000);
+        secondsSpan.textContent = elapsed;
+        requestAnimationFrame(updateSeconds);
+    }
+    updateSeconds();
+    setTimeout(function() {
+        running = false;
+        spinner.style.display = 'none';
+    }, 1500);
+});
+</script>
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="container hero-content">
