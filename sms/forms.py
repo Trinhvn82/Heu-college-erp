@@ -7,12 +7,26 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
 
 class CustomAuthenticationForm(AuthenticationForm):
-    def confirm_login_allowed(self, user):
-        if not user.is_active:
-            raise ValidationError(
-                "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ chủ nhà để được hỗ trợ.",
-                code='inactive',
-            )
+    def clean(self):
+        username_or_email = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        if username_or_email and password:
+            from django.contrib.auth import authenticate, get_user_model
+            UserModel = get_user_model()
+            # Try to get user by username
+            user = authenticate(self.request, username=username_or_email, password=password)
+            if not user:
+                # Try to get user by email
+                try:
+                    user_obj = UserModel.objects.get(email=username_or_email)
+                    user = authenticate(self.request, username=user_obj.username, password=password)
+                except UserModel.DoesNotExist:
+                    pass
+            if user is None:
+                raise ValidationError("Sai tên đăng nhập/email hoặc mật khẩu.")
+            self.confirm_login_allowed(user)
+            self.user_cache = user
+        return self.cleaned_data
 
 class CreateTeacher(forms.ModelForm):
     class Meta:

@@ -214,9 +214,8 @@
     <!-- Main Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark main-navbar">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="{% url 'home_dashboard' %}">
-                <span class="fas fa-building me-2"></span>
-                Quản lý Nhà trọ
+            <a class="nav-link {% if request.resolver_match.url_name == 'home_dashboard' %}active{% endif %}" href="{% url 'home_dashboard' %}">
+                <span class="fas fa-home me-1"></span>Trang chủ
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
                 <span class="navbar-toggler-icon"></span>
@@ -225,11 +224,6 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     {% if user.is_authenticated %}
                         {# Menu cho Landlord/Admin - hiển thị mặc định #}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'home_dashboard' %}active{% endif %}" href="{% url 'home_dashboard' %}">
-                                <span class="fas fa-home me-1"></span>Trang chủ
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'rental_dashboard' %}active{% endif %}" href="{% url 'rental_dashboard' %}">
                                 <span class="fas fa-chart-line me-1"></span>Dashboard

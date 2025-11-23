@@ -6580,9 +6580,10 @@ class BillCommentForm(forms.ModelForm):
 def notifications_list(request):
     from .models import Notification
     items = Notification.objects.filter(user=request.user).order_by('-created_at')
-    
-    # Don't auto-mark as read anymore, let users click to mark
-    return render(request, 'sms/notifications_list.html', { 'items': items })
+    # Determine base template by role
+    is_landlord = getattr(request.user, 'is_landlord', False)
+    base_template = 'layouts/rental_base.html' if is_landlord else 'layouts/renter_base.html'
+    return render(request, 'sms/notifications_list.html', { 'items': items, 'base_template': base_template })
 
 
 @login_required

@@ -1,0 +1,10 @@
+{% extends 'layouts/renter_base.html' %}
+{% block content %}
+<h2>Thông báo cho Renter</h2>
+<ul>
+  {% for n in notifications %}
+    <li>{{ n.verb }} - {{ n.timestamp }}</li>
+  {% endfor %}
+</ul>
+<p>Bạn có {{ unread_count }} thông báo chưa đọc.</p>
+{% endblock %}

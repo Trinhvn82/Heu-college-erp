@@ -8,7 +8,7 @@ from htmx_patterns.views.thongbao import view_tb, view_tb_search
 from htmx_patterns.views.monhoc import view_mh, view_mh_search 
 from htmx_patterns.views.gv_lmh import view_gv_lmh_search, view_gv_lmh 
 
-from htmx_patterns.views.notifications import live_tester, make_notification
+from htmx_patterns.views.notifications import live_tester, make_notification, owner_notifications, renter_notifications
 from sms.tasks import create_tbs
 from . import views as sms_views
 from sms.utils.hashid_converter import HashidConverter
@@ -57,6 +57,9 @@ urlpatterns = [
 
     path('notifications/', live_tester, name='notifications'),
     path('test-make/', make_notification, name='test-make'),
+
+     path('owner/notifications/', owner_notifications, name='owner_notifications'),
+     path('renter/notifications/', renter_notifications, name='renter_notifications'),
 
     path('import-mh-dm/', views.import_monhoc_dm, name='import_monhoc_dm'),
     path('import-lopsv/<int:lop_id>/', views.import_lopsv, name='import_lopsv'),

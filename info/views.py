@@ -704,7 +704,6 @@ def user_changepwd(request):
 
 def signup(request):
     if request.method == "POST":
-        username = request.POST.get("username", "").strip()
         fname = request.POST.get("fname", "").strip()
         lname = request.POST.get("lname", "").strip()
         email = request.POST.get("email", "").strip()
@@ -713,15 +712,6 @@ def signup(request):
 
         field_errors = {}
 
-        # Validate inputs and collect errors (no redirect so we can keep values)
-        if not username:
-            field_errors.setdefault('username', []).append("Vui lòng nhập tên đăng nhập.")
-        elif len(username) > 20:
-            field_errors.setdefault('username', []).append("Tên đăng nhập tối đa 20 ký tự.")
-        elif not username.isalnum():
-            field_errors.setdefault('username', []).append("Tên đăng nhập chỉ gồm chữ và số.")
-        elif User.objects.filter(username=username).exists():
-            field_errors.setdefault('username', []).append("Tên đăng nhập đã tồn tại, vui lòng chọn tên khác.")
 
         if not email:
             field_errors.setdefault('email', []).append("Vui lòng nhập email.")
@@ -738,7 +728,6 @@ def signup(request):
             messages.error(request, "Vui lòng kiểm tra các lỗi phía dưới và thử lại.")
             context = {
                 'form_data': {
-                    'username': username,
                     'fname': fname,
                     'lname': lname,
                     'email': email,
@@ -748,7 +737,10 @@ def signup(request):
             return render(request, "sms/signup.html", context)
 
         # Create user
-        myuser = User.objects.create_user(username, email, pass1)
+        # Create user with temporary username, will update after creation
+        myuser = User.objects.create_user("tempuser", email, pass1)
+        # Set username to CN + id
+        myuser.username = f"CN{myuser.id}"
         # Lưu họ tên (ưu tiên set vào first_name/last_name chuẩn của Django)
         try:
             myuser.first_name = fname
@@ -781,7 +773,8 @@ def signup(request):
         current_site = get_current_site(request)
         email_subject = "Xác nhận email của bạn và kích hoạt tài khoản"
         message2 = render_to_string('sms/email_confirmation.html',{
-            'name': myuser.first_name or username,
+            'name': myuser.first_name or myuser.username,
+            'username': myuser.username,
             'domain': "http://127.0.0.1:8000",
             'uid': urlsafe_base64_encode(force_bytes(myuser.pk)),
             'token': generate_token.make_token(myuser)

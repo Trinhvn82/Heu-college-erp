@@ -8,6 +8,25 @@ from notifications.signals import notify
 
 
 @login_required
+
+def owner_notifications(request):
+    """View notification cho chủ nhà"""
+    notify.send(sender=request.user, recipient=request.user, verb='Bạn đã mở trang thông báo (chủ nhà)', level='info')
+    return render(request, 'sms/owner_notifications.html', {
+        'unread_count': request.user.notifications.unread().count(),
+        'notifications': request.user.notifications.all(),
+        'is_owner': True
+    })
+
+def renter_notifications(request):
+    """View notification cho renter"""
+    notify.send(sender=request.user, recipient=request.user, verb='Bạn đã mở trang thông báo (renter)', level='info')
+    return render(request, 'sms/renter_notifications.html', {
+        'unread_count': request.user.notifications.unread().count(),
+        'notifications': request.user.notifications.all(),
+        'is_renter': True
+    })
+
 def live_tester(request):
     notify.send(sender=request.user, recipient=request.user, verb='you loaded the page', level='success')
     #('success', 'info', 'warning', 'error') (default=info)
