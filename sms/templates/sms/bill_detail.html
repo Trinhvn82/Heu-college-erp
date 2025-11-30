@@ -34,11 +34,22 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
     <div class="d-block mb-4 mb-md-0">
         <h2 class="h4">Chi tiết Hóa đơn</h2>
-        <p class="mb-0">Danh sách Hóa đơn</p>
+        <div class="mb-2">
+            <span class="fas fa-map-marker-alt me-2"></span>
+            <strong>Vị trí:</strong> {{ hoadon.house.loc.diachi }}
+        </div>
+    
+        <div class="mb-2">
+            <span class="fas fa-home me-2"></span>
+            <strong>Nhà:</strong> {{ hoadon.house.ten }}
+        </div>
     </div>
     <div class="btn-group">
-    <a href="{% url 'generate_bill_pdf_secure' bill_id=hoadon.id %}" class="btn btn-success animate-up-2" target="_blank">
+        <a href="{% url 'generate_bill_pdf_secure' bill_id=hoadon.id %}" class="btn btn-success animate-up-2" target="_blank">
             <span class="fas fa-file-pdf me-2"></span> Tải về PDF
+        </a>
+        <a href="{% url 'bill_history' hoadon.id %}" class="btn btn-outline-info animate-up-2 ms-2">
+            <span class="fas fa-history"></span> Lịch sử thay đổi
         </a>
     </div>
 </div>
@@ -47,9 +58,9 @@
     <div class="row mb-4">
         <div class="col-lg-6">
             <div class="card card-body bg-white border-light shadow-sm h-100">
-                <h3 class="h5 mb-3 border-bottom pb-2">Hóa đơn: {{ hoadon.ten }} | {{ hoadon.house.ten }}</h3>
-                
-                {% if hoadon.renter %}
+                <h3 class="h5 mb-3 border-bottom pb-2">Mô tả: {{ hoadon.ten }}</h3>
+
+                    {% if hoadon.renter %}
                 <div class="alert alert-light border mb-3 text-dark">
                     <span class="fas fa-user me-2"></span><strong>Khách thuê:</strong> {{ hoadon.renter.hoten }}
                     {% if hoadon.renter.sdt %}

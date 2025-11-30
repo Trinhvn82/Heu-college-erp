@@ -25,7 +25,21 @@
                     <div class="row">
                         {% for field in forms %}
                             <div class="col-md-12 mb-3">
-                                <div>{{ field.label_tag }}{{ field }}</div>
+                                <div>{{ field.label_tag }}{{ field }}
+                                    <script>
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        var el = document.getElementById('{{ field.id_for_label }}');
+                                        if (el && el.required) {
+                                            el.oninvalid = function(e) {
+                                                el.setCustomValidity('Vui lòng nhập thông tin này.');
+                                            };
+                                            el.oninput = function(e) {
+                                                el.setCustomValidity('');
+                                            };
+                                        }
+                                    });
+                                    </script>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -47,9 +61,10 @@
 {% block extra_js %}
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script src="{% static 'js/required_vi.js' %}"></script>
 <script>
     $(document).ready(function() {
         $('#id_xp').select2();
     });
-    </script>
+</script>
 {% endblock %}

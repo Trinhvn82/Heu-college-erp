@@ -124,7 +124,13 @@
                     <td class="text-wrap">{{ bill.ten }}</td>
                     <td>{{ bill.TONG_CONG|vn_currency }}</td>
                     <td>{{ bill.SO_TIEN_DA_TRA|vn_currency }}</td>
-                    <td>{{ bill.CONG_NO|vn_currency }}</td>
+                    <td>
+                        {% if bill.CONG_NO < 0 %}
+                            <span style="color: red; font-weight: bold;">{{ bill.CONG_NO|vn_currency }}</span>
+                        {% else %}
+                              {{ bill.CONG_NO|vn_currency }}
+                        {% endif %}
+                    </td>
                     <td>{{ bill.ngay_tao|date:"d/m/Y H:i" }}</td>
                     <td>{{ bill.duedate|date:"d/m/Y" }}</td>
                     <td>

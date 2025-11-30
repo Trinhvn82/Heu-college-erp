@@ -1,0 +1,45 @@
+{% extends "layouts/rental_base.html" %}
+{% load humanize %}
+{% load vn_date_filters %}
+
+
+{% block title %}Lịch sử thay đổi hóa đơn{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="fas fa-history me-2"></i>Lịch sử thay đổi hóa đơn: {{ bill.ten }}</h2>
+    <div class="mb-3">
+        <strong>Nhà:</strong> {{ bill.house.ten }}<br>
+        <strong>Vị trí:</strong> {{ bill.house.loc.diachi }}
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Thời điểm</th>
+                <th>Người thao tác</th>
+                <th>Thay đổi</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for h in history_list %}
+            <tr>
+                <td>{{ h.history_date|date:"d/m/Y H:i" }}</td>
+                <td>{% if h.history_user %}{{ h.history_user.get_full_name|default:h.history_user.username }}{% else %}<span class="text-muted">Hệ thống</span>{% endif %}</td>
+                <td>
+                    <ul class="mb-0">
+                    {% for field, change in h.diff.items %}
+                        {% if field != 'ngay_cap_nhat' %}
+                        <li><strong>{{ field }}:</strong> {{ change.old|vn_currency }} → {{ change.new|vn_currency }}</li>
+                        {% endif %}
+                    {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="3" class="text-center text-muted">Chưa có lịch sử thay đổi nào.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'bill_detail' bill.id %}" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Quay lại chi tiết hóa đơn</a>
+</div>
+{% endblock %}

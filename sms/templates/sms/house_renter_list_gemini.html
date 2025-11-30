@@ -171,8 +171,6 @@
                     // Reset form
                     form.reset();
                     
-                    // Show success message
-                    alert('Thêm hợp đồng thành công!');
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -185,7 +183,21 @@
                 });
             });
         }
+
+        initDatePickers(this);
     });
+    function initDatePickers(context) {
+        $('.datepicker', context).datepicker({
+            format: 'dd/mm/yyyy',
+            autoclose: true,
+            todayHighlight: true
+        });
+    }
+
+    // Khi modal được mở
+    document.getElementById('createHRModal').addEventListener('shown.bs.modal', function () {
+        initDatePickers(this);
+    });    
 </script>
 {% endblock %}
 
@@ -200,24 +212,28 @@
 {% endblock %}
 
 {% block content %}
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-12">
-                        <h2 class="h5 mb-4 text-center border-bottom pb-2">Dòng thời gian thuê nhà</h2>
-                        
-                        <div
-                            id="hr-timeline-wrapper"
-                            hx-get="{% url 'hr_list_partial_secure' id %}"
-                            hx-trigger="refresh-hr-list"
-                            hx-swap="innerHTML"
-                        >
-                            {% include 'sms/fragments/_hr_timeline_list.html' with hrs=hrs id=id %}
-                        </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <!-- Thông tin vị trí và nhà liên quan -->
+            <div class="mb-3">
+                <div><i class="fas fa-map-marker-alt me-1"></i>{{ location.diachi }}</div>
+                <div><i class="fas fa-home me-2 text-primary"></i>{{ house.ten }}</div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="h5 mb-4 text-center border-bottom pb-2">Dòng thời gian thuê nhà</h2>
+                    <div
+                        id="hr-timeline-wrapper"
+                        hx-get="{% url 'hr_list_partial_secure' id %}"
+                        hx-trigger="refresh-hr-list"
+                        hx-swap="innerHTML"
+                    >
+                        {% include 'sms/fragments/_hr_timeline_list.html' with hrs=hrs id=id %}
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
 <!-- Modal: Tạo Hợp đồng Mới -->
 <div class="modal fade" id="createHRModal" tabindex="-1" aria-labelledby="createHRModalLabel" aria-hidden="true">

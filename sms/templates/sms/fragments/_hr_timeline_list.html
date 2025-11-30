@@ -10,9 +10,9 @@
                 <p class="card-text text-muted mb-3">
                     Tạo bản ghi hợp đồng tiếp theo hoặc hợp đồng thuê đầu tiên cho nhà trọ này.
                 </p>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createHRModal">
-                    <span class="fas fa-plus-circle me-2"></span> Tạo Hợp đồng Mới Ngay
-                </button>
+                <a href="{% url 'create_hr_secure' id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-signature me-1"></i> Tạo Hợp đồng Mới
+                </a>
             </div>
         </div>
     </li>

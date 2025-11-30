@@ -1,6 +1,7 @@
 {% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load humanize %}
+{% load vn_date_filters %}
 
 {% block title %} Ảnh & Bản đồ Vị trí {% endblock %}
 
@@ -156,7 +157,7 @@
                                         <div class="row g-2 mb-3">
                                             <div class="col-6">
                                                 <small class="text-muted d-block">Giá thuê</small>
-                                                <strong class="text-danger">{{ house.permonth|intcomma }} VNĐ</strong>
+                                                <strong class="text-danger">{{ house.permonth|vn_currency }} VNĐ</strong>
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">Diện tích</small>

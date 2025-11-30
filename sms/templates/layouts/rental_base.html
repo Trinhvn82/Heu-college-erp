@@ -497,13 +497,6 @@
                 }, true);
             });
 
-            // Periodically check for timeout and show confirm window
-            setInterval(function() {
-                const timeSinceLastActivity = Date.now() - lastActivity;
-                if (!promptActive && timeSinceLastActivity >= SESSION_TIMEOUT) {
-                    showTimeoutModal();
-                }
-            }, CHECK_INTERVAL);
 
             function showTimeoutModal(){
                 if (promptActive) return;

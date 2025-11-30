@@ -8,6 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.http import FileResponse
 from django.core.exceptions import ValidationError
 from notifications.signals import notify
+from sms.utils.hashid_converter import HashidConverter
 
 from django.template.loader import render_to_string
 from decimal import Decimal
@@ -331,9 +332,10 @@ def index(request):
     elif request.user.is_internalstaff:
         return redirect("lop_list")
     else:
-        # Landlords go to welcome page after login
+        # Nếu là chủ nhà (có Location), luôn vào home_dashboard
         if Location.objects.filter(chu=request.user).exists():
-            return redirect("welcome_page")
+            return redirect("home_dashboard")
+        # Nếu không phải chủ nhà, không vào welcome_page nữa
         return redirect("renter_landing")
 
 
@@ -3230,8 +3232,12 @@ def create_renter(request):
             # Generate renter code after we have an ID
             renter.ma = "NT"+str(request.user.id)+str(renter.id).zfill(3)
             renter.save()
-        messages.success(request, "Tạo mới người thuê thành công!")
-        return redirect("renter_list")
+            messages.success(request, "Tạo mới người thuê thành công!")
+            return redirect("renter_list")
+
+        else:
+            messages.error(request, "Lỗi Forms: " + str(forms.errors.as_text()))
+
     else:
         forms = CreateRenter()
 
@@ -3394,7 +3400,7 @@ def edit_loc(request, loc_id):
         edit_forms = CreateLoc(request.POST, request.FILES or None, instance=loc)
         if edit_forms.is_valid():
             edit_forms.save()
-            messages.success(request, "Edit Location Info Successfully!")
+            messages.success(request, "Cập nhật thông tin địa điểm thành công!")
             return redirect("loc_list")
 
     context = {
@@ -4872,13 +4878,16 @@ def hr_list(request, id):
         return error_response
     
     hrs = HouseRenter.objects.filter(house_id=id).order_by('-rent_from','-id')
+    house = get_object_or_404(House, pk=id)
+    location = house.loc if house else None
+    owner = location.chu if location else None
     
     # -----------------------------------
     # Logic Xử lý Form POST (Thêm mới)
     # -----------------------------------
     if request.method == 'POST':
         # Sử dụng HouseRenterForm bạn đã tạo
-        forms = CreateHouseRenter(request.POST) 
+        forms = CreateHouseRenter(request.POST, owner=owner)
         
         if forms.is_valid():
             new_renter_contract = forms.save(commit=False)
@@ -4906,14 +4915,16 @@ def hr_list(request, id):
     # -----------------------------------
     else:
         # Nếu là GET request, tạo một Form trống để hiển thị
-        forms = CreateHouseRenter() 
+        forms = CreateHouseRenter(owner=owner)
     
     # Chuẩn bị Context để render template
     context = {
         'segment': 'createhouserenter',
         'forms': forms, # Form để hiển thị (có thể chứa lỗi nếu POST thất bại)
         'hrs': hrs,     # Dữ liệu để hiển thị Timeline
-        'id': id
+        'id': id,
+        'house': house,
+        'location': location
     }
     return render(request, 'sms/house_renter_list_gemini.html', context)
 
@@ -5559,12 +5570,13 @@ def create_bill_view(request, house_id):
             try:
                 if new_bill.renter and new_bill.renter.user:
                     from .models import Notification
+                    hashid_converter = HashidConverter()
                     Notification.objects.create(
                         user=new_bill.renter.user,
                         title="Bạn có hóa đơn mới",
                         message=f"Hóa đơn {new_bill.ten} cho {house.ten} đã được tạo.",
                         type='bill_created',
-                        target_url=f"/sms/bill/{new_bill.id}/detail/"
+                        target_url=f"/sms/bill/{hashid_converter.to_url(new_bill.id)}/detail/"
                     )
             except Exception:
                 pass
@@ -5851,11 +5863,14 @@ def update_bill_view(request, bill_id):
     else:
         form = CreateHoaDonForm(instance=bill, house=house)
         
+    from sms.utils.id_encoder import encode_id
+    bill_hashid = encode_id(bill.id) if bill else None
     context = {
         'forms': form,
         'house': house,
         'loc_id': loc_id,
-        'bill': bill, # Đặt biến 'bill' để template biết đang ở chế độ update
+        'bill': bill,
+        'bill_hashid': bill_hashid,
     }
     return render(request, 'sms/create_bill.html', context)
 
@@ -5961,12 +5976,13 @@ def add_payment(request, bill_id):
                     landlord = hoadon.house.loc.chu
                     if landlord:
                         from .models import Notification
+                        hashid_converter = HashidConverter()
                         Notification.objects.create(
                             user=landlord,
                             title="Khách thuê gửi thanh toán",
                             message=f"{request.user.get_username()} đã gửi thanh toán {tientt:,} VNĐ cho hóa đơn #{hoadon.id}",
                             type='payment_submitted',
-                            target_url=f"/sms/bill/{hoadon.id}/detail/"
+                            target_url=f"/sms/bill/{hashid_converter.to_url(hoadon.id)}/detail/"
                         )
             except Exception:
                 pass
@@ -6644,12 +6660,13 @@ def add_bill_comment(request, bill_id):
                     recipient = hoadon.renter.user if hoadon.renter and hoadon.renter.user else None
                 if recipient:
                     from django.urls import reverse
+                    hashid_converter = HashidConverter()
                     Notification.objects.create(
                         user=recipient,
                         title=f"Bình luận mới về Hóa đơn #{hoadon.id}",
                         message=f"{request.user.username}: {c.comment[:100]}",
                         type='bill_commented',
-                        target_url=reverse('bill_detail', args=[hoadon.id])
+                        target_url=reverse('bill_detail', args=[{hashid_converter.to_url(hoadon.id)}])
                     )
             except Exception:
                 pass
@@ -7215,3 +7232,28 @@ def notification_badge(request):
     from .models import Notification
     unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
     return render(request, 'sms/notification_badge.html', {'unread_count': unread_count})
+
+@login_required
+def bill_history_view(request, bill_id):
+    bill = get_object_or_404(Hoadon, pk=bill_id)
+    history_qs = bill.history.order_by('-history_date')
+    history_list = []
+    for h in history_qs:
+        # Tính toán sự khác biệt giữa bản ghi này và bản ghi trước đó
+        diff = {}
+        prev = h.prev_record
+        if prev:
+            for field in bill._meta.fields:
+                fname = field.name
+                old = getattr(prev, fname, None)
+                new = getattr(h, fname, None)
+                if old != new:
+                    diff[fname] = {'old': old, 'new': new}
+        history_list.append({'history_date': h.history_date,
+                            'history_user': h.history_user,
+                            'diff': diff})
+    context = {
+        'bill': bill,
+        'history_list': history_list,
+    }
+    return render(request, 'sms/bill_history.html', context)

@@ -11,20 +11,7 @@ class HTMXLoginRequiredMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        try:
-            is_htmx = request.headers.get('HX-Request') == 'true'
-            if is_htmx and getattr(response, 'status_code', None) in (301, 302):
-                location = response.headers.get('Location') or response.get('Location')
-                login_url = getattr(settings, 'LOGIN_URL', '/accounts/login/')
-                if location and login_url and location.startswith(login_url):
-                    # Return 401 to trigger client-side handler
-                    r = HttpResponse('Unauthorized', status=401)
-                    # Optionally add a trigger for custom handlers
-                    r['HX-Trigger'] = 'auth-timeout'
-                    return r
-        except Exception:
-            # Fail open; don't block the request pipeline
-            return response
+        # Bỏ logic trả về 401 và HX-Trigger, chỉ trả về response mặc định
         return response
 
 

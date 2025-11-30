@@ -72,6 +72,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Application definition
+LOGIN_REDIRECT_URL = '/sms/home/'
 
 INSTALLED_APPS = [
     'info.apps.InfoConfig',
@@ -216,7 +217,7 @@ REST_FRAMEWORK = {
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'vi'  # Vietnamese locale
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Bangkok'
 
@@ -225,15 +226,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-# Date format configuration for dd/mm/yyyy
-DATE_FORMAT = 'd/m/Y'
-SHORT_DATE_FORMAT = 'd/m/Y'
-DATE_INPUT_FORMATS = [
-    '%d/%m/%Y',  # 25/10/2024
-    '%d-%m-%Y',  # 25-10-2024
-    '%Y-%m-%d',  # 2024-10-25 (ISO format, keep as fallback)
-]
 
 
 # Static files (CSS, JavaScript, Images)
@@ -253,7 +245,7 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-LOGIN_REDIRECT_URL = '/welcome-page/'  # Show welcome page after login
+#LOGIN_REDIRECT_URL = '/welcome-page/'  # Show welcome page after login
 LOGOUT_REDIRECT_URL = '/'
 
 SITE_ID = 2

@@ -1,5 +1,6 @@
 ﻿{% extends "layouts/rental_base.html" %}
 {% load static %}
+{% load vn_date_filters %}
 
 {% block title %} Tạo địa chỉ {% endblock %}
 
@@ -43,25 +44,50 @@
                         Chọn khách thuê từng có hợp đồng với nhà này (bất kể hợp đồng đang active hay đã kết thúc). 
                         Mặc định sẽ chọn khách thuê đang thuê hiện tại.
                     </div>
+                        <div class="mb-3">
+                            <span class="fas fa-map-marker-alt me-2"></span>
+                            <strong>Vị trí:</strong> {{ house.loc.diachi }}
+                            <br>
+                            <span class="fas fa-home me-2"></span>
+                            <strong>Nhà:</strong> {{ house.ten }}
+                        </div>
                     
                     <form action="" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
+
+                        {# Hiển thị số tiền đã thanh toán nếu có #}
+                        {% if bill and bill.SO_TIEN_DA_TRA and bill.SO_TIEN_DA_TRA > 0 %}
+                        <div class="mb-3">
+                            <span class="fas fa-money-bill-wave me-2"></span>
+                            <strong>Đã thanh toán:</strong>
+                            <span class="text-success">{{ bill.SO_TIEN_DA_TRA|vn_currency }} VNĐ</span>
+                        </div>
+                        {% endif %}
+
                         <div class="row">
                             {% for field in forms %}
                                 <div class="col-md-6 mb-3"> 
-                                    <div>
-                                        {{ field.label_tag }}
-                                        {{ field }}
-                                        {% if field.name == 'renter' and field.field.queryset|length == 0 %}
-                                            <div class="alert alert-warning mt-2 py-2 px-3 small">
-                                                <span class="fas fa-info-circle me-1"></span>
-                                                Chưa có hợp đồng nào cho nhà này. Vào trang
-                                                <a href="{% url 'house_contracts' house_id=house.id %}" class="alert-link">Hợp đồng của nhà</a>
-                                                để tạo trước rồi quay lại.
+                                    <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                        <div style="flex:1;">
+                                            {{ field.label_tag }}
+                                            {{ field }}
+                                            {% if field.name == 'renter' and field.field.queryset|length == 0 %}
+                                                <div class="alert alert-warning mt-2 py-2 px-3 small">
+                                                    <span class="fas fa-info-circle me-1"></span>
+                                                    Chưa có hợp đồng nào cho nhà này. Vào trang
+                                                    <a href="{% url 'house_contracts' house_id=house.id %}" class="alert-link">Hợp đồng của nhà</a>
+                                                    để tạo trước rồi quay lại.
+                                                </div>
+                                            {% endif %}
+                                            {% if field.help_text %}
+                                            <small class="form-text text-muted d-block">{{ field.help_text }}</small>
+                                            {% endif %}
+                                        </div>
+                                        {% if field.name == 'qr_code_image' and bill and bill.qr_code_image %}
+                                            <div style="min-width:120px; text-align:center;">
+                                                <img src="{{ bill.qr_code_image.url }}" alt="QR Code" style="max-width:100px;max-height:100px;">
+                                                <div class="small text-muted">QR hiện tại</div>
                                             </div>
-                                        {% endif %}
-                                        {% if field.help_text %}
-                                        <small class="form-text text-muted d-block">{{ field.help_text }}</small>
                                         {% endif %}
                                     </div>
                                     {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
@@ -88,7 +114,6 @@
     $(document).ready(function() {
         // Áp dụng Select2 cho trường 'xp' (xã/phường)
         $('#id_xp').select2();
-        
         // Format tất cả các trường tiền khi trang load (quan trọng khi edit)
         const moneyFields = ['#id_tienthuenha', '#id_tiendien', '#id_tiennuoc', '#id_tienkhac'];
         moneyFields.forEach(selector => {
@@ -97,9 +122,17 @@
                 formatThousands(field);
             }
         });
-    });    
-</script>
-<script>
+        // Thêm xác nhận khi công nợ < 0
+        $('form').on('submit', function(e) {
+            var congNoInput = document.getElementById('id_CONG_NO');
+            if (congNoInput && parseInt(congNoInput.value) < 0) {
+                if (!window.confirm('Công nợ đang âm. Bạn có chắc chắn muốn lưu hóa đơn này?')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    });
+
     // Hàm này (ĐÃ CÓ) để định dạng dấu chấm
     function formatThousands(input) {
         let rawValue = input.value.replace(/[^0-9]/g, ''); 
@@ -112,12 +145,10 @@
     // --- HÀM MỚI: ĐỂ CHẶN KÝ TỰ KHÔNG PHẢI SỐ ---
     function preventNonNumeric(event) {
         const key = event.key;
-
         // 1. Cho phép các phím số ('0' - '9')
         if (key >= '0' && key <= '9') {
             return; // Cho phép nhập
         }
-
         // 2. Cho phép các phím điều khiển (Backspace, Tab, Delete, Mũi tên)
         if ([
             'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Home', 'End'

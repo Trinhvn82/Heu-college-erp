@@ -85,9 +85,9 @@ class CreateNs(forms.ModelForm):
         exclude = ['user',]
 
         widgets = {
-            'ma': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã nhân sự'}),    
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-            'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên'}), 
+              'ma': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã nhân sự'}),    
+              'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+              'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên', 'maxlength': '50'}), 
             'gioitinh': forms.Select(attrs={'class': 'form-control'}),
             'namsinh': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'dantoc': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Dân tộc'}),
@@ -137,31 +137,45 @@ class CreateNs(forms.ModelForm):
         }
 
 class CreateRenter(forms.ModelForm):
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            from django.core.validators import validate_email
+            try:
+                validate_email(email)
+            except ValidationError:
+                raise forms.ValidationError("Email không đúng định dạng. Vui lòng nhập lại.")
+        return email
     class Meta:
         model = Renter
         fields = "__all__"
         exclude = ['user','chu_id','ma','init_pwd']
 
         widgets = {
-            'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên'}), 
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
-            'sdt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số điện thoại'}),
-            'cccd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CCCD'}),
+            'hoten': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Họ tên', 'maxlength': '50'}), 
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email', 'maxlength': '50'}),
+            'sdt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số điện thoại', 'maxlength': '50'}),
+            'cccd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CCCD', 'maxlength': '50'}),
             'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'noicap': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nơi cấp'}),
-            'mst': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã số thuế'}),
-            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú'}),
+            'noicap': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nơi cấp', 'maxlength': '50'}),
+            'mst': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã số thuế', 'maxlength': '50'}),
+            'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú', 'maxlength': '0'}),
         }
 
 class CreateHouseRenter(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        owner = kwargs.pop('owner', None)
+        super().__init__(*args, **kwargs)
+        if owner:
+            self.fields['renter'].queryset = Renter.objects.filter(chu_id=owner.id)
     class Meta:
         model = HouseRenter
         fields = "__all__"
         exclude = ['house']
         widgets = {
             'renter': forms.Select(attrs={'class': 'form-control'}),
-            'rent_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'rent_to': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'rent_from': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
+            'rent_to': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'active' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú'}),
         }
@@ -333,6 +347,7 @@ class CreateLop(forms.ModelForm):
             'trungtam': forms.Select(attrs={'class': 'form-control'}),
             'ctdt': forms.Select(attrs={'class': 'form-control'}),
         }
+
 
 class CreateLoc(forms.ModelForm):
 
@@ -604,10 +619,10 @@ class CreateHouse(forms.ModelForm):
         fields = "__all__"
         exclude = ['loc',]
         widgets = {
-            'ten': forms.TextInput(attrs={'class': 'form-control'}),
+            'ten': forms.TextInput(attrs={'class': 'form-control', 'maxlength':'100'}),
             'loainha': forms.Select(attrs={'class': 'form-control'}),
-            'sophong': forms.NumberInput(attrs={'class': 'form-control'}),
-            'dientich': forms.NumberInput(attrs={'class': 'form-control'}),
+            'sophong': forms.NumberInput(attrs={'class': 'form-control', 'max':100, 'min':1}),
+            'dientich': forms.NumberInput(attrs={'class': 'form-control', 'max':10000, 'min':1}),
 
             'interval': forms.Select(attrs={'class': 'form-control'}),
             'kitchen' : forms.CheckboxInput(attrs={'class': 'form-check-input'}),

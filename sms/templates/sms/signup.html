@@ -40,35 +40,46 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="fname" class="form-label">Họ</label>
-                                                                <input type="text" class="form-control" id="fname" name="fname" placeholder="Nhập họ" required value="{{ form_data.fname|default:'' }}">
+                                                                <input type="text" class="form-control" id="fname" name="fname" placeholder="Nhập họ" required value="{{ form_data.fname|default:'' }}" maxlength="50"
+                                                                    oninvalid="this.setCustomValidity('Vui lòng nhập họ.')"
+                                                                    oninput="this.setCustomValidity('')">
                                                                 {% if field_errors.fname %}
                                                                     <div class="text-danger small mt-1">{{ field_errors.fname|join:', ' }}</div>
                                                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="lname" class="form-label">Tên</label>
-                                                                <input type="text" class="form-control" id="lname" name="lname" placeholder="Nhập tên" required value="{{ form_data.lname|default:'' }}">
+                                                                <input type="text" class="form-control" id="lname" name="lname" placeholder="Nhập tên" required value="{{ form_data.lname|default:'' }}"  maxlength="50"
+                                                                    oninvalid="this.setCustomValidity('Vui lòng nhập tên.')"
+                                                                    oninput="this.setCustomValidity('')">
                                                                 {% if field_errors.lname %}
                                                                     <div class="text-danger small mt-1">{{ field_errors.lname|join:', ' }}</div>
                                                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                                                <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email" required value="{{ form_data.email|default:'' }}">
+                                   <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email" required value="{{ form_data.email|default:'' }}"
+                                        oninvalid="if(this.value===''){this.setCustomValidity('Vui lòng nhập email.');}else{this.setCustomValidity('Email không đúng định dạng. Vui lòng nhập lại.');}"
+                                        oninput="this.setCustomValidity('')"
+                                        maxlength="100">
                                                                 {% if field_errors.email %}
                                                                     <div class="text-danger small mt-1">{{ field_errors.email|join:', ' }}</div>
                                                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="pass1" class="form-label">Mật khẩu</label>
-                                                                <input type="password" class="form-control" id="id_password1" name="pass1" placeholder="Nhập mật khẩu" required>
+                                                                <input type="password" class="form-control" id="id_password1" name="pass1" placeholder="Nhập mật khẩu" required
+                                                                    oninvalid="this.setCustomValidity('Vui lòng nhập mật khẩu.')"
+                                                                    oninput="this.setCustomValidity('')">
                                                                 {% if field_errors.pass1 %}
                                                                     <div class="text-danger small mt-1">{{ field_errors.pass1|join:', ' }}</div>
                                                                 {% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="pass2" class="form-label">Xác nhận mật khẩu</label>
-                                                                <input type="password" class="form-control" id="id_password2" name="pass2" placeholder="Nhập lại mật khẩu" required>
+                                                                <input type="password" class="form-control" id="id_password2" name="pass2" placeholder="Nhập lại mật khẩu" required
+                                                                    oninvalid="this.setCustomValidity('Vui lòng xác nhận mật khẩu.')"
+                                                                    oninput="this.setCustomValidity('')">
                                                                 {% if field_errors.pass2 %}
                                                                     <div class="text-danger small mt-1">{{ field_errors.pass2|join:', ' }}</div>
                                                                 {% endif %}
@@ -118,6 +129,27 @@ document.addEventListener('DOMContentLoaded', function() {
         updateSeconds();
 
         var formData = new FormData(form);
+    });
+    // Thêm thông báo tiếng Việt cho các trường required
+    var requiredFields = document.querySelectorAll('input[required]');
+    requiredFields.forEach(function(field) {
+        field.oninvalid = function(e) {
+            if (!field.value) {
+                if (field.type === 'email') {
+                    field.setCustomValidity('Vui lòng nhập email.');
+                } else if (field.id === 'fname') {
+                    field.setCustomValidity('Vui lòng nhập họ.');
+                } else if (field.id === 'lname') {
+                    field.setCustomValidity('Vui lòng nhập tên.');
+                } else {
+                    field.setCustomValidity('Vui lòng nhập thông tin này.');
+                }
+            }
+        };
+        field.oninput = function(e) {
+            field.setCustomValidity('');
+        };
+    });
         var csrf = getCsrfToken();
 
         fetch(form.action || window.location.href, {
@@ -183,4 +215,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 </script>
+<script src="{% static 'js/required_vi.js' %}"></script>
 {% endblock %}

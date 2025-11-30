@@ -110,10 +110,23 @@ document.addEventListener('click', function(e) {
     console.log('Issue ID extracted:', issueId);
     loadIssueModal(issueId, notificationId, notificationHash);
   } else if (billMatch) {
-    // For bills, just navigate to the page (no modal for now)
+    // For bills, mark as read then navigate to the page
     const billId = billMatch[1];
     console.log('Bill ID extracted:', billId, '- Navigating to bill page');
+    if (notificationHash) {
+      fetch(`/sms/notifications/${notificationHash}/read/?modal=1`, {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      }).then(() => {
+        window.location.href = targetUrl;
+      }).catch(() => {
+        window.location.href = targetUrl;
+      });
+  } else {
     window.location.href = targetUrl;
+  }
   } else {
     // Cannot extract ID (old notification or list page URL) - just navigate normally
     console.log('Cannot extract ID from:', targetUrl, '- Navigating normally');

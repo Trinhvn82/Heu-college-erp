@@ -210,8 +210,14 @@ class House(models.Model):
     loc = models.ForeignKey(Location, on_delete=models.RESTRICT, null=True)
     ten = models.CharField(max_length=100, verbose_name = "Tên nhà trọ")
     loainha = models.CharField(choices=ln_choice, verbose_name = "Loại nhà")
-    sophong= models.IntegerField(default= 1, verbose_name = "Số phòng")
-    dientich = models.IntegerField(verbose_name = "Diện tích")
+    from django.core.validators import MinValueValidator, MaxValueValidator
+    sophong= models.IntegerField(
+        default=1,
+        verbose_name = "Số phòng"
+    )
+    dientich = models.IntegerField(
+        verbose_name = "Diện tích"
+    )
     permonth = models.IntegerField(verbose_name = "Tiền thuê/tháng (VNĐ)")
     interval = models.CharField(choices=interval_choice, max_length=100, verbose_name = "Số tháng/kỳ thanh toán")
     deposit = models.IntegerField(verbose_name = "Tiền đặt cọc (VNĐ)")
@@ -254,7 +260,7 @@ class Renter(models.Model):
         verbose_name = "Người thuê"
         verbose_name_plural = "Danh sách Người thuê"
         ordering = ["ma",]
-        unique_together = ('ma',)
+        unique_together = ('hoten','chu_id',)
 
     def __str__(self):
         # Gracefully handle possible None values to avoid TypeError

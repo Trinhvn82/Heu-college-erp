@@ -1,6 +1,7 @@
 {% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load humanize %}
+{% load vn_date_filters %}
 
 {% block title %}Chi tiết nhà trọ{% endblock %}
 
@@ -120,19 +121,11 @@
                     </div>
                     <div class="info-row">
                         <div class="info-label">Giá thuê/tháng</div>
-                        <div class="info-value text-danger">{{ house.permonth|intcomma }} VNĐ</div>
+                        <div class="info-value text-danger">{{ house.permonth|vn_currency }} VNĐ</div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Tiền cọc</div>
-                        <div class="info-value">{{ house.deposit|intcomma }} VNĐ</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Giá điện</div>
-                        <div class="info-value">{{ house.electric|intcomma }} VNĐ/kWh</div>
-                    </div>
-                    <div class="info-row">
-                        <div class="info-label">Giá nước</div>
-                        <div class="info-value">{{ house.water|intcomma }} VNĐ/m³</div>
+                        <div class="info-value">{{ house.deposit|vn_currency }} VNĐ</div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,27 @@
+{% extends "layouts/rental_base.html" %}
+{% load static %}
+{% block title %}Tạo Hợp đồng Thuê Mới{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4"><i class="fas fa-file-signature me-2"></i>Tạo Hợp đồng Thuê Mới</h2>
+    <form method="post" action="{% url 'create_hr_secure' id %}">
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>Lưu Hợp đồng
+        </button>
+        <a href="{% url 'hr_list_secure' id %}" class="btn btn-secondary ms-2">Quay lại lịch sử thuê nhà</a>
+    </form>
+</div>
+{% endblock %}

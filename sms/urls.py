@@ -298,6 +298,7 @@ urlpatterns = [
      path('api/locations/<int:loc_id>/houses/', views.api_houses_by_location, name='api_houses_by_location'),
     #path('bill/<int:bill_id>/excel/', views.generate_bill_excel, name='generate_bill_excel'),
     path('bill/<int:bill_id>/pdf/', views.generate_bill_pdf, name='generate_bill_pdf'),
+path('bill/<hashid:bill_id>/history/', views.bill_history_view, name='bill_history'),
 
      # Secure (encoded ID) routes — now canonical
      # Bills (encoded bill_id)
