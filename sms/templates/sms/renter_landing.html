@@ -313,7 +313,12 @@
         }
     }
 </style>
+
 {% endblock %}
+
+<div style="text-align:center; margin-top: 2rem; margin-bottom: 2rem;">
+    <a href="/sms/faq/" class="btn btn-outline-primary" style="font-weight:600;">Xem tất cả câu hỏi thường gặp (FAQ)</a>
+</div>
 
 {% block content %}
 <!-- Loader SVG Hourglass -->
@@ -555,13 +560,13 @@ document.addEventListener('DOMContentLoaded', function() {
 <section class="cta-section">
     <div class="container cta-content">
         <h2 class="animate__animated animate__fadeInUp">
-            Sẵn sàng bắt đầu?
+            Bạn có thắc mắc cần giải đáp?
         </h2>
-        <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
-            Đăng nhập ngay để trải nghiệm hệ thống quản lý nhà trọ hiện đại
-        </p>
-        <a href="{% url 'login' %}" class="btn btn-cta animate__animated animate__fadeInUp animate__delay-2s">
-            <span class="fas fa-sign-in-alt me-2"></span>Đăng nhập ngay
+        <a href="{% url 'faq' %}" class="btn btn-cta animate__animated animate__fadeInUp animate__delay-2s">
+            <span class="fas fa-sign-in-alt me-2"></span>FAQs
+        </a>
+        <a href="{% url 'forum_list' %}" class="btn btn-cta animate__animated animate__fadeInUp animate__delay-2s">
+            <span class="fas fa-sign-in-alt me-2"></span>Forums
         </a>
     </div>
 </section>

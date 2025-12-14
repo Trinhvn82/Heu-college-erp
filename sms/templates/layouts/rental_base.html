@@ -476,108 +476,20 @@
             }
         });
 
-        // Handle session timeout with 5s confirm window (landlord/admin)
+        // Tự động logout khi session timeout
         (function() {
             let lastActivity = Date.now();
-            const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes for landlords/admin
-            const CONFIRM_WINDOW = 5; // seconds to wait for confirmation
-            const CHECK_INTERVAL = 1000;
-            let promptActive = false;
-            let autoLogoutTimer = null;
-            let countdownTimer = null;
-
-            // Update last activity on any user interaction
+            const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 phút cho landlord/admin
+            setInterval(function() {
+                if (Date.now() - lastActivity >= SESSION_TIMEOUT) {
+                    window.location.replace('/accounts/logout/');
+                }
+            }, 1000);
             ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function(event) {
                 document.addEventListener(event, function() {
                     lastActivity = Date.now();
-                    if (promptActive) {
-                        try { clearTimeout(autoLogoutTimer); clearInterval(countdownTimer); } catch(e){}
-                        hideTimeoutModal(true);
-                    }
                 }, true);
             });
-
-
-            function showTimeoutModal(){
-                if (promptActive) return;
-                promptActive = true;
-
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = `
-                <div class="modal fade" id="sessionTimeoutModal" tabindex="-1" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title">Phiên làm việc sắp hết hạn</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p>Phiên làm việc của bạn đã hết hạn do không hoạt động.</p>
-                        <p class="mb-0">Tự động đăng xuất sau <strong id="timeoutCountdown">${CONFIRM_WINDOW}</strong> giây...</p>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" id="staySignedInBtn">Tiếp tục làm việc</button>
-                        <a href="/accounts/logout/" class="btn btn-danger">Đăng xuất</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>`;
-                const modalEl = wrapper.firstElementChild;
-                document.body.appendChild(modalEl);
-
-                const bsModal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
-                bsModal.show();
-
-                // Countdown + auto-logout (robust: deadline-based to avoid timer throttling)
-                const countdownEl = modalEl.querySelector('#timeoutCountdown');
-                const deadlineAt = Date.now() + (CONFIRM_WINDOW * 1000);
-                countdownTimer = setInterval(() => {
-                    const msLeft = Math.max(0, deadlineAt - Date.now());
-                    const secsLeft = Math.ceil(msLeft / 1000);
-                    if (countdownEl) countdownEl.textContent = String(secsLeft);
-                    if (msLeft <= 0) {
-                        try { clearInterval(countdownTimer); } catch(e){}
-                        // Use replace to avoid creating extra history entry
-                        window.location.replace('/accounts/logout/');
-                    }
-                }, 250);
-
-                // Stay signed-in handler
-                const stayBtn = modalEl.querySelector('#staySignedInBtn');
-                if (stayBtn) {
-                    stayBtn.addEventListener('click', function(){
-                        try { clearTimeout(autoLogoutTimer); clearInterval(countdownTimer); } catch(e){}
-                        lastActivity = Date.now();
-                        fetch(window.location.href, { method: 'HEAD', credentials: 'same-origin' }).catch(()=>{});
-                        hideTimeoutModal(true);
-                    });
-                }
-
-                modalEl.addEventListener('hidden.bs.modal', function(){
-                    try { clearTimeout(autoLogoutTimer); clearInterval(countdownTimer); } catch(e){}
-                    modalEl.remove();
-                    promptActive = false;
-                });
-
-                const closeBtn = modalEl.querySelector('.btn-close');
-                if (closeBtn) closeBtn.addEventListener('click', function(evt){ evt.preventDefault(); const btn = modalEl.querySelector('#staySignedInBtn'); if (btn) btn.click(); });
-            }
-
-            function hideTimeoutModal(){
-                const modalEl = document.getElementById('sessionTimeoutModal');
-                if (!modalEl) { promptActive = false; return; }
-                const bs = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-                bs.hide();
-            }
-
-            // Block stale form submissions after timeout
-            document.addEventListener('submit', function(e) {
-                const timeSinceLastActivity = Date.now() - lastActivity;
-                if (timeSinceLastActivity > SESSION_TIMEOUT) {
-                    e.preventDefault();
-                    showTimeoutModal();
-                }
-            }, true);
         })();
     </script>
 

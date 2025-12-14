@@ -46,7 +46,7 @@ INTERNAL_IPS = (
     '192.168.1.23',
 )
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','103.141.140.214', 'heu-college.online']
 
 AUTH_USER_MODEL = 'info.User'
 
@@ -72,7 +72,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Application definition
-LOGIN_REDIRECT_URL = '/sms/home/'
 
 INSTALLED_APPS = [
     'info.apps.InfoConfig',
@@ -111,7 +110,8 @@ INSTALLED_APPS = [
     'notifications',
     'django_q',
     "debug_toolbar",
-    'django.contrib.humanize'
+    'django.contrib.humanize',
+    'forum',
 #    'import_export'
 #    'rest_framework'
 
@@ -217,7 +217,7 @@ REST_FRAMEWORK = {
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'vi'  # Vietnamese locale
 
 TIME_ZONE = 'Asia/Bangkok'
 
@@ -226,6 +226,15 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+# Date format configuration for dd/mm/yyyy
+DATE_FORMAT = 'd/m/Y'
+SHORT_DATE_FORMAT = 'd/m/Y'
+DATE_INPUT_FORMATS = [
+    '%d/%m/%Y',  # 25/10/2024
+    '%d-%m-%Y',  # 25-10-2024
+    '%Y-%m-%d',  # 2024-10-25 (ISO format, keep as fallback)
+]
 
 
 # Static files (CSS, JavaScript, Images)
@@ -246,6 +255,7 @@ STATICFILES_FINDERS = [
 ]
 
 #LOGIN_REDIRECT_URL = '/welcome-page/'  # Show welcome page after login
+LOGIN_REDIRECT_URL = '/sms/home/'
 LOGOUT_REDIRECT_URL = '/'
 
 SITE_ID = 2

@@ -47,14 +47,20 @@ test_name = (
 class User(AbstractUser):
     @property
     def is_landlord(self):
-        from sms.models import Location
-        return Location.objects.filter(chu=self).exists()
+        if hasattr(self, 'landlord'):
+            return True
+        return False
+    @property
+    def is_renter(self):
+        if hasattr(self, 'renter'):
+            return True
+        return False
+
     @property
     def is_internalstaff(self):
         if hasattr(self, 'hsns'):
             return True
         return False
-
     @property
     def is_gv(self):
         if hasattr(self, 'hsgv'):

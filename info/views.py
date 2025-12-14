@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib import messages
-from sms.models import Hsns, Hsgv, Hssv, Renter
+from sms.models import Hsns, Hsgv, Hssv, Renter, Landlord
 from django.http import HttpResponseForbidden,HttpResponse
 
 from .views_fragments.users import user_list_view  # Import the user list view
@@ -755,6 +755,9 @@ def signup(request):
             pass
         myuser.is_active = False
         myuser.save()
+        landloard = Landlord(user = myuser, ma = myuser.username, email = myuser.email)
+        landloard.save()
+
         messages.success(request, "Tạo tài khoản thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.")
 
         # Welcome Email

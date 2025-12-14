@@ -156,7 +156,7 @@ class CreateRenter(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email', 'maxlength': '50'}),
             'sdt': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Số điện thoại', 'maxlength': '50'}),
             'cccd': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'CCCD', 'maxlength': '50'}),
-            'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'ngaycap': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}, format='%Y-%m-%d'),
             'noicap': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nơi cấp', 'maxlength': '50'}),
             'mst': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Mã số thuế', 'maxlength': '50'}),
             'ghichu': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Ghi chú', 'maxlength': '0'}),
@@ -168,6 +168,13 @@ class CreateHouseRenter(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if owner:
             self.fields['renter'].queryset = Renter.objects.filter(chu_id=owner.id)
+    def clean(self):
+        cleaned_data = super().clean()
+        rent_from = cleaned_data.get('rent_from')
+        rent_to = cleaned_data.get('rent_to')
+        if rent_from and rent_to and rent_to < rent_from:
+            self.add_error('rent_to', 'Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu.')
+        return cleaned_data
     class Meta:
         model = HouseRenter
         fields = "__all__"

@@ -1,0 +1,23 @@
+{% extends 'layouts/rental_base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Đăng đề xuất mới</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.title.label_tag }}
+            {{ form.title }}
+        </div>
+        <div class="form-group">
+            {{ form.content.label_tag }}
+            {{ form.content }}
+        </div>
+        <div class="form-group">
+            <label>Ảnh (tối đa 3 ảnh):</label>
+            {{ form.images }}
+        </div>
+        <button type="submit" class="btn btn-primary rounded-pill">Đăng đề xuất</button>
+        <a href="{% url 'forum_list' %}" class="btn btn-outline-secondary rounded-pill ml-2">Quay lại</a>
+    </form>
+</div>
+{% endblock %}

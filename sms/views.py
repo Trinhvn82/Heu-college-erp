@@ -1,3 +1,49 @@
+from datetime import datetime
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+# --- Hàm tiện ích chuyển đổi ngày tự động cho import ---
+def parse_date_auto(val):
+    if pd.isnull(val) or str(val).strip() == '':
+        return None
+    if isinstance(val, datetime):
+        return val.date()
+    s = str(val).strip()
+    # Nếu đúng định dạng YYYY-MM-DD
+    try:
+        return datetime.strptime(s, "%Y-%m-%d").date()
+    except Exception:
+        print("giá trị date 1" + s)
+        pass
+    # Nếu đúng định dạng DD/MM/YYYY hoặc D/M/YYYY
+    try:
+        return datetime.strptime(s, "%d/%m/%Y").date()
+    except Exception:
+        print("giá trị date 2" + s)
+        pass
+    # Nếu đúng định dạng D/M/YY
+    try:
+        return datetime.strptime(s, "%d/%m/%y").date()
+    except Exception:
+        print("giá trị date 3" + s)
+        pass
+    # Nếu đúng định dạng MM/DD/YYYY
+    try:
+        return datetime.strptime(s, "%m/%d/%Y").date()
+    except Exception:
+        pass
+    # Nếu đúng định dạng khác, trả về None
+    print("giá trị date 4" + s)
+    return None
+
+# ...existing code...
+import pandas as pd
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Renter
+from .forms_import import RenterImportForm
+from django.db import IntegrityError
+
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 
@@ -147,7 +193,7 @@ def get_object_or_forbidden(model, user, error_message, **kwargs):
 def block_renter_access(request, redirect_url='renter_dashboard', message="Bạn không có quyền truy cập chức năng này."):
     """Check if user is a renter and block access. Returns redirect response or None"""
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, message)
             return redirect(redirect_url)
     except (AttributeError, Renter.DoesNotExist):
@@ -318,7 +364,7 @@ def index(request):
     
     # Check if user is a renter - use try/except to avoid AttributeError
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             return redirect("/renter/dashboard/")
     except (AttributeError, Renter.DoesNotExist):
         pass
@@ -333,10 +379,8 @@ def index(request):
         return redirect("lop_list")
     else:
         # Nếu là chủ nhà (có Location), luôn vào home_dashboard
-        if Location.objects.filter(chu=request.user).exists():
+        if request.user.is_landlord:
             return redirect("home_dashboard")
-        # Nếu không phải chủ nhà, không vào welcome_page nữa
-        return redirect("renter_landing")
 
 
 @login_required
@@ -344,7 +388,7 @@ def welcome_page(request):
     """Welcome page shown after successful login"""
     # Redirect renters to their dashboard
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             return redirect("renter_dashboard")
     except (AttributeError, Renter.DoesNotExist):
         pass
@@ -364,7 +408,7 @@ def home_dashboard(request):
     """Main dashboard with feature blocks"""
     # Block renter access
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.warning(request, "Bạn không có quyền truy cập trang này.")
             return redirect("renter_dashboard")
     except (AttributeError, Renter.DoesNotExist):
@@ -556,7 +600,7 @@ def renter_list(request):
     
     # Chặn renter truy cập danh sách khách thuê
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền xem danh sách khách thuê.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -1615,6 +1659,46 @@ def import_gv(request):
         messages.success(request, "Import thanh cong!")
         return redirect("gv_list")
 
+def import_renter(request):
+    if request.method == 'POST':
+        file = request.FILES['file']
+        try:
+            df = pd.read_excel(file)
+        except Exception as e:
+            messages.error(request, f'Lỗi đọc file: {e}')
+            return redirect('renter_list')
+
+        imported, errors = 0, 0
+        for idx, row in df.iterrows():
+            try:
+                renter, created = Renter.objects.update_or_create(
+                    hoten=row.get('hoten'),
+                    chu_id=request.user.id,
+                    defaults={
+                        'email': row.get('email') if pd.notna(row.get('email')) else '',
+                        'sdt': row.get('sdt') if pd.notna(row.get('sdt')) else '',
+                        'cccd': row.get('cccd') if pd.notna(row.get('cccd')) else '',
+                        'ngaycap': parse_date_auto(row['ngaycap']),
+                        'noicap': row.get('noicap') if pd.notna(row.get('noicap')) else '',
+                        'mst': row.get('mst') if pd.notna(row.get('mst')) else '',
+                        'ghichu': row.get('ghichu') if pd.notna(row.get('ghichu')) else '',
+                    }
+                )
+                if created:
+                    renter.ma = "NT"+str(request.user.id)+str(renter.id).zfill(3)
+                    renter.save()
+
+                imported += 1
+            except IntegrityError as e:
+                print (e)
+                errors += 1
+            except Exception as e:
+                print (e)
+                errors += 1
+        messages.success(request, f'Đã import {imported} người thuê. Lỗi: {errors}')
+        return redirect('renter_list')
+
+
 @login_required
 def import_ns(request):
     if request.method == "POST":
@@ -2141,7 +2225,7 @@ def lop_list_guardian(request):
 def loc_list(request):
     # Chặn renter truy cập - chuyển về trang locations của họ
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
             return redirect('renter_locations')
     except (AttributeError, Renter.DoesNotExist):
@@ -2160,7 +2244,7 @@ def loc_list(request):
 def house_list(request, loc_id):
     # Chặn renter truy cập - chuyển về trang locations của họ
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
             return redirect('renter_locations')
     except (AttributeError, Renter.DoesNotExist):
@@ -2186,7 +2270,7 @@ def houses(request):
     """
     # Block renters; redirect them to their own locations page
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
             return redirect('renter_locations')
     except (AttributeError, Renter.DoesNotExist):
@@ -2232,7 +2316,7 @@ def houses_partial(request):
     """HTMX fragment for the houses table filtered by location (query param: ?loc=<id>)."""
     # Block renters
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.info(request, "Vui lòng xem địa điểm của bạn tại đây.")
             return redirect('renter_locations')
     except (AttributeError, Renter.DoesNotExist):
@@ -3040,7 +3124,7 @@ def create_lop(request):
 def create_loc(request):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền tạo địa điểm.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -3071,8 +3155,8 @@ def create_loc(request):
 def create_house(request,loc_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
-            messages.error(request, "Bạn không có quyền tạo nhà/phòng.")
+        if request.user.is_renter:
+            messages.error(request, "Bạn không có quyền tạo nhà/phòng!!!")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
         pass
@@ -3095,7 +3179,7 @@ def create_house(request,loc_id):
             # print(error)
             # messages.error(request, "Lỗi khi lưu dữ liệu: " + str(error))
 
-        return redirect("house_list", loc_id)
+        return redirect("view_loc_secure", loc_id)
     else:
         forms = CreateHouse()
 
@@ -3205,7 +3289,7 @@ def create_ns(request):
 def create_renter(request):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền tạo khách thuê.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -3381,7 +3465,7 @@ def edit_lopmonhoc(request, lmh_id):
 def edit_loc(request, loc_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền sửa địa điểm.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -3413,7 +3497,7 @@ def edit_loc(request, loc_id):
 def edit_house(request, loc_id, house_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền sửa nhà/phòng.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -3432,7 +3516,7 @@ def edit_house(request, loc_id, house_id):
     # Ensure house belongs to the specified location
     if house.loc_id != loc_id:
         messages.error(request, "Nhà này không thuộc vị trí được chỉ định")
-        return redirect('house_list', loc_id)
+        return redirect('view_loc_secure', loc_id)
     
     #house_forms = CreateHouse(instance=house)
 
@@ -3442,7 +3526,7 @@ def edit_house(request, loc_id, house_id):
         if edit_forms.is_valid():
             edit_forms.save()
             messages.success(request, "Edit House Info Successfully!")
-            return redirect("house_list", loc_id)
+            return redirect("view_loc_secure", loc_id)
         else:
             messages.error(request, "Lỗi Forms: " + str(edit_forms.errors.as_text()))
 
@@ -3472,6 +3556,17 @@ def edit_house(request, loc_id, house_id):
         "house": house
     }
     return render(request, "sms/edit_house.html", context)
+
+# Nhân bản house
+def save_as_house(request, house_id):
+    house = get_object_or_404(House, id=house_id)
+    # Tạo bản sao, chỉ khác tên
+    new_house = House.objects.get(id=house_id)
+    new_house.pk = None
+    new_house.ten = f"{house.ten}_1"
+    new_house.save()
+    messages.success(request, f"Đã nhân bản nhà trọ thành công: {new_house.ten}")
+    return redirect("view_loc_secure", new_house.loc_id)
 
 @login_required
 @permission_required_or_403('sms.assign_lop',(Lop, 'id', 'lop_id'))
@@ -4123,7 +4218,7 @@ def edit_ns(request, ns_id):
 def edit_renter(request, renter_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền sửa thông tin khách thuê.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -4280,6 +4375,8 @@ def download_temp(request, opt):
         path = "uploads/tpl_hsgv.xlsx"
     elif opt == 6:
         path = "uploads/tpl_hsns.xlsx"
+    elif opt == 7:
+        path = "uploads/tpl_renter.xlsx"
     else:
         path = "uploads/monhoc.xlsx"
 
@@ -4543,7 +4640,7 @@ def view_house(request, house_id):
     is_current_renter = False
     
     try:
-        renter = request.user.renter
+        renter = request.user.is_renter
         active_contract = HouseRenter.objects.filter(
             house=house, 
             renter=renter,
@@ -4837,9 +4934,9 @@ def create_hr(request, id):
             # Normal request: chuyển hướng về trang hiện tại
             return redirect('hr_list_secure', id)
         else:
-            # Nếu Form không hợp lệ, giữ nguyên forms để hiển thị lỗi và dữ liệu cũ
-            messages.error(request, 'Lỗi: Dữ liệu nhập không hợp lệ. Vui lòng kiểm tra lại Form.')
-            # Tiếp tục logic bên dưới để render lại trang
+            for field, errors in forms.errors.items():
+                for error in errors:
+                    messages.error(request, f"Lỗi ở trường '{field}': {error}")
 
     # -----------------------------------
     # Logic Xử lý Form GET (Hiển thị)
@@ -5503,7 +5600,7 @@ def user_changepwd(request):
 def bill_list_view(request, loc_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.info(request, "Vui lòng xem hóa đơn của bạn tại đây.")
             return redirect('renter_bills')
     except (AttributeError, Renter.DoesNotExist):
@@ -5531,7 +5628,7 @@ def bill_list_view(request, loc_id):
 def create_bill_view(request, house_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền tạo hóa đơn.")
             return redirect('renter_dashboard')
     except (AttributeError, Renter.DoesNotExist):
@@ -5634,7 +5731,7 @@ def invoice_search(request):
     
     # Chặn renter truy cập - chuyển hướng về trang hóa đơn của họ
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.info(request, "Vui lòng xem hóa đơn của bạn tại đây.")
             return redirect('renter_bills')
     except (AttributeError, Renter.DoesNotExist):
@@ -5831,7 +5928,7 @@ def api_houses_by_location(request, loc_id: int):
 def update_bill_view(request, bill_id):
     # Chặn renter truy cập
     try:
-        if request.user.renter:
+        if request.user.is_renter:
             messages.error(request, "Bạn không có quyền sửa hóa đơn.")
             return redirect('renter_bills')
     except (AttributeError, Renter.DoesNotExist):
@@ -6760,7 +6857,7 @@ def issue_list(request):
     """Landlord's issue list - landlords only"""
     # Check if user is a landlord (owns at least one location)
     from .models import Location
-    if not Location.objects.filter(chu=request.user).exists():
+    if request.user.is_renter:
         messages.error(request, "Chỉ chủ nhà mới có quyền truy cập trang này.")
         return redirect('index')
     
@@ -7257,3 +7354,19 @@ def bill_history_view(request, bill_id):
         'history_list': history_list,
     }
     return render(request, 'sms/bill_history.html', context)
+
+def renter_account_pdf(request, renter_id):
+    from utils.generate_renter_pdf import generate_renter_account_pdf
+    from django.http import HttpResponse
+    from sms.models import Renter
+    renter = get_object_or_404(Renter, id=renter_id)
+    user = renter.user
+    username = user.username if user else 'N/A'
+    # Lấy password thực tế (ví dụ: lưu tạm khi tạo user, hoặc lấy từ trường tạm)
+    password = getattr(renter, 'plain_password', 'Vui lòng liên hệ quản lý để nhận mật khẩu.')
+    full_name = renter.hoten
+    system_url = 'https://your-domain.com'  # Thay bằng địa chỉ hệ thống thực tế
+    pdf_buffer = generate_renter_account_pdf(username, renter.init_pwd, full_name, system_url)
+    response = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="renter_{username}_account.pdf"'
+    return response

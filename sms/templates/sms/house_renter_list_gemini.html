@@ -214,6 +214,11 @@
 {% block content %}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
+            <!-- Nút quay lại danh sách nhà của location -->
+            <a href="{% url 'view_loc_secure' location.id %}" class="btn btn-lg btn-gradient-primary rounded-pill shadow-sm mb-4 d-inline-flex align-items-center gap-2" style="font-weight:500; font-size:1.1rem;">
+                <span class="fas fa-arrow-left fa-lg"></span>
+                <span>Quay lại</span>
+            </a>
             <!-- Thông tin vị trí và nhà liên quan -->
             <div class="mb-3">
                 <div><i class="fas fa-map-marker-alt me-1"></i>{{ location.diachi }}</div>

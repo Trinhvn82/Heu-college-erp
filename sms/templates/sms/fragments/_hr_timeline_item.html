@@ -38,8 +38,8 @@
                     class="m-0"
                 >
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-success" title="Kích hoạt hợp đồng" aria-label="Kích hoạt hợp đồng">
-                        <span class="fas fa-toggle-on"></span> Kích hoạt
+                    <button type="submit" class="btn btn-sm btn-warning" title="Đang ở: Tắt" aria-label="Đang ở: Tắt">
+                        <span class="fas fa-toggle-on"></span>
                     </button>
                 </form>
                 {% else %}
@@ -52,8 +52,8 @@
                     class="m-0"
                 >
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-warning" title="Hủy kích hoạt hợp đồng" aria-label="Hủy kích hoạt hợp đồng">
-                        <span class="fas fa-toggle-off"></span> Vô hiệu hóa
+                    <button type="submit" class="btn btn-sm btn-success" title="Đang ở: Bật" aria-label="Đang ở: Bật">
+                        <span class="fas fa-toggle-off"></span>
                     </button>
                 </form>
                 {% endif %}

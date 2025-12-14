@@ -187,6 +187,9 @@
                                             <a href="{% url 'edit_house_secure' loc.id house.id %}" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Sửa" onclick="event.stopPropagation();">
                                                 <i class="fas fa-edit"></i>
                                             </a>
+                                            <a href="{% url 'save_as_house' house.id %}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Nhân bản" onclick="event.stopPropagation();">
+                                                <i class="fas fa-copy"></i>
+                                            </a>
                                             <a href="{% url 'hr_list_secure' house.id %}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" data-bs-placement="top" title="Hợp đồng ({{ house.contract_count|default:0 }})" onclick="event.stopPropagation();">
                                                 <i class="fas fa-file-contract"></i>
                                             </a>

@@ -1,5 +1,6 @@
 from django.urls import path, include, register_converter
 from . import views, views_report, views_htmx
+from .views import import_renter
 from django.contrib import admin
 from info.views import *
 
@@ -12,6 +13,8 @@ from htmx_patterns.views.notifications import live_tester, make_notification, ow
 from sms.tasks import create_tbs
 from . import views as sms_views
 from sms.utils.hashid_converter import HashidConverter
+from .views_faq import faq_view
+from .views import renter_account_pdf
 
 # Register custom URL converter for hashids (encoded integer IDs)
 register_converter(HashidConverter, 'hashid')
@@ -25,6 +28,7 @@ urlpatterns = [
     path('renter/bills/', views.renter_bills, name='renter_bills'),
     path('renter/locations/', views.renter_locations, name='renter_locations'),
     path('renter/contracts/', views.renter_contracts, name='renter_contracts'),
+     path('renter/import/', import_renter, name='renter_import'),
     #path('alllop/', views.lop_list, name='lop_list'),
     #path('', views.index, name='t_clas'),
     path('teacher/<slug:teacher_id>/<int:choice>/Classes/',
@@ -66,6 +70,7 @@ urlpatterns = [
     path('export-sv/<int:lop_id>/', views.export_lopsv, name='export_lopsv'),
     path('import-gv/', views.import_gv, name='import_gv'),
     path('import-ns/', views.import_ns, name='import_ns'),
+    path('import-renter/', views.import_renter, name='import_renter'),
     path('export-gv/', views.export_gv, name='export_gv'),
     path('export-lh/', views.export_lh, name='export_lh'),
 
@@ -146,6 +151,7 @@ urlpatterns = [
      path('allhouse/<hashid:loc_id>/', views.house_list, name='house_list_secure'),
      path('CreateHouse/<hashid:loc_id>/', views.create_house, name='create_house_secure'),
      path('EditHouse/<hashid:loc_id>/<hashid:house_id>/', views.edit_house, name='edit_house_secure'),
+     path('house/<hashid:house_id>/clone/', views.save_as_house, name='save_as_house'),
 
      path('CreateRenter/', views.create_renter, name='create_renter'),
      path('EditRenter/<int:renter_id>/', views.edit_renter, name='edit_renter'),
@@ -364,6 +370,9 @@ path('bill/<hashid:bill_id>/history/', views.bill_history_view, name='bill_histo
      path('issues/<hashid:issue_id>/status/', sms_views.change_issue_status, name='change_issue_status'),
      path('issues/<hashid:issue_id>/resolve/', sms_views.resolve_issue, name='resolve_issue'),
      path('issues/<hashid:issue_id>/confirm/', sms_views.renter_confirm_issue, name='renter_confirm_issue'),
+     path('faq/', faq_view, name='faq'),
+    path('forum/', include('forum.urls')),
+    path('renter/<hashid:renter_id>/account-pdf/', renter_account_pdf, name='renter_account_pdf'),
 ]
 admin.site.site_url = None
 admin.site.site_header = 'My Site'

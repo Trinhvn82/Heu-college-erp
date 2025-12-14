@@ -32,12 +32,14 @@ class DynamicSessionTimeoutMiddleware:
         if request.user.is_authenticated:
             try:
                 # Kiểm tra xem user có phải là renter không
-                if hasattr(request.user, 'renter'):
-                    # User này là renter
+                if hasattr(request.user, 'renter') and request.user.renter:
+                # User này là renter
                     request.session.set_expiry(self.renter_timeout)
+                    print("Session timeout set for renter: {} seconds".format(self.renter_timeout))
                 else:
                     # User này là chủ nhà hoặc admin
                     request.session.set_expiry(self.owner_timeout)
+                    print("Session timeout set for owner/admin: {} seconds".format(self.owner_timeout))
             except Exception:
                 # Nếu có lỗi, dùng timeout mặc định
                 pass

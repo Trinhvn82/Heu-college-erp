@@ -1,0 +1,86 @@
+{% extends 'layouts/rental_base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="card mb-3">
+        <div class="card-body">
+            <h4 class="card-title">{{ post.title }}</h4>
+            <p class="card-text">{{ post.content|linebreaks }}</p>
+            {% if post.images.count > 0 %}
+            <div id="postImagesCarousel{{ post.id }}" class="carousel slide mb-3" data-bs-ride="carousel" style="width:400px;height:300px;max-width:100%;margin:auto;">
+                <div class="carousel-inner rounded shadow-sm" style="width:100%;height:100%;background:#f8f9fa;">
+                    {% for img in post.images.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}" style="width:100%;height:100%;">
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                            <img src="{{ img.image.url }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.12);background:#fff;display:block;margin:auto;" alt="Ảnh đề xuất">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if post.images.count > 1 %}
+                <button class="carousel-control-prev custom-carousel-btn" type="button" data-bs-target="#postImagesCarousel{{ post.id }}" data-bs-slide="prev" style="background:none;border:none;box-shadow:none;top:50%;left:-54px;transform:translateY(-50%);padding:0;">
+                    <span class="carousel-control-prev-icon" aria-hidden="true" style="width:2.2rem;height:2.2rem;background-size:2.2rem 2.2rem;filter:invert(30%) sepia(80%) saturate(800%) hue-rotate(240deg) brightness(1.2);"></span>
+                </button>
+                <button class="carousel-control-next custom-carousel-btn" type="button" data-bs-target="#postImagesCarousel{{ post.id }}" data-bs-slide="next" style="background:none;border:none;box-shadow:none;top:50%;right:-54px;transform:translateY(-50%);padding:0;">
+                    <span class="carousel-control-next-icon" aria-hidden="true" style="width:2.2rem;height:2.2rem;background-size:2.2rem 2.2rem;filter:invert(30%) sepia(80%) saturate(800%) hue-rotate(240deg) brightness(1.2);"></span>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+            <div class="text-muted small">Bởi {{ post.author.username }} lúc {{ post.created_at|date:'d/m/Y H:i' }}</div>
+            <form method="post" class="d-inline" style="display:inline-block;">
+                {% csrf_token %}
+                {% if not liked %}
+                <button type="submit" name="like_post_id" value="{{ post.id }}" class="btn btn-outline-danger btn-sm rounded-pill">
+                    <i class="fas fa-thumbs-up"></i> Thích
+                </button>
+                {% else %}
+                <span class="btn btn-danger btn-sm rounded-pill disabled"><i class="fas fa-thumbs-up"></i> Đã thích</span>
+                {% endif %}
+                <span class="ml-2">{{ like_count }} lượt thích</span>
+            </form>
+        </div>
+    </div>
+    <h5>Bình luận</h5>
+    <div class="mb-3">
+        {% for reply in replies %}
+        <div class="border rounded p-2 mb-2">
+            <strong>{{ reply.author.username }}</strong> <span class="text-muted small">{{ reply.created_at|date:'d/m/Y H:i' }}</span>
+            <div>{{ reply.content|linebreaks }}</div>
+            {% if reply.images.count > 0 %}
+            <div id="replyImagesCarousel{{ reply.id }}" class="carousel slide mt-2 mb-2" data-bs-ride="carousel" style="width:200px;height:150px;max-width:100%;margin:auto;">
+                <div class="carousel-inner rounded shadow-sm" style="width:100%;height:100%;background:#f8f9fa;">
+                    {% for img in reply.images.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}" style="width:100%;height:100%;">
+                        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                            <img src="{{ img.image.url }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.10);background:#fff;display:block;margin:auto;" alt="Ảnh reply">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if reply.images.count > 1 %}
+                <button class="carousel-control-prev custom-carousel-btn" type="button" data-bs-target="#replyImagesCarousel{{ reply.id }}" data-bs-slide="prev" style="background:none;border:none;box-shadow:none;top:50%;left:-44px;transform:translateY(-50%);padding:0;">
+                    <span class="carousel-control-prev-icon" aria-hidden="true" style="width:1.6rem;height:1.6rem;background-size:1.6rem 1.6rem;filter:invert(30%) sepia(80%) saturate(800%) hue-rotate(240deg) brightness(1.2);"></span>
+                </button>
+                <button class="carousel-control-next custom-carousel-btn" type="button" data-bs-target="#replyImagesCarousel{{ reply.id }}" data-bs-slide="next" style="background:none;border:none;box-shadow:none;top:50%;right:-44px;transform:translateY(-50%);padding:0;">
+                    <span class="carousel-control-next-icon" aria-hidden="true" style="width:1.6rem;height:1.6rem;background-size:1.6rem 1.6rem;filter:invert(30%) sepia(80%) saturate(800%) hue-rotate(240deg) brightness(1.2);"></span>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p>Chưa có bình luận nào.</p>
+        {% endfor %}
+    </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ reply_form.content }}
+        <div class="form-group mt-2">
+            <label>Ảnh (tối đa 3 ảnh):</label>
+            {{ reply_form.images }}
+        </div>
+        <button type="submit" name="reply_content" class="btn btn-primary rounded-pill mt-2">Gửi bình luận</button>
+    </form>
+    <a href="{% url 'forum_list' %}" class="btn btn-outline-secondary rounded-pill mt-3">Quay lại danh sách đề xuất</a>
+</div>
+{% endblock %}

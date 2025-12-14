@@ -1,4 +1,15 @@
-﻿{% extends "layouts/rental_base.html" %}
+﻿{% for house in houses %}
+    <tr>
+        <td>{{ house.name }}</td>
+        <!-- ...existing columns... -->
+        <td>
+            <a href="{% url 'house_detail' house.id %}" class="btn btn-sm btn-info">Chi tiết</a>
+            <!-- ...existing actions... -->
+            <a href="{% url 'save_as_house' house.id %}" class="btn btn-sm btn-warning">Nhân bản</a>
+        </td>
+    </tr>
+{% endfor %}
+{% extends "layouts/rental_base.html" %}
 {% load static %}
 {% load guardian_tags %}
 

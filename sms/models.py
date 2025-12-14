@@ -249,7 +249,7 @@ class Renter(models.Model):
     sdt = models.CharField(max_length=100, verbose_name = "Số điện thoại",blank=True, null=True)
     cccd = models.CharField(max_length=100, verbose_name = "CCCD", blank=True, null=True)
     ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
-    noicap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    noicap = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Nơi cấp")
     mst = models.CharField(max_length=100, blank=True, null=True, verbose_name = "MS Thuế cá nhân")
     ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
     init_pwd = models.CharField(max_length=100, blank=True, null=True, verbose_name="Mật khẩu khởi tạo") 
@@ -270,6 +270,29 @@ class Renter(models.Model):
             return f"{hoten} - {cccd}"
         return hoten
 
+class Landlord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.RESTRICT, null=True)
+    ma = models.CharField(null=True, verbose_name = "Mã")
+    hoten = models.CharField(max_length=100, verbose_name = "Họ tên")
+    email = models.CharField(max_length=100, blank=True, null=True, verbose_name = "Email")
+    #namsinh = models.DateField()
+    sdt = models.CharField(max_length=100, verbose_name = "Số điện thoại",blank=True, null=True)
+    cccd = models.CharField(max_length=100, verbose_name = "CCCD", blank=True, null=True)
+    ngaycap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    noicap = models.DateField(blank=True, null=True, verbose_name = "Ngày cấp")
+    mst = models.CharField(max_length=100, blank=True, null=True, verbose_name = "MS Thuế cá nhân")
+    ghichu = models.TextField(max_length=500, blank=True, null=True, verbose_name = "Ghi chú")
+    #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
+    history = HistoricalRecords()
+ 
+    class Meta:
+        verbose_name = "Chủ nhà"
+        verbose_name_plural = "Danh sách Chủ nhà"
+        ordering = ["id",]
+        unique_together = ('email',)
+
+    def __str__(self):
+        return ma
 
 class Hoadon(models.Model):
     st_choice = (
@@ -732,7 +755,7 @@ class HouseRenter(models.Model):
     renter = models.ForeignKey(Renter, on_delete=models.RESTRICT, null=True, verbose_name = "Người thuê")
     rent_from = models.DateField(blank=True, null=True, verbose_name = "Thuê từ ngày")
     rent_to = models.DateField(blank=True, null=True, verbose_name = "Thuê đến ngày")
-    active = models.BooleanField(default= False, verbose_name = "Hợp đồng đang có hiệu lực?")
+    active = models.BooleanField(default= False, verbose_name = "Người thuê đang ở?")
     ghichu = models.TextField(max_length=200, blank=True, null=True, verbose_name = "Ghi chú")
     #phong = models.ForeignKey(Phong, on_delete=models.RESTRICT, null=True, blank=True)
     history = HistoricalRecords()
