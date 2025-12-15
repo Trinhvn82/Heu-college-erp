@@ -195,6 +195,7 @@ class CreateCtdtMonhoc(forms.ModelForm):
         #fields_required = ('lop','trungtam','thoigian','monhoc')
         labels = {
             'ctdt': 'Chuong trinh DT',
+            # Lựa chọn tiêu đề sự cố cho dropdown
             'monhoc': 'Mon hoc',
         }
         widgets = {
